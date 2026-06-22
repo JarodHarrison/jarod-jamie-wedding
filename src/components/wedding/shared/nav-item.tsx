@@ -24,7 +24,7 @@ export function NavItem({
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex min-h-[44px] min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-55"}`}
+      className={`flex min-h-[40px] min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-px transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-55"}`}
     >
       <div
         className={`rounded-xl transition-colors ${compact ? "p-1.5" : "p-2"} ${isActive ? "bg-[#c3a379] text-white shadow-md" : "text-[#2a2723]"}`}

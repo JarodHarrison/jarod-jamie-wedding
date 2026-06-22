@@ -195,7 +195,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] right-4 z-40 touch-manipulation transition-transform active:scale-95 sm:bottom-24"
+          className="absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 touch-manipulation transition-transform active:scale-95 sm:bottom-20"
           aria-label={`Open ${ANNITA.name}`}
         >
           <AnnitaAvatar size={56} className="shadow-xl ring-4 ring-pink-200" />

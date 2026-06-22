@@ -143,7 +143,7 @@ export function WeddingApp() {
         <WeddingChatbot open={chatOpen} onOpenChange={setChatOpen} />
         {!chatOpen && (
           <nav
-            className={`wedding-bottom-nav z-50 grid w-full shrink-0 items-end border-t bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-0.5 pt-1.5 ${navItems.length > 5 ? "grid-cols-6" : "grid-cols-5"}`}
+            className={`wedding-bottom-nav z-50 grid w-full shrink-0 items-end border-t bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-0.5 pt-1 ${navItems.length > 5 ? "grid-cols-6" : "grid-cols-5"}`}
             style={{ borderColor: theme.border }}
           >
             {navItems.map(({ id, label, icon }) => (
