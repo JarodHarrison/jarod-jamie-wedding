@@ -73,7 +73,7 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat }: Hom
       <div className="space-y-4 px-8 pb-10">
         <h3 className="mb-4 font-serif text-xl text-[#2a2723]">Quick Links</h3>
         <MenuRow icon={Heart} title="Our Story" onClick={() => setActiveTab("story")} />
-        <MenuRow icon={MessageCircle} title="Wedding Assistant" onClick={() => onOpenChat?.()} />
+        <MenuRow icon={MessageCircle} title="Annita Help" onClick={() => onOpenChat?.()} />
         <MenuRow icon={Camera} title="Photos" onClick={() => setActiveTab("photos")} />
         <MenuRow icon={Gift} title="Wishing Well" onClick={() => setActiveTab("wishingwell")} />
         <MenuRow icon={Plane} title="Travel & Stay" onClick={() => setActiveTab("travel")} />

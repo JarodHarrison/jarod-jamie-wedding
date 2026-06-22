@@ -1,27 +1,78 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, Sparkles, X } from "lucide-react";
+import { Send, X } from "lucide-react";
+import {
+  ANNITA,
+  ANNITA_INPUT_PLACEHOLDERS,
+  ANNITA_LOADING_MESSAGES,
+  pickAnnitaLine,
+} from "@/lib/annita";
+import { getIncompleteProfileTasks } from "@/lib/guest-profile-checklist";
 import { theme } from "@/lib/theme";
+import type { GuestProfile } from "@/types/wedding";
+
+type ChatSource = {
+  title: string;
+  url: string;
+};
 
 type Message = {
   role: "user" | "assistant";
   content: string;
+  sources?: ChatSource[];
 };
-
-const STARTERS = [
-  "What time is the ceremony?",
-  "How do I get from Brisbane Airport?",
-  "Is there a shuttle service?",
-];
-
-const WELCOME_MESSAGE =
-  "Hi! I'm your wedding assistant. Ask me about the schedule, travel, accommodation, dress code, shuttles, or anything else about Jarod & Jamie's wedding.";
 
 type WeddingChatbotProps = {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 };
+
+function buildWelcomeMessage(profile: GuestProfile | null): string {
+  if (!profile) return ANNITA.welcomeMessage;
+
+  const tasks = getIncompleteProfileTasks(profile);
+  if (tasks.length === 0) {
+    return `${ANNITA.welcomeMessage} Your forms are all complete — you're officially ready to slay, honey.`;
+  }
+
+  const required = tasks.filter((task) => task.priority === "required");
+  if (required.length > 0) {
+    const missing = required.map((task) => task.label.split("(")[0]?.trim() ?? task.label).join(", ");
+    return `${ANNITA.welcomeMessage} I can also see you still need: ${missing}. Want me to help you fill those in right here?`;
+  }
+
+  return `${ANNITA.welcomeMessage} You've got a few optional details we could still add — just say the word, darling.`;
+}
+
+function buildStarters(profile: GuestProfile | null): string[] {
+  const defaults = ANNITA.starters.slice(0, 2);
+  if (!profile) return [...ANNITA.starters];
+
+  const taskStarters = getIncompleteProfileTasks(profile)
+    .slice(0, 2)
+    .map((task) => task.starter);
+
+  return [...taskStarters, ...defaults].slice(0, 4);
+}
+
+function AnnitaAvatar({ size = 36, className = "" }: { size?: number; className?: string }) {
+  return (
+    <div
+      className={`relative shrink-0 overflow-hidden rounded-full ring-2 ring-pink-300 ${className}`}
+      style={{ width: size, height: size }}
+    >
+      <Image
+        src={ANNITA.avatarSrc}
+        alt={ANNITA.name}
+        fill
+        className="object-cover object-top"
+        sizes={`${size}px`}
+      />
+    </div>
+  );
+}
 
 export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingChatbotProps = {}) {
   const [internalOpen, setInternalOpen] = useState(false);
@@ -36,14 +87,37 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [welcomed, setWelcomed] = useState(false);
+  const [profile, setProfile] = useState<GuestProfile | null>(null);
+  const [starters, setStarters] = useState<string[]>([...ANNITA.starters]);
+  const [loadingMessage, setLoadingMessage] = useState(() => pickAnnitaLine(ANNITA_LOADING_MESSAGES));
+  const [inputPlaceholder, setInputPlaceholder] = useState(() =>
+    pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS),
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (open && !welcomed) {
-      setMessages([{ role: "assistant", content: WELCOME_MESSAGE }]);
-      setWelcomed(true);
-    }
+    if (!open) return;
+
+    fetch("/api/guest/profile")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        const guestProfile = (data?.profile as GuestProfile | undefined) ?? null;
+        setProfile(guestProfile);
+        setStarters(buildStarters(guestProfile));
+
+        if (!welcomed) {
+          setMessages([{ role: "assistant", content: buildWelcomeMessage(guestProfile) }]);
+          setWelcomed(true);
+        }
+        setInputPlaceholder(pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS));
+      })
+      .catch(() => {
+        if (!welcomed) {
+          setMessages([{ role: "assistant", content: ANNITA.welcomeMessage }]);
+          setWelcomed(true);
+        }
+      });
   }, [open, welcomed]);
 
   useEffect(() => {
@@ -65,13 +139,16 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
     const nextMessages = [...messages, userMessage];
     setMessages(nextMessages);
     setInput("");
+    setLoadingMessage(pickAnnitaLine(ANNITA_LOADING_MESSAGES));
     setLoading(true);
 
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: nextMessages }),
+        body: JSON.stringify({
+          messages: nextMessages.map(({ role, content }) => ({ role, content })),
+        }),
       });
       const data = await res.json();
 
@@ -82,7 +159,22 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         return;
       }
 
-      setMessages([...nextMessages, { role: "assistant", content: data.reply }]);
+      setMessages([
+        ...nextMessages,
+        {
+          role: "assistant",
+          content: data.reply,
+          sources: Array.isArray(data.sources) ? data.sources : undefined,
+        },
+      ]);
+
+      if (data.profileUpdated && data.profile) {
+        const guestProfile = data.profile as GuestProfile;
+        setProfile(guestProfile);
+        setStarters(buildStarters(guestProfile));
+      }
+
+      setInputPlaceholder(pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS));
     } catch {
       setError("Network error — please try again.");
       setMessages(messages);
@@ -103,11 +195,10 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-14 w-14 touch-manipulation items-center justify-center rounded-full shadow-xl transition-transform active:scale-95 sm:bottom-24"
-          style={{ backgroundColor: theme.btnDark, color: theme.gold }}
-          aria-label="Open wedding assistant"
+          className="absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] right-4 z-40 touch-manipulation transition-transform active:scale-95 sm:bottom-24"
+          aria-label={`Open ${ANNITA.name}`}
         >
-          <MessageCircle size={22} />
+          <AnnitaAvatar size={56} className="shadow-xl ring-4 ring-pink-200" />
         </button>
       )}
 
@@ -115,19 +206,14 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         <div className="absolute inset-0 z-[100] flex flex-col bg-[#f7f4ee]">
           <header
             className="wedding-screen-top flex shrink-0 items-center justify-between border-b px-5 pb-4"
-            style={{ borderColor: theme.border }}
+            style={{ borderColor: theme.border, background: "linear-gradient(to right, #fdf2f8, #f7f4ee)" }}
           >
             <div className="flex items-center gap-3">
-              <div
-                className="flex h-9 w-9 items-center justify-center rounded-full"
-                style={{ backgroundColor: theme.gold, color: theme.btnDark }}
-              >
-                <Sparkles size={16} />
-              </div>
+              <AnnitaAvatar size={40} />
               <div>
-                <p className="font-serif text-lg text-[#2a2723]">Wedding Assistant</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                  Ask about travel & the wedding
+                <p className="font-serif text-lg text-[#2a2723]">{ANNITA.name}</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider text-pink-400">
+                  {ANNITA.tagline}
                 </p>
               </div>
             </div>
@@ -135,7 +221,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
               type="button"
               onClick={() => setOpen(false)}
               className="rounded-full p-2 text-gray-400 transition-colors hover:text-[#2a2723]"
-              aria-label="Close assistant"
+              aria-label={`Close ${ANNITA.name}`}
             >
               <X size={20} />
             </button>
@@ -144,14 +230,14 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
             {messages.length <= 1 && !loading && (
               <div className="space-y-2 pb-4">
-                {STARTERS.map((starter) => (
+                {starters.map((starter) => (
                   <button
                     key={starter}
                     type="button"
                     onClick={() => sendMessage(starter)}
                     disabled={loading}
-                    className="w-full rounded-xl border bg-white px-4 py-3 text-left text-xs text-[#2a2723] shadow-sm transition-colors hover:bg-white/80 disabled:opacity-60"
-                    style={{ borderColor: theme.border }}
+                    className="w-full rounded-xl border bg-white px-4 py-3 text-left text-xs text-[#2a2723] shadow-sm transition-colors hover:bg-pink-50 disabled:opacity-60"
+                    style={{ borderColor: ANNITA.bubbleBorder }}
                   >
                     {starter}
                   </button>
@@ -163,32 +249,58 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
               {messages.map((msg, i) => (
                 <div
                   key={`${msg.role}-${i}`}
-                  className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+                  className={`flex items-end gap-2 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                 >
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-                      msg.role === "user"
-                        ? "rounded-br-md text-white"
-                        : "rounded-bl-md border bg-white text-gray-700"
-                    }`}
-                    style={
-                      msg.role === "user"
-                        ? { backgroundColor: theme.btnDark }
-                        : { borderColor: theme.border }
-                    }
-                  >
-                    {msg.content}
+                  {msg.role === "assistant" && <AnnitaAvatar size={28} className="mb-1" />}
+                  <div className="max-w-[80%]">
+                    <div
+                      className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                        msg.role === "user"
+                          ? "rounded-br-md text-white"
+                          : "rounded-bl-md border text-gray-700"
+                      }`}
+                      style={
+                        msg.role === "user"
+                          ? { backgroundColor: theme.btnDark }
+                          : {
+                              borderColor: ANNITA.bubbleBorder,
+                              backgroundColor: ANNITA.bubbleBg,
+                            }
+                      }
+                    >
+                      {msg.content}
+                    </div>
+                    {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2 px-1">
+                        {msg.sources.map((source) => (
+                          <a
+                            key={source.url}
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-full border bg-white px-2.5 py-1 text-[10px] text-pink-500 transition-colors hover:bg-pink-50"
+                            style={{ borderColor: ANNITA.bubbleBorder }}
+                          >
+                            {source.title}
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
 
               {loading && (
-                <div className="flex justify-start">
+                <div className="flex items-end gap-2 justify-start">
+                  <AnnitaAvatar size={28} className="mb-1" />
                   <div
-                    className="rounded-2xl rounded-bl-md border bg-white px-4 py-3 text-sm text-gray-400"
-                    style={{ borderColor: theme.border }}
+                    className="rounded-2xl rounded-bl-md border px-4 py-3 text-sm italic text-pink-400"
+                    style={{
+                      borderColor: ANNITA.bubbleBorder,
+                      backgroundColor: ANNITA.bubbleBg,
+                    }}
                   >
-                    Thinking...
+                    {loadingMessage}
                   </div>
                 </div>
               )}
@@ -212,16 +324,16 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question..."
+                placeholder={inputPlaceholder}
                 disabled={loading}
-                className="flex-1 rounded-full border bg-[#f7f4ee] px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c3a379] disabled:opacity-60"
-                style={{ borderColor: theme.border }}
+                className="flex-1 rounded-full border bg-[#f7f4ee] px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-300 disabled:opacity-60"
+                style={{ borderColor: ANNITA.bubbleBorder }}
               />
               <button
                 type="submit"
                 disabled={loading || !input.trim()}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-transform active:scale-95 disabled:opacity-40"
-                style={{ backgroundColor: theme.gold, color: theme.btnDark }}
+                style={{ backgroundColor: ANNITA.accent, color: "white" }}
                 aria-label="Send message"
               >
                 <Send size={16} />

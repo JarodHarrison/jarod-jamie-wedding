@@ -1,4 +1,4 @@
-import { Bus, Camera, ChevronRight, Map, Sparkles } from "lucide-react";
+import { Bus, Camera, ChevronRight, Map, Shirt, Sparkles } from "lucide-react";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 
@@ -29,6 +29,28 @@ export function GuideScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => v
           </p>
           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest">
             View Guide <ChevronRight size={12} />
+          </span>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setActiveTab("fashion")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setActiveTab("fashion");
+          }}
+          className="group relative cursor-pointer overflow-hidden rounded-3xl border bg-white p-6 shadow-md transition-transform active:scale-95"
+          style={{ borderColor: theme.border }}
+        >
+          <div className="absolute right-0 top-0 p-4 opacity-10 transition-transform group-hover:scale-110">
+            <Shirt size={64} color={theme.textDark} />
+          </div>
+          <h3 className="mb-1 font-serif text-2xl text-[#2a2723]">Fashion Inspiration</h3>
+          <p className="mb-4 max-w-[80%] text-sm text-gray-500">
+            Colourful cocktail looks, ASOS picks, and sequin tux energy for the big weekend.
+          </p>
+          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+            Get Inspired <ChevronRight size={12} />
           </span>
         </div>
 

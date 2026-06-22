@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
 import { generateChatReply, type ChatMessage } from "@/lib/chat";
+import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { getSession } from "@/lib/auth/session";
+import { prisma } from "@/lib/prisma";
 
 const MAX_MESSAGES = 20;
 const MAX_CONTENT_LENGTH = 2000;
@@ -37,18 +39,43 @@ export async function POST(request: Request) {
       return jsonError("Please send a message.", 400);
     }
 
+    let guestId: string | undefined;
+    let profile;
+
+    if (session.type === "guest") {
+      guestId = session.id;
+      const guest = await prisma.guest.findUnique({
+        where: { id: session.id },
+        select: guestProfileSelect,
+      });
+      if (guest) {
+        profile = serializeGuestProfile(guest);
+      }
+    }
+
     const context =
       session.type === "guest"
-        ? { guestName: session.name, guestTier: session.tier }
+        ? {
+            guestName: session.name,
+            guestTier: session.tier,
+            guestId,
+            profile,
+          }
         : { guestName: session.name, guestTier: "ADMIN" };
 
-    const reply = await generateChatReply(messages, context);
+    const { reply, sources, profileUpdated, profile: updatedProfile } =
+      await generateChatReply(messages, context);
 
-    return NextResponse.json({ reply });
+    return NextResponse.json({
+      reply,
+      sources,
+      profileUpdated: profileUpdated ?? false,
+      profile: updatedProfile ?? profile,
+    });
   } catch (error) {
     if (error instanceof Error && error.message === "CHAT_NOT_CONFIGURED") {
       return jsonError(
-        "The wedding assistant is not configured yet. Please add GOOGLE_API_KEY to your environment.",
+        "Annita Help isn't ready for her close-up yet — please add GOOGLE_API_KEY to your environment.",
         503,
       );
     }

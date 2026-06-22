@@ -1,6 +1,58 @@
+import { ExternalLink } from "lucide-react";
 import { InterestForm } from "@/components/wedding/forms/interest-form";
+import { fashionInspirationLinks } from "@/components/wedding/data/fashion-inspiration";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
+import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
+
+export function FashionInspirationScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
+  return (
+    <div className="animate-fade-in animate-slide-right pb-10">
+      <SubHeader title="Fashion Inspiration" subtitle="Dress to Impress" onBack={() => setActiveTab("guide")} />
+      <div className="mt-8 space-y-6 px-6">
+        <div
+          className="rounded-2xl border bg-white p-5 text-sm leading-relaxed text-gray-600 shadow-sm"
+          style={{ borderColor: theme.border }}
+        >
+          <p className="mb-3 font-serif text-lg text-[#2a2723]">The dress code</p>
+          <ul className="space-y-2 text-sm">
+            <li>
+              <strong className="text-[#2a2723]">Ceremony (Sat):</strong> Colourful cocktail attire
+            </li>
+            <li>
+              <strong className="text-[#2a2723]">Meet &amp; Greet (Fri):</strong> Smart casual
+            </li>
+            <li>
+              <strong className="text-[#2a2723]">Family Breakfast (Sun):</strong> Casual
+            </li>
+          </ul>
+          <p className="mt-4 text-xs text-gray-500">
+            Think colour, personality, and a little glamour — you&apos;re on a mountaintop, honey.
+          </p>
+        </div>
+
+        {fashionInspirationLinks.map((link) => (
+          <a
+            key={link.id}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group block rounded-2xl border bg-white p-5 shadow-sm transition-transform active:scale-[0.98]"
+            style={{ borderColor: theme.border }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">{link.subtitle}</p>
+            <h3 className="mb-2 font-serif text-xl text-[#2a2723]">{link.title}</h3>
+            <p className="mb-4 text-sm leading-relaxed text-gray-600">{link.description}</p>
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#2a2723] transition-colors group-hover:text-[#c3a379]">
+              {link.cta}
+              <ExternalLink size={12} />
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function GlowUpScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
   return (

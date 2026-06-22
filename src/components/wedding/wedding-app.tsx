@@ -9,7 +9,7 @@ import { NavItem } from "@/components/wedding/shared/nav-item";
 import { AttractionsScreen } from "@/components/wedding/screens/attractions-screen";
 import { FAQScreen, WishingWellScreen } from "@/components/wedding/screens/faq-screen";
 import { GuestShuttleScreen } from "@/components/wedding/screens/guest-shuttle-screen";
-import { GlowUpScreen, OnSiteScreen } from "@/components/wedding/screens/guide-sub-screens";
+import { GlowUpScreen, FashionInspirationScreen, OnSiteScreen } from "@/components/wedding/screens/guide-sub-screens";
 import { GuideScreen } from "@/components/wedding/screens/guide-screen";
 import { HomeScreen } from "@/components/wedding/screens/home-screen";
 import { ItineraryScreen } from "@/components/wedding/screens/itinerary-screen";
@@ -119,6 +119,8 @@ export function WeddingApp() {
         return <PhotosScreen setActiveTab={setActiveTab} />;
       case "attractions":
         return <AttractionsScreen setActiveTab={setActiveTab} />;
+      case "fashion":
+        return <FashionInspirationScreen setActiveTab={setActiveTab} />;
       case "glowup":
         return <GlowUpScreen setActiveTab={setActiveTab} />;
       case "onsite":

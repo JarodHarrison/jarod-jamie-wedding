@@ -23,6 +23,7 @@ export type SubTab =
   | "shuttle"
   | "photos"
   | "attractions"
+  | "fashion"
   | "glowup"
   | "onsite";
 
