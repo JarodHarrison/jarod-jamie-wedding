@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum RsvpStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum GuestTier {
+  PENTHOUSE
+  ON_SITE
+  OFF_SITE
+}
+
+model Guest {
+  id           String     @id @default(cuid())
+  name         String
+  email        String     @unique
+  passwordHash String
+  tier         GuestTier  @default(OFF_SITE)
+  rsvpStatus   RsvpStatus @default(PENDING)
+  createdAt    DateTime   @default(now()) @db.Timestamptz
+  updatedAt    DateTime   @updatedAt @db.Timestamptz
+
+  phone            String?
+  plusOneName      String?
+  dietaryNotes     String?
+  songRequest      String?
+  rsvpSubmittedAt  DateTime? @db.Timestamptz
+
+  accommodationType        String?
+  accommodationName        String?
+  accommodationAddress     String?
+  checkInDate              String?
+  checkOutDate             String?
+  needsShuttle             Boolean?
+  accommodationNotes       String?
+  accommodationSubmittedAt DateTime? @db.Timestamptz
+
+  wantsSharedTransfer Boolean?
+  arrivalAirport      String?
+  arrivalDate         String?
+  arrivalTime         String?
+  departureAirport    String?
+  departureDate       String?
+  departureTime       String?
+  flightNumber        String?
+  passengerCount      Int?
+  transferNotes       String?
+  transferSubmittedAt DateTime? @db.Timestamptz
+
+  glowUpInterest        String?
+  onSiteServiceInterest String?
+  interestsSubmittedAt  DateTime? @db.Timestamptz
+
+  goldCoastTrip GoldCoastTrip?
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+}
+
+model GoldCoastTrip {
+  id          String   @id @default(cuid())
+  guestId     String   @unique
+  guest       Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  amountPaid  Decimal  @default(0) @db.Decimal(10, 2)
+  balanceDue  Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+}
+
+model ShuttlePing {
+  id        String   @id @default(cuid())
+  latitude  Float
+  longitude Float
+  timestamp DateTime @default(now()) @db.Timestamptz
+}

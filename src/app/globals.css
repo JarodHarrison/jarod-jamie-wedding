@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f4ee;
+  --foreground: #2a2723;
+  --wedding-gold: #c3a379;
+  --wedding-border: #e2d5c4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-wedding-gold: var(--wedding-gold);
+  --color-wedding-border: var(--wedding-border);
+  /* Lato — body & UI */
+  --font-sans: var(--font-lato);
+  /* Playfair Display — headings */
+  --font-serif: var(--font-playfair);
+  /* Pinyon Script — cursive accents (e.g. wedding date) */
+  --font-script: var(--font-pinyon);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Lato: primary body font for general text and UI */
+.font-sans {
+  font-family: var(--font-lato), system-ui, sans-serif;
+}
+
+/* Playfair Display: primary heading font */
+.font-serif {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+/* Pinyon Script: elegant cursive accent (wedding date, decorative text) */
+.font-script {
+  font-family: var(--font-pinyon), cursive;
+  font-size: 1.5em;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(1rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+.animate-slide-right {
+  animation: slide-right 0.3s ease-out;
+}
