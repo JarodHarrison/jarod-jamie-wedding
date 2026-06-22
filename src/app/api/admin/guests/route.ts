@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
-import { hashPassword, generateTemporaryPassword } from "@/lib/auth/password";
+import {
+  buildPasswordFields,
+  generateTemporaryPassword,
+  MIN_PASSWORD_LENGTH,
+} from "@/lib/auth/password";
 import { requireAdminSession } from "@/lib/auth/session";
 import { jsonError, normalizeEmail, isValidGuestTier } from "@/lib/api-utils";
-import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
+import { adminGuestSelect, serializeAdminGuest } from "@/lib/guest-profile";
+import { sendGuestInviteEmail } from "@/lib/guest-emails";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -10,14 +15,14 @@ export async function GET() {
     await requireAdminSession();
     const guests = await prisma.guest.findMany({
       orderBy: { name: "asc" },
-      select: guestProfileSelect,
+      select: adminGuestSelect,
     });
     const adminEmails = new Set(
       (await prisma.admin.findMany({ select: { email: true } })).map((a) => a.email),
     );
     return NextResponse.json({
       guests: guests.map((g) => ({
-        ...serializeGuestProfile(g),
+        ...serializeAdminGuest(g),
         isAdmin: adminEmails.has(g.email),
       })),
     });
@@ -47,24 +52,28 @@ export async function POST(request: Request) {
       return jsonError("A guest with this email already exists.", 409);
     }
 
+    const passwordFields = await buildPasswordFields(password);
+
     const guest = await prisma.guest.create({
       data: {
         name,
         email,
         tier,
-        passwordHash: await hashPassword(password),
+        passwordHash: passwordFields.passwordHash,
+        passwordPlaintext: passwordFields.passwordPlaintext,
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        tier: true,
-        rsvpStatus: true,
-        createdAt: true,
-      },
+      select: adminGuestSelect,
     });
 
-    return NextResponse.json({ guest, temporaryPassword: password }, { status: 201 });
+    void sendGuestInviteEmail({ name, email, password });
+
+    return NextResponse.json(
+      {
+        guest: serializeAdminGuest(guest),
+        temporaryPassword: password,
+      },
+      { status: 201 },
+    );
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonError("Unauthorized", 401);

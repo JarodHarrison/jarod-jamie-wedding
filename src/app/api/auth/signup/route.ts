@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { hashPassword } from "@/lib/auth/password";
+import { buildPasswordFields } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { notifyRegistration } from "@/lib/registration-notify";
+import { sendGuestWelcomeEmail } from "@/lib/guest-emails";
 import { prisma } from "@/lib/prisma";
 
-const MIN_PASSWORD_LENGTH = 8;
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/constants";
 
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -34,11 +35,14 @@ export async function POST(request: Request) {
       return jsonError("An account with this email already exists. Please sign in.", 409);
     }
 
+    const passwordFields = await buildPasswordFields(password);
+
     const guest = await prisma.guest.create({
       data: {
         name,
         email,
-        passwordHash: await hashPassword(password),
+        passwordHash: passwordFields.passwordHash,
+        passwordPlaintext: passwordFields.passwordPlaintext,
         tier: "OFF_SITE",
       },
       select: guestProfileSelect,
@@ -53,6 +57,7 @@ export async function POST(request: Request) {
     });
 
     notifyRegistration("signup", serializeGuestProfile(guest));
+    void sendGuestWelcomeEmail({ name: guest.name, email: guest.email });
 
     return NextResponse.json(
       {

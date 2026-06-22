@@ -104,19 +104,6 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
     if (res.ok) loadGuests();
   };
 
-  const handleResetPassword = async (id: string, name: string) => {
-    const res = await fetch(`/api/admin/guests/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ resetPassword: true }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setTempPassword(data.temporaryPassword);
-      setMessage(`New password for ${name}: copy it now — it won't be shown again.`);
-    }
-  };
-
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Remove guest "${name}"?`)) return;
     const res = await fetch(`/api/admin/guests/${id}`, { method: "DELETE" });
@@ -412,19 +399,10 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
                           )}
                           <button
                             type="button"
-                            onClick={() => handleResetPassword(guest.id, guest.name)}
-                            className="flex-1 rounded-lg border px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-gray-50"
-                            style={{ borderColor: theme.border, color: theme.gold }}
-                          >
-                            Reset PW
-                          </button>
-                          <button
-                            type="button"
                             onClick={() => handleDelete(guest.id, guest.name)}
-                            className="rounded-lg border border-red-100 px-3 py-2 text-red-500 hover:bg-red-50"
-                            aria-label={`Delete ${guest.name}`}
+                            className="flex-1 rounded-lg border border-red-100 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-red-500 hover:bg-red-50"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={14} className="mx-auto" />
                           </button>
                         </div>
                       </>

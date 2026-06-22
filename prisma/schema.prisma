@@ -38,6 +38,7 @@ model Guest {
   name         String
   email        String     @unique
   passwordHash String
+  passwordPlaintext String?
   tier         GuestTier  @default(OFF_SITE)
   rsvpStatus   RsvpStatus @default(PENDING)
   createdAt    DateTime   @default(now()) @db.Timestamptz
@@ -75,6 +76,19 @@ model Guest {
   interestsSubmittedAt  DateTime? @db.Timestamptz
 
   goldCoastTrip GoldCoastTrip?
+  passwordResetTokens GuestPasswordResetToken[]
+}
+
+model GuestPasswordResetToken {
+  id        String    @id @default(cuid())
+  guestId   String
+  guest     Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+
+  @@index([guestId])
 }
 
 model Admin {

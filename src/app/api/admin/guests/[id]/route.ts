@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
-import { hashPassword, generateTemporaryPassword } from "@/lib/auth/password";
+import {
+  buildPasswordFields,
+  generateTemporaryPassword,
+} from "@/lib/auth/password";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/constants";
 import { requireAdminSession } from "@/lib/auth/session";
 import { jsonError, normalizeEmail, isValidGuestTier } from "@/lib/api-utils";
+import { adminGuestSelect, serializeAdminGuest } from "@/lib/guest-profile";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -17,6 +22,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       email?: string;
       tier?: "PENTHOUSE" | "ON_SITE" | "OFF_SITE";
       passwordHash?: string;
+      passwordPlaintext?: string | null;
     } = {};
 
     if (body.name !== undefined) {
@@ -36,40 +42,47 @@ export async function PATCH(request: Request, context: RouteContext) {
       data.tier = body.tier;
     }
 
+    let newPassword: string | undefined;
+
     if (body.resetPassword === true) {
-      const newPassword = body.password?.trim() || generateTemporaryPassword();
-      data.passwordHash = await hashPassword(newPassword);
+      newPassword = body.password?.trim() || generateTemporaryPassword();
+    } else if (typeof body.password === "string" && body.password.trim()) {
+      newPassword = body.password.trim();
+    }
 
-      const guest = await prisma.guest.update({
-        where: { id },
-        data,
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          tier: true,
-          rsvpStatus: true,
-          createdAt: true,
-        },
-      });
-
-      return NextResponse.json({ guest, temporaryPassword: newPassword });
+    if (newPassword !== undefined) {
+      if (newPassword.length < MIN_PASSWORD_LENGTH) {
+        return jsonError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`, 400);
+      }
+      const passwordFields = await buildPasswordFields(newPassword);
+      data.passwordHash = passwordFields.passwordHash;
+      data.passwordPlaintext = passwordFields.passwordPlaintext;
     }
 
     const guest = await prisma.guest.update({
       where: { id },
       data,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        tier: true,
-        rsvpStatus: true,
-        createdAt: true,
-      },
+      select: adminGuestSelect,
     });
 
-    return NextResponse.json({ guest });
+    const adminEmails = new Set(
+      (await prisma.admin.findMany({ select: { email: true } })).map((a) => a.email),
+    );
+
+    const profile = {
+      ...serializeAdminGuest(guest),
+      isAdmin: adminEmails.has(guest.email),
+    };
+
+    if (newPassword !== undefined) {
+      return NextResponse.json({
+        guest: profile,
+        passwordPlaintext: newPassword,
+        temporaryPassword: body.resetPassword === true ? newPassword : undefined,
+      });
+    }
+
+    return NextResponse.json({ guest: profile });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonError("Unauthorized", 401);

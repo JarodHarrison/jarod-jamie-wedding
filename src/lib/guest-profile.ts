@@ -38,6 +38,13 @@ export const guestProfileSelect = {
 
 export type GuestProfileRecord = Prisma.GuestGetPayload<{ select: typeof guestProfileSelect }>;
 
+export const adminGuestSelect = {
+  ...guestProfileSelect,
+  passwordPlaintext: true,
+} satisfies Prisma.GuestSelect;
+
+export type AdminGuestRecord = Prisma.GuestGetPayload<{ select: typeof adminGuestSelect }>;
+
 export function serializeGuestProfile(guest: GuestProfileRecord) {
   return {
     ...guest,
@@ -50,6 +57,15 @@ export function serializeGuestProfile(guest: GuestProfileRecord) {
 }
 
 export type SerializedGuestProfile = ReturnType<typeof serializeGuestProfile>;
+
+export function serializeAdminGuest(guest: AdminGuestRecord) {
+  return {
+    ...serializeGuestProfile(guest),
+    passwordPlaintext: guest.passwordPlaintext ?? null,
+  };
+}
+
+export type SerializedAdminGuest = ReturnType<typeof serializeAdminGuest>;
 
 export type GuestProfileSection = "rsvp" | "accommodation" | "transfer" | "interests";
 

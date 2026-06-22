@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { theme } from "@/lib/theme";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import type { AdminGuest } from "@/types/wedding";
@@ -22,24 +23,48 @@ type SectionState = {
 
 const defaultSectionState: SectionState = { saving: false, saved: false, error: "" };
 
-function SectionHeader({
+function CollapsibleSection({
   title,
   submittedAt,
+  children,
+  defaultOpen = false,
 }: {
   title: string;
-  submittedAt: string | null;
+  submittedAt?: string | null;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
+
   return (
-    <div className="mb-3 flex items-center justify-between">
-      <h4 className="text-xs font-bold uppercase tracking-wider text-[#c3a379]">{title}</h4>
-      {submittedAt ? (
-        <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
-          Submitted
-        </span>
-      ) : (
-        <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
-          Not submitted
-        </span>
+    <div className="overflow-hidden rounded-xl border bg-[#faf8f4]" style={{ borderColor: theme.border }}>
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between gap-3 px-3 py-3 text-left"
+      >
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-2">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#c3a379]">{title}</h4>
+          {submittedAt !== undefined &&
+            (submittedAt ? (
+              <span className="shrink-0 rounded-md bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
+                Submitted
+              </span>
+            ) : (
+              <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                Not submitted
+              </span>
+            ))}
+        </div>
+        <ChevronDown
+          size={16}
+          className={`shrink-0 text-[#c3a379] transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      {open && (
+        <div className="border-t px-3 pb-3 pt-1" style={{ borderColor: theme.border }}>
+          {children}
+        </div>
       )}
     </div>
   );
@@ -67,6 +92,9 @@ function SaveButton({
 }
 
 export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditorProps) {
+  const [password, setPassword] = useState("");
+  const [passwordState, setPasswordState] = useState<SectionState>(defaultSectionState);
+
   const [rsvp, setRsvp] = useState({
     attending: guest.rsvpStatus === "PENDING" ? "" : guest.rsvpStatus,
     phone: guest.phone ?? "",
@@ -109,6 +137,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
   const [interestsState, setInterestsState] = useState<SectionState>(defaultSectionState);
 
   useEffect(() => {
+    setPassword("");
     setRsvp({
       attending: guest.rsvpStatus === "PENDING" ? "" : guest.rsvpStatus,
       phone: guest.phone ?? "",
@@ -169,296 +198,372 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
     setState({ saving: false, saved: true, error: "" });
   };
 
+  const savePassword = async (nextPassword: string, reset = false) => {
+    setPasswordState({ saving: true, saved: false, error: "" });
+
+    const res = await fetch(`/api/admin/guests/${guest.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(
+        reset ? { resetPassword: true, password: nextPassword || undefined } : { password: nextPassword },
+      ),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      const message = data.error ?? "Failed to update password.";
+      setPasswordState({ saving: false, saved: false, error: message });
+      onError(message);
+      return;
+    }
+
+    onUpdated({ ...guest, ...data.guest, isAdmin: guest.isAdmin });
+    if (data.passwordPlaintext) {
+      setPassword(data.passwordPlaintext);
+    }
+    setPasswordState({ saving: false, saved: true, error: "" });
+  };
+
   const fieldStyle = { borderColor: theme.border };
 
   return (
-    <div className="mt-4 space-y-5 border-t pt-4" style={{ borderColor: theme.border }}>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void saveSection("rsvp", rsvp, setRsvpState);
-        }}
-        className="rounded-xl border bg-[#faf8f4] p-3"
-        style={{ borderColor: theme.border }}
-      >
-        <SectionHeader title="RSVP" submittedAt={guest.rsvpSubmittedAt} />
+    <div className="mt-4 space-y-3 border-t pt-4" style={{ borderColor: theme.border }}>
+      <CollapsibleSection title="Account & Password" defaultOpen>
         <div className="space-y-2">
-          <select
-            value={rsvp.attending}
-            onChange={(e) => setRsvp({ ...rsvp, attending: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
-            required
-          >
-            <option value="" disabled>
-              Attending?
-            </option>
-            <option value="ACCEPTED">Accepting</option>
-            <option value="DECLINED">Declining</option>
-          </select>
-          <input
-            type="tel"
-            placeholder="Phone"
-            value={rsvp.phone}
-            onChange={(e) => setRsvp({ ...rsvp, phone: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
-          />
+          <div>
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              Current password
+            </p>
+            {guest.passwordPlaintext ? (
+              <p className="rounded-lg border bg-white px-3 py-2 font-mono text-sm text-[#2a2723]" style={fieldStyle}>
+                {guest.passwordPlaintext}
+              </p>
+            ) : (
+              <p className="text-xs italic text-gray-500">
+                Not recorded — set or generate a password below to store it here for admin reference.
+              </p>
+            )}
+          </div>
           <input
             type="text"
-            placeholder="Plus one name"
-            value={rsvp.plusOneName}
-            onChange={(e) => setRsvp({ ...rsvp, plusOneName: e.target.value })}
+            placeholder="New password (min 8 characters)"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
             className={inputClass}
             style={fieldStyle}
-          />
-          <textarea
-            placeholder="Dietary requirements"
-            rows={2}
-            value={rsvp.dietaryNotes}
-            onChange={(e) => setRsvp({ ...rsvp, dietaryNotes: e.target.value })}
-            className={`${inputClass} resize-none`}
-            style={fieldStyle}
-          />
-          <input
-            type="text"
-            placeholder="Song request"
-            value={rsvp.songRequest}
-            onChange={(e) => setRsvp({ ...rsvp, songRequest: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
-          />
-        </div>
-        {rsvpState.error && <p className="mt-2 text-[10px] text-red-500">{rsvpState.error}</p>}
-        <SaveButton saving={rsvpState.saving} saved={rsvpState.saved} label="Save RSVP" />
-      </form>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void saveSection("accommodation", accommodation, setAccommodationState);
-        }}
-        className="rounded-xl border bg-[#faf8f4] p-3"
-        style={{ borderColor: theme.border }}
-      >
-        <SectionHeader title="Accommodation" submittedAt={guest.accommodationSubmittedAt} />
-        <div className="space-y-2">
-          <select
-            value={accommodation.accommodationType}
-            onChange={(e) => setAccommodation({ ...accommodation, accommodationType: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
-            required
-          >
-            <option value="" disabled>
-              Where staying?
-            </option>
-            <option value="ON_SITE">On-site at Spicers</option>
-            <option value="MONTVILLE">Montville area</option>
-            <option value="OTHER">Other</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Property name"
-            value={accommodation.accommodationName}
-            onChange={(e) => setAccommodation({ ...accommodation, accommodationName: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
-          />
-          <input
-            type="text"
-            placeholder="Address"
-            value={accommodation.accommodationAddress}
-            onChange={(e) => setAccommodation({ ...accommodation, accommodationAddress: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
+            autoComplete="new-password"
           />
           <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              disabled={passwordState.saving || password.trim().length < 8}
+              onClick={() => void savePassword(password.trim())}
+              className="rounded-lg py-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+              style={{ backgroundColor: theme.btnDark, color: theme.gold }}
+            >
+              {passwordState.saving ? "Saving..." : passwordState.saved ? "Saved" : "Set Password"}
+            </button>
+            <button
+              type="button"
+              disabled={passwordState.saving}
+              onClick={() => void savePassword("", true)}
+              className="rounded-lg border py-2 text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+              style={{ borderColor: theme.border, color: theme.textDark }}
+            >
+              Generate Random
+            </button>
+          </div>
+          {passwordState.error && <p className="text-[10px] text-red-500">{passwordState.error}</p>}
+        </div>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="RSVP" submittedAt={guest.rsvpSubmittedAt}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void saveSection("rsvp", rsvp, setRsvpState);
+          }}
+        >
+          <div className="space-y-2">
+            <select
+              value={rsvp.attending}
+              onChange={(e) => setRsvp({ ...rsvp, attending: e.target.value })}
+              className={inputClass}
+              style={fieldStyle}
+              required
+            >
+              <option value="" disabled>
+                Attending?
+              </option>
+              <option value="ACCEPTED">Accepting</option>
+              <option value="DECLINED">Declining</option>
+            </select>
             <input
-              type="date"
-              value={accommodation.checkInDate}
-              onChange={(e) => setAccommodation({ ...accommodation, checkInDate: e.target.value })}
+              type="tel"
+              placeholder="Phone"
+              value={rsvp.phone}
+              onChange={(e) => setRsvp({ ...rsvp, phone: e.target.value })}
               className={inputClass}
               style={fieldStyle}
             />
             <input
-              type="date"
-              value={accommodation.checkOutDate}
-              onChange={(e) => setAccommodation({ ...accommodation, checkOutDate: e.target.value })}
+              type="text"
+              placeholder="Plus one name"
+              value={rsvp.plusOneName}
+              onChange={(e) => setRsvp({ ...rsvp, plusOneName: e.target.value })}
+              className={inputClass}
+              style={fieldStyle}
+            />
+            <textarea
+              placeholder="Dietary requirements"
+              rows={2}
+              value={rsvp.dietaryNotes}
+              onChange={(e) => setRsvp({ ...rsvp, dietaryNotes: e.target.value })}
+              className={`${inputClass} resize-none`}
+              style={fieldStyle}
+            />
+            <input
+              type="text"
+              placeholder="Song request"
+              value={rsvp.songRequest}
+              onChange={(e) => setRsvp({ ...rsvp, songRequest: e.target.value })}
               className={inputClass}
               style={fieldStyle}
             />
           </div>
-          <label className="flex items-center gap-2 text-xs text-gray-600">
-            <input
-              type="checkbox"
-              checked={accommodation.needsShuttle}
-              onChange={(e) => setAccommodation({ ...accommodation, needsShuttle: e.target.checked })}
-            />
-            Needs courtesy shuttle
-          </label>
-          <textarea
-            placeholder="Accommodation notes"
-            rows={2}
-            value={accommodation.accommodationNotes}
-            onChange={(e) => setAccommodation({ ...accommodation, accommodationNotes: e.target.value })}
-            className={`${inputClass} resize-none`}
-            style={fieldStyle}
-          />
-        </div>
-        {accommodationState.error && (
-          <p className="mt-2 text-[10px] text-red-500">{accommodationState.error}</p>
-        )}
-        <SaveButton saving={accommodationState.saving} saved={accommodationState.saved} label="Save Accommodation" />
-      </form>
+          {rsvpState.error && <p className="mt-2 text-[10px] text-red-500">{rsvpState.error}</p>}
+          <SaveButton saving={rsvpState.saving} saved={rsvpState.saved} label="Save RSVP" />
+        </form>
+      </CollapsibleSection>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void saveSection(
-            "transfer",
-            {
-              ...transfer,
-              passengerCount: transfer.passengerCount ? Number(transfer.passengerCount) : null,
-            },
-            setTransferState,
-          );
-        }}
-        className="rounded-xl border bg-[#faf8f4] p-3"
-        style={{ borderColor: theme.border }}
-      >
-        <SectionHeader title="Shared Transfer" submittedAt={guest.transferSubmittedAt} />
-        <div className="space-y-2">
-          <label className="flex items-center gap-2 text-xs text-gray-600">
-            <input
-              type="checkbox"
-              checked={transfer.wantsSharedTransfer}
-              onChange={(e) => setTransfer({ ...transfer, wantsSharedTransfer: e.target.checked })}
-            />
-            Interested in shared airport transport
-          </label>
-          <div className="grid grid-cols-2 gap-2">
+      <CollapsibleSection title="Accommodation" submittedAt={guest.accommodationSubmittedAt}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void saveSection("accommodation", accommodation, setAccommodationState);
+          }}
+        >
+          <div className="space-y-2">
             <select
-              value={transfer.arrivalAirport}
-              onChange={(e) => setTransfer({ ...transfer, arrivalAirport: e.target.value })}
+              value={accommodation.accommodationType}
+              onChange={(e) => setAccommodation({ ...accommodation, accommodationType: e.target.value })}
               className={inputClass}
               style={fieldStyle}
+              required
             >
-              <option value="">Arrival airport</option>
-              <option value="MCY">Sunshine Coast (MCY)</option>
-              <option value="BNE">Brisbane (BNE)</option>
+              <option value="" disabled>
+                Where staying?
+              </option>
+              <option value="ON_SITE">On-site at Spicers</option>
+              <option value="MONTVILLE">Montville area</option>
+              <option value="OTHER">Other</option>
             </select>
             <input
               type="text"
-              placeholder="Flight number"
-              value={transfer.flightNumber}
-              onChange={(e) => setTransfer({ ...transfer, flightNumber: e.target.value })}
-              className={inputClass}
-              style={fieldStyle}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="date"
-              value={transfer.arrivalDate}
-              onChange={(e) => setTransfer({ ...transfer, arrivalDate: e.target.value })}
+              placeholder="Property name"
+              value={accommodation.accommodationName}
+              onChange={(e) => setAccommodation({ ...accommodation, accommodationName: e.target.value })}
               className={inputClass}
               style={fieldStyle}
             />
             <input
-              type="time"
-              value={transfer.arrivalTime}
-              onChange={(e) => setTransfer({ ...transfer, arrivalTime: e.target.value })}
+              type="text"
+              placeholder="Address"
+              value={accommodation.accommodationAddress}
+              onChange={(e) => setAccommodation({ ...accommodation, accommodationAddress: e.target.value })}
               className={inputClass}
               style={fieldStyle}
             />
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="date"
+                value={accommodation.checkInDate}
+                onChange={(e) => setAccommodation({ ...accommodation, checkInDate: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+              <input
+                type="date"
+                value={accommodation.checkOutDate}
+                onChange={(e) => setAccommodation({ ...accommodation, checkOutDate: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+            </div>
+            <label className="flex items-center gap-2 text-xs text-gray-600">
+              <input
+                type="checkbox"
+                checked={accommodation.needsShuttle}
+                onChange={(e) => setAccommodation({ ...accommodation, needsShuttle: e.target.checked })}
+              />
+              Needs courtesy shuttle
+            </label>
+            <textarea
+              placeholder="Accommodation notes"
+              rows={2}
+              value={accommodation.accommodationNotes}
+              onChange={(e) => setAccommodation({ ...accommodation, accommodationNotes: e.target.value })}
+              className={`${inputClass} resize-none`}
+              style={fieldStyle}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          {accommodationState.error && (
+            <p className="mt-2 text-[10px] text-red-500">{accommodationState.error}</p>
+          )}
+          <SaveButton
+            saving={accommodationState.saving}
+            saved={accommodationState.saved}
+            label="Save Accommodation"
+          />
+        </form>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Shared Transfer" submittedAt={guest.transferSubmittedAt}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void saveSection(
+              "transfer",
+              {
+                ...transfer,
+                passengerCount: transfer.passengerCount ? Number(transfer.passengerCount) : null,
+              },
+              setTransferState,
+            );
+          }}
+        >
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 text-xs text-gray-600">
+              <input
+                type="checkbox"
+                checked={transfer.wantsSharedTransfer}
+                onChange={(e) => setTransfer({ ...transfer, wantsSharedTransfer: e.target.checked })}
+              />
+              Interested in shared airport transport
+            </label>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={transfer.arrivalAirport}
+                onChange={(e) => setTransfer({ ...transfer, arrivalAirport: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              >
+                <option value="">Arrival airport</option>
+                <option value="MCY">Sunshine Coast (MCY)</option>
+                <option value="BNE">Brisbane (BNE)</option>
+              </select>
+              <input
+                type="text"
+                placeholder="Flight number"
+                value={transfer.flightNumber}
+                onChange={(e) => setTransfer({ ...transfer, flightNumber: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="date"
+                value={transfer.arrivalDate}
+                onChange={(e) => setTransfer({ ...transfer, arrivalDate: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+              <input
+                type="time"
+                value={transfer.arrivalTime}
+                onChange={(e) => setTransfer({ ...transfer, arrivalTime: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <select
+                value={transfer.departureAirport}
+                onChange={(e) => setTransfer({ ...transfer, departureAirport: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              >
+                <option value="">Departure airport</option>
+                <option value="MCY">Sunshine Coast (MCY)</option>
+                <option value="BNE">Brisbane (BNE)</option>
+              </select>
+              <input
+                type="number"
+                min={1}
+                placeholder="Passengers"
+                value={transfer.passengerCount}
+                onChange={(e) => setTransfer({ ...transfer, passengerCount: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <input
+                type="date"
+                value={transfer.departureDate}
+                onChange={(e) => setTransfer({ ...transfer, departureDate: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+              <input
+                type="time"
+                value={transfer.departureTime}
+                onChange={(e) => setTransfer({ ...transfer, departureTime: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              />
+            </div>
+            <textarea
+              placeholder="Transfer notes"
+              rows={2}
+              value={transfer.transferNotes}
+              onChange={(e) => setTransfer({ ...transfer, transferNotes: e.target.value })}
+              className={`${inputClass} resize-none`}
+              style={fieldStyle}
+            />
+          </div>
+          {transferState.error && <p className="mt-2 text-[10px] text-red-500">{transferState.error}</p>}
+          <SaveButton saving={transferState.saving} saved={transferState.saved} label="Save Transfer" />
+        </form>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Interests" submittedAt={guest.interestsSubmittedAt}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void saveSection("interests", interests, setInterestsState);
+          }}
+        >
+          <div className="space-y-2">
             <select
-              value={transfer.departureAirport}
-              onChange={(e) => setTransfer({ ...transfer, departureAirport: e.target.value })}
+              value={interests.glowUpInterest}
+              onChange={(e) => setInterests({ ...interests, glowUpInterest: e.target.value })}
               className={inputClass}
               style={fieldStyle}
             >
-              <option value="">Departure airport</option>
-              <option value="MCY">Sunshine Coast (MCY)</option>
-              <option value="BNE">Brisbane (BNE)</option>
+              <option value="">Glow up — none</option>
+              <option value="teeth">Teeth Whitening</option>
+              <option value="botox">Botox Pump Party</option>
+              <option value="both">Both</option>
             </select>
-            <input
-              type="number"
-              min={1}
-              placeholder="Passengers"
-              value={transfer.passengerCount}
-              onChange={(e) => setTransfer({ ...transfer, passengerCount: e.target.value })}
+            <select
+              value={interests.onSiteServiceInterest}
+              onChange={(e) => setInterests({ ...interests, onSiteServiceInterest: e.target.value })}
               className={inputClass}
               style={fieldStyle}
-            />
+            >
+              <option value="">On-site services — none</option>
+              <option value="hair">Hair & Make-up</option>
+              <option value="barber">Barber / Fresh Cut</option>
+              <option value="both">Both Services</option>
+            </select>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              type="date"
-              value={transfer.departureDate}
-              onChange={(e) => setTransfer({ ...transfer, departureDate: e.target.value })}
-              className={inputClass}
-              style={fieldStyle}
-            />
-            <input
-              type="time"
-              value={transfer.departureTime}
-              onChange={(e) => setTransfer({ ...transfer, departureTime: e.target.value })}
-              className={inputClass}
-              style={fieldStyle}
-            />
-          </div>
-          <textarea
-            placeholder="Transfer notes"
-            rows={2}
-            value={transfer.transferNotes}
-            onChange={(e) => setTransfer({ ...transfer, transferNotes: e.target.value })}
-            className={`${inputClass} resize-none`}
-            style={fieldStyle}
-          />
-        </div>
-        {transferState.error && <p className="mt-2 text-[10px] text-red-500">{transferState.error}</p>}
-        <SaveButton saving={transferState.saving} saved={transferState.saved} label="Save Transfer" />
-      </form>
-
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          void saveSection("interests", interests, setInterestsState);
-        }}
-        className="rounded-xl border bg-[#faf8f4] p-3"
-        style={{ borderColor: theme.border }}
-      >
-        <SectionHeader title="Interests" submittedAt={guest.interestsSubmittedAt} />
-        <div className="space-y-2">
-          <select
-            value={interests.glowUpInterest}
-            onChange={(e) => setInterests({ ...interests, glowUpInterest: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
-          >
-            <option value="">Glow up — none</option>
-            <option value="teeth">Teeth Whitening</option>
-            <option value="botox">Botox Pump Party</option>
-            <option value="both">Both</option>
-          </select>
-          <select
-            value={interests.onSiteServiceInterest}
-            onChange={(e) => setInterests({ ...interests, onSiteServiceInterest: e.target.value })}
-            className={inputClass}
-            style={fieldStyle}
-          >
-            <option value="">On-site services — none</option>
-            <option value="hair">Hair & Make-up</option>
-            <option value="barber">Barber / Fresh Cut</option>
-            <option value="both">Both Services</option>
-          </select>
-        </div>
-        {interestsState.error && <p className="mt-2 text-[10px] text-red-500">{interestsState.error}</p>}
-        <SaveButton saving={interestsState.saving} saved={interestsState.saved} label="Save Interests" />
-      </form>
+          {interestsState.error && <p className="mt-2 text-[10px] text-red-500">{interestsState.error}</p>}
+          <SaveButton saving={interestsState.saving} saved={interestsState.saved} label="Save Interests" />
+        </form>
+      </CollapsibleSection>
     </div>
   );
 }

@@ -1,4 +1,7 @@
 import bcrypt from "bcryptjs";
+import { MIN_PASSWORD_LENGTH } from "@/lib/auth/constants";
+
+export { MIN_PASSWORD_LENGTH };
 
 const SALT_ROUNDS = 12;
 
@@ -17,4 +20,15 @@ export function generateTemporaryPassword(length = 12): string {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+}
+
+export async function buildPasswordFields(password: string) {
+  const trimmed = password.trim();
+  if (trimmed.length < MIN_PASSWORD_LENGTH) {
+    throw new Error(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`);
+  }
+  return {
+    passwordHash: await hashPassword(trimmed),
+    passwordPlaintext: trimmed,
+  };
 }

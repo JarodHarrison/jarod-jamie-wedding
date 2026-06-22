@@ -38,35 +38,38 @@ async function main() {
 
   await prisma.guest.upsert({
     where: { email: "demo.penthouse@example.com" },
-    update: {},
-    create: {
-      name: "Demo Penthouse Guest",
-      email: "demo.penthouse@example.com",
-      tier: "PENTHOUSE",
-      passwordHash: guestPasswordHash,
-    },
+      update: { passwordHash: guestPasswordHash, passwordPlaintext: demoGuestPassword },
+      create: {
+        name: "Demo Penthouse Guest",
+        email: "demo.penthouse@example.com",
+        tier: "PENTHOUSE",
+        passwordHash: guestPasswordHash,
+        passwordPlaintext: demoGuestPassword,
+      },
   });
 
   await prisma.guest.upsert({
     where: { email: "demo.onsite@example.com" },
-    update: {},
-    create: {
-      name: "Demo On-site Guest",
-      email: "demo.onsite@example.com",
-      tier: "ON_SITE",
-      passwordHash: guestPasswordHash,
-    },
+      update: { passwordHash: guestPasswordHash, passwordPlaintext: demoGuestPassword },
+      create: {
+        name: "Demo On-site Guest",
+        email: "demo.onsite@example.com",
+        tier: "ON_SITE",
+        passwordHash: guestPasswordHash,
+        passwordPlaintext: demoGuestPassword,
+      },
   });
 
   await prisma.guest.upsert({
     where: { email: "demo.offsite@example.com" },
-    update: {},
-    create: {
-      name: "Demo Off-site Guest",
-      email: "demo.offsite@example.com",
-      tier: "OFF_SITE",
-      passwordHash: guestPasswordHash,
-    },
+      update: { passwordHash: guestPasswordHash, passwordPlaintext: demoGuestPassword },
+      create: {
+        name: "Demo Off-site Guest",
+        email: "demo.offsite@example.com",
+        tier: "OFF_SITE",
+        passwordHash: guestPasswordHash,
+        passwordPlaintext: demoGuestPassword,
+      },
   });
 
   const shuttleRoute = await prisma.shuttleRoute.upsert({

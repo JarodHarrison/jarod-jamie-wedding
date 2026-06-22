@@ -71,6 +71,7 @@ export type AdminGuest = {
   glowUpInterest: string | null;
   onSiteServiceInterest: string | null;
   interestsSubmittedAt: string | null;
+  passwordPlaintext: string | null;
   isAdmin?: boolean;
 };
 
