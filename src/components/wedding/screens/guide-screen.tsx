@@ -1,11 +1,11 @@
-import { Camera, ChevronRight, Map, Sparkles } from "lucide-react";
+import { Bus, Camera, ChevronRight, Map, Sparkles } from "lucide-react";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 
 export function GuideScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
   return (
     <div className="animate-fade-in animate-slide-up pb-10">
-      <div className="px-8 pb-6 pt-14 text-center">
+      <div className="wedding-screen-top px-8 pb-6 text-center">
         <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">Concierge</h2>
         <h1 className="font-serif text-3xl text-[#2a2723]">Planning Guide</h1>
       </div>
@@ -72,6 +72,28 @@ export function GuideScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => v
           </p>
           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
             Register <ChevronRight size={12} />
+          </span>
+        </div>
+
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setActiveTab("shuttle")}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") setActiveTab("shuttle");
+          }}
+          className="group relative cursor-pointer overflow-hidden rounded-3xl border bg-white p-6 shadow-md transition-transform active:scale-95"
+          style={{ borderColor: theme.border }}
+        >
+          <div className="absolute right-0 top-0 p-4 opacity-10 transition-transform group-hover:scale-110">
+            <Bus size={64} color={theme.textDark} />
+          </div>
+          <h3 className="mb-1 font-serif text-2xl text-[#2a2723]">Live Wedding Shuttle</h3>
+          <p className="mb-4 max-w-[80%] text-sm text-gray-500">
+            Track the courtesy bus in real time — next stop, ETA, and route to Spicers Clovelly Estate.
+          </p>
+          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+            View Live Map <ChevronRight size={12} />
           </span>
         </div>
       </div>

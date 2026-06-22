@@ -103,7 +103,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="absolute bottom-24 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-xl transition-transform active:scale-95"
+          className="absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom,0px))] right-4 z-40 flex h-14 w-14 touch-manipulation items-center justify-center rounded-full shadow-xl transition-transform active:scale-95 sm:bottom-24"
           style={{ backgroundColor: theme.btnDark, color: theme.gold }}
           aria-label="Open wedding assistant"
         >
@@ -114,7 +114,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       {open && (
         <div className="absolute inset-0 z-[100] flex flex-col bg-[#f7f4ee]">
           <header
-            className="flex shrink-0 items-center justify-between border-b px-5 pb-4 pt-14"
+            className="wedding-screen-top flex shrink-0 items-center justify-between border-b px-5 pb-4"
             style={{ borderColor: theme.border }}
           >
             <div className="flex items-center gap-3">

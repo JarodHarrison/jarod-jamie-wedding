@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { hashPassword } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
+import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
+import { notifyRegistration } from "@/lib/registration-notify";
 import { prisma } from "@/lib/prisma";
 
 const MIN_PASSWORD_LENGTH = 8;
@@ -39,6 +41,7 @@ export async function POST(request: Request) {
         passwordHash: await hashPassword(password),
         tier: "OFF_SITE",
       },
+      select: guestProfileSelect,
     });
 
     await setSessionCookie({
@@ -48,6 +51,8 @@ export async function POST(request: Request) {
       email: guest.email,
       tier: guest.tier,
     });
+
+    notifyRegistration("signup", serializeGuestProfile(guest));
 
     return NextResponse.json(
       {

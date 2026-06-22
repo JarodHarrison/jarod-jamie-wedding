@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../src/lib/auth/password";
+import { SHUTTLE_STOPS } from "../src/lib/shuttle/stops";
 
 const prisma = new PrismaClient();
 
@@ -68,7 +69,58 @@ async function main() {
     },
   });
 
+  const shuttleRoute = await prisma.shuttleRoute.upsert({
+    where: { id: "wedding-shuttle-route" },
+    update: { name: "Wedding Day Courtesy Shuttle", active: true },
+    create: {
+      id: "wedding-shuttle-route",
+      name: "Wedding Day Courtesy Shuttle",
+      active: true,
+    },
+  });
+
+  for (const stop of SHUTTLE_STOPS) {
+    await prisma.shuttleStop.upsert({
+      where: {
+        routeId_slug: { routeId: shuttleRoute.id, slug: stop.slug },
+      },
+      update: {
+        name: stop.name,
+        address: stop.address,
+        latitude: stop.latitude,
+        longitude: stop.longitude,
+        stopOrder: stop.stopOrder,
+      },
+      create: {
+        routeId: shuttleRoute.id,
+        slug: stop.slug,
+        name: stop.name,
+        address: stop.address,
+        latitude: stop.latitude,
+        longitude: stop.longitude,
+        stopOrder: stop.stopOrder,
+      },
+    });
+  }
+
+  const driverPin = process.env.SHUTTLE_DRIVER_PIN ?? "260926";
+  await prisma.driver.upsert({
+    where: { id: "wedding-shuttle-driver" },
+    update: {
+      name: "Wedding Shuttle Driver",
+      pinHash: await hashPassword(driverPin),
+    },
+    create: {
+      id: "wedding-shuttle-driver",
+      name: "Wedding Shuttle Driver",
+      phone: null,
+      pinHash: await hashPassword(driverPin),
+    },
+  });
+
   console.log("Seed complete.");
+  console.log("Shuttle driver PIN:", driverPin, "(override with SHUTTLE_DRIVER_PIN)");
+  console.log("Driver portal: /driver");
   console.log("Admin accounts:");
   for (const admin of ADMINS) {
     console.log(`  ${admin.name}: ${admin.email}`);

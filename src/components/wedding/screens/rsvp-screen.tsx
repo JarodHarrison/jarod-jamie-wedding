@@ -47,14 +47,14 @@ export function RSVPScreen() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center px-8 pt-16">
+      <div className="flex h-full items-center justify-center px-8 wedding-screen-top">
         <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Loading...</p>
       </div>
     );
   }
 
   return (
-    <div className="animate-fade-in px-8 pb-10 pt-16">
+    <div className="animate-fade-in wedding-screen-top px-8 pb-10">
       <div className="mb-10 text-center">
         <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">
           You&apos;re Invited

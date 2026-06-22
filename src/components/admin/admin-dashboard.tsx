@@ -1,9 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, LogOut, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { ChevronDown, LogOut, Plus, RefreshCw, Shield, Trash2 } from "lucide-react";
 import { GUEST_TIER_LABELS } from "@/lib/api-utils";
 import { theme } from "@/lib/theme";
+import { AdminGuestEditor } from "@/components/admin/admin-guest-editor";
 import type { AdminGuest, GuestTier } from "@/types/wedding";
 
 type AdminDashboardProps = {
@@ -14,128 +15,6 @@ type AdminDashboardProps = {
 
 const TIERS: GuestTier[] = ["PENTHOUSE", "ON_SITE", "OFF_SITE"];
 
-const ACCOMMODATION_LABELS: Record<string, string> = {
-  ON_SITE: "On-site at Spicers",
-  MONTVILLE: "Montville area",
-  OTHER: "Other / outside shuttle route",
-};
-
-const GLOW_UP_LABELS: Record<string, string> = {
-  teeth: "Teeth Whitening",
-  botox: "Botox Pump Party",
-  both: "Both",
-};
-
-const ON_SITE_LABELS: Record<string, string> = {
-  hair: "Hair & Make-up",
-  barber: "Barber / Fresh Cut",
-  both: "Both Services",
-};
-
-function formatDate(iso: string | null) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleString("en-AU", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
-
-function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
-  if (value === null || value === undefined || value === "") return null;
-  return (
-    <div className="flex justify-between gap-4 border-b border-dashed py-2 last:border-0" style={{ borderColor: theme.border }}>
-      <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-gray-400">{label}</span>
-      <span className="text-right text-xs text-[#2a2723]">{value}</span>
-    </div>
-  );
-}
-
-function SectionBadge({ submittedAt }: { submittedAt: string | null }) {
-  return submittedAt ? (
-    <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700">
-      Submitted
-    </span>
-  ) : (
-    <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-gray-400">
-      Pending
-    </span>
-  );
-}
-
-function GuestDetails({ guest }: { guest: AdminGuest }) {
-  return (
-    <div className="mt-4 space-y-4 border-t pt-4" style={{ borderColor: theme.border }}>
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#c3a379]">RSVP</h4>
-          <SectionBadge submittedAt={guest.rsvpSubmittedAt} />
-        </div>
-        <DetailRow label="Phone" value={guest.phone} />
-        <DetailRow label="Plus One" value={guest.plusOneName} />
-        <DetailRow label="Dietary" value={guest.dietaryNotes} />
-        <DetailRow label="Song Request" value={guest.songRequest} />
-        {guest.rsvpSubmittedAt && (
-          <DetailRow label="Submitted" value={formatDate(guest.rsvpSubmittedAt)} />
-        )}
-      </div>
-
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#c3a379]">Accommodation</h4>
-          <SectionBadge submittedAt={guest.accommodationSubmittedAt} />
-        </div>
-        <DetailRow
-          label="Type"
-          value={guest.accommodationType ? ACCOMMODATION_LABELS[guest.accommodationType] ?? guest.accommodationType : null}
-        />
-        <DetailRow label="Property" value={guest.accommodationName} />
-        <DetailRow label="Address" value={guest.accommodationAddress} />
-        <DetailRow label="Check-in" value={guest.checkInDate} />
-        <DetailRow label="Check-out" value={guest.checkOutDate} />
-        <DetailRow label="Shuttle" value={guest.needsShuttle === null ? null : guest.needsShuttle ? "Yes" : "No"} />
-        <DetailRow label="Notes" value={guest.accommodationNotes} />
-      </div>
-
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#c3a379]">Shared Transfer</h4>
-          <SectionBadge submittedAt={guest.transferSubmittedAt} />
-        </div>
-        <DetailRow
-          label="Interested"
-          value={
-            guest.wantsSharedTransfer === null
-              ? null
-              : guest.wantsSharedTransfer
-                ? "Yes"
-                : "No"
-          }
-        />
-        <DetailRow label="Arrival" value={guest.arrivalAirport ? `${guest.arrivalAirport} · ${guest.arrivalDate ?? ""} ${guest.arrivalTime ?? ""}`.trim() : null} />
-        <DetailRow label="Departure" value={guest.departureAirport ? `${guest.departureAirport} · ${guest.departureDate ?? ""} ${guest.departureTime ?? ""}`.trim() : null} />
-        <DetailRow label="Flight" value={guest.flightNumber} />
-        <DetailRow label="Passengers" value={guest.passengerCount} />
-        <DetailRow label="Notes" value={guest.transferNotes} />
-      </div>
-
-      <div>
-        <div className="mb-2 flex items-center justify-between">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#c3a379]">Interests</h4>
-          <SectionBadge submittedAt={guest.interestsSubmittedAt} />
-        </div>
-        <DetailRow
-          label="Glow Up"
-          value={guest.glowUpInterest ? GLOW_UP_LABELS[guest.glowUpInterest] ?? guest.glowUpInterest : null}
-        />
-        <DetailRow
-          label="On-Site Services"
-          value={guest.onSiteServiceInterest ? ON_SITE_LABELS[guest.onSiteServiceInterest] ?? guest.onSiteServiceInterest : null}
-        />
-      </div>
-    </div>
-  );
-}
-
 export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDashboardProps) {
   const [guests, setGuests] = useState<AdminGuest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,6 +23,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
   const [showAddForm, setShowAddForm] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "pending-rsvp" | "submitted">("all");
+  const [driverLink, setDriverLink] = useState<string | null>(null);
 
   const [newGuest, setNewGuest] = useState({
     name: "",
@@ -247,6 +127,41 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
     }
   };
 
+  const handleMakeAdmin = async (id: string, name: string) => {
+    if (!confirm(`Grant admin access to "${name}"? They can sign in with their existing password.`)) {
+      return;
+    }
+
+    setMessage("");
+    const res = await fetch(`/api/admin/guests/${id}/make-admin`, { method: "POST" });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setMessage(data.error ?? "Failed to grant admin access.");
+      return;
+    }
+
+    setMessage(data.message ?? `${name} is now an admin.`);
+    loadGuests();
+  };
+
+  const handleGuestUpdated = (updated: AdminGuest) => {
+    setGuests((current) => current.map((g) => (g.id === updated.id ? updated : g)));
+    setMessage(`Updated ${updated.name}.`);
+  };
+
+  const handleDriverMagicLink = async () => {
+    setDriverLink(null);
+    const res = await fetch("/api/shuttle/driver/magic-link", { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) {
+      setMessage(data.error ?? "Failed to create driver link.");
+      return;
+    }
+    setDriverLink(data.url);
+    setMessage("Driver magic link created — valid for 1 hour. Send it to your shuttle driver.");
+  };
+
   const rsvpColor = (status: AdminGuest["rsvpStatus"]) => {
     if (status === "ACCEPTED") return "text-emerald-600";
     if (status === "DECLINED") return "text-rose-500";
@@ -256,13 +171,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
   return (
     <div className="animate-fade-in flex h-full flex-col">
       <header
-        className="sticky top-0 z-20 border-b bg-[#f7f4ee]/90 px-6 pb-4 pt-14 backdrop-blur-md"
+        className="wedding-screen-top sticky top-0 z-20 border-b bg-[#f7f4ee]/90 px-6 pb-4 backdrop-blur-md"
         style={{ borderColor: theme.border }}
       >
         <button
           type="button"
           onClick={onLogout}
-          className="absolute right-6 top-16 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-colors hover:text-[#2a2723]"
+          className="wedding-top-offset absolute right-6 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-colors hover:text-[#2a2723]"
         >
           <LogOut size={12} /> Sign Out
         </button>
@@ -275,7 +190,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
         </p>
       </header>
 
-      <div className="flex-1 overflow-y-auto scroll-smooth px-6 py-6 pb-28">
+      <div className="flex-1 overflow-y-auto scroll-smooth px-6 py-6 pb-6">
         {(message || tempPassword) && (
           <div
             className="mb-6 rounded-2xl border bg-white p-4 shadow-sm"
@@ -303,6 +218,24 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
               <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">{stat.label}</p>
             </div>
           ))}
+        </section>
+
+        <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: theme.border }}>
+          <h2 className="mb-2 font-serif text-lg text-[#2a2723]">Shuttle Driver</h2>
+          <p className="mb-3 text-xs text-gray-500">
+            Driver portal: <span className="font-mono">/driver</span> — PIN from seed (default 260926) or generate a one-time magic link.
+          </p>
+          <button
+            type="button"
+            onClick={handleDriverMagicLink}
+            className="w-full rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest"
+            style={{ backgroundColor: theme.btnDark, color: theme.gold }}
+          >
+            Generate Driver Magic Link
+          </button>
+          {driverLink && (
+            <p className="mt-3 break-all font-mono text-[10px] text-[#2a2723]">{driverLink}</p>
+          )}
         </section>
 
         <section className="mb-6">
@@ -428,7 +361,14 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
                       className="flex w-full items-start justify-between gap-3 text-left"
                     >
                       <div>
-                        <p className="font-medium text-[#2a2723]">{guest.name}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-[#2a2723]">{guest.name}</p>
+                          {guest.isAdmin && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-[#2a2723] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#c3a379]">
+                              <Shield size={10} /> Admin
+                            </span>
+                          )}
+                        </div>
                         <p className="text-xs text-gray-500">{guest.email}</p>
                         <p className={`mt-1 text-[10px] font-bold uppercase tracking-wider ${rsvpColor(guest.rsvpStatus)}`}>
                           RSVP: {guest.rsvpStatus}
@@ -442,7 +382,11 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
                     {isExpanded && (
                       <>
-                        <GuestDetails guest={guest} />
+                        <AdminGuestEditor
+                          guest={guest}
+                          onUpdated={handleGuestUpdated}
+                          onError={setMessage}
+                        />
                         <select
                           value={guest.tier}
                           onChange={(e) => handleTierChange(guest.id, e.target.value as GuestTier)}
@@ -456,6 +400,16 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
                           ))}
                         </select>
                         <div className="flex gap-2">
+                          {!guest.isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleMakeAdmin(guest.id, guest.name)}
+                              className="flex flex-1 items-center justify-center gap-1 rounded-lg border px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-gray-50"
+                              style={{ borderColor: theme.border, color: theme.btnDark }}
+                            >
+                              <Shield size={12} /> Make Admin
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => handleResetPassword(guest.id, guest.name)}

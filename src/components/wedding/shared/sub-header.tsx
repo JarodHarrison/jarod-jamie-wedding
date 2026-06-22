@@ -10,13 +10,13 @@ type SubHeaderProps = {
 export function SubHeader({ title, subtitle, onBack }: SubHeaderProps) {
   return (
     <div
-      className="sticky top-0 z-20 border-b bg-[#f7f4ee]/90 px-8 pb-6 pt-14 text-center backdrop-blur-md"
+      className="wedding-screen-top sticky top-0 z-20 border-b bg-[#f7f4ee]/90 px-8 pb-6 text-center backdrop-blur-md"
       style={{ borderColor: theme.border }}
     >
       <button
         type="button"
         onClick={onBack}
-        className="absolute left-6 top-16 flex items-center gap-1 text-[10px] uppercase tracking-widest text-gray-500 transition-colors hover:text-black"
+        className="wedding-top-offset absolute left-6 flex items-center gap-1 text-[10px] uppercase tracking-widest text-gray-500 transition-colors hover:text-black"
       >
         <ArrowLeft size={14} /> Back
       </button>

@@ -49,6 +49,8 @@ export function serializeGuestProfile(guest: GuestProfileRecord) {
   };
 }
 
+export type SerializedGuestProfile = ReturnType<typeof serializeGuestProfile>;
+
 export type GuestProfileSection = "rsvp" | "accommodation" | "transfer" | "interests";
 
 export function isGuestProfileSection(value: string): value is GuestProfileSection {

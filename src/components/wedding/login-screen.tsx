@@ -69,9 +69,9 @@ export function LoginScreen({ onGuestLogin, onAdminLogin }: LoginScreenProps) {
   };
 
   return (
-    <div className="animate-fade-in relative flex h-full flex-col items-center justify-center px-8">
+    <div className="animate-fade-in relative flex min-h-0 flex-1 flex-col items-center justify-center px-8">
       <div className="absolute inset-0 z-0">
-        <HeroImage alt="Background" className="h-full w-full object-cover opacity-30" />
+        <HeroImage alt="Background" className="object-cover opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#f7f4ee]/80 via-[#f7f4ee]/60 to-[#f7f4ee]" />
       </div>
 

@@ -15,12 +15,12 @@ type HomeScreenProps = {
 export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat }: HomeScreenProps) {
   return (
     <div className="animate-fade-in animate-slide-up">
-      <div className="relative px-6 pb-4 pt-12 text-center">
+      <div className="wedding-screen-top relative px-6 pb-4 text-center">
         {onLogout && (
           <button
             type="button"
             onClick={onLogout}
-            className="absolute right-6 top-14 text-[9px] font-bold uppercase tracking-widest text-gray-400 transition-colors hover:text-[#2a2723]"
+            className="wedding-top-offset absolute right-6 text-[9px] font-bold uppercase tracking-widest text-gray-400 transition-colors hover:text-[#2a2723]"
           >
             Sign Out
           </button>
@@ -55,7 +55,7 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat }: Hom
       >
         <div className="relative h-[420px] overflow-hidden rounded-[2rem] shadow-xl transition-transform duration-500 group-hover:scale-[1.02]">
           <HeroImage alt="Spicers Clovelly Estate Pavilion" />
-          <div className="absolute inset-0 flex flex-col items-center justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent px-6 pb-8 text-center text-white">
+          <div className="absolute inset-0 z-10 flex flex-col items-center justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent px-6 pb-8 text-center text-white">
             <h3 className="mb-1 font-serif text-2xl tracking-wide">Spicers Clovelly Estate</h3>
             <p className="mb-6 flex items-center gap-1 text-xs uppercase tracking-widest text-white/80">
               <MapPin size={12} /> Montville, QLD

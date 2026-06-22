@@ -25,7 +25,7 @@ const jamoFamily = [
 export function PartyScreen() {
   return (
     <div className="animate-fade-in animate-slide-up pb-10">
-      <div className="px-8 pb-6 pt-14 text-center">
+      <div className="wedding-screen-top px-8 pb-6 text-center">
         <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">VIPs</h2>
         <h1 className="font-serif text-3xl text-[#2a2723]">Wedding Party & Family</h1>
       </div>

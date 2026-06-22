@@ -12,7 +12,15 @@ export async function GET() {
       orderBy: { name: "asc" },
       select: guestProfileSelect,
     });
-    return NextResponse.json({ guests: guests.map(serializeGuestProfile) });
+    const adminEmails = new Set(
+      (await prisma.admin.findMany({ select: { email: true } })).map((a) => a.email),
+    );
+    return NextResponse.json({
+      guests: guests.map((g) => ({
+        ...serializeGuestProfile(g),
+        isAdmin: adminEmails.has(g.email),
+      })),
+    });
   } catch {
     return jsonError("Unauthorized", 401);
   }

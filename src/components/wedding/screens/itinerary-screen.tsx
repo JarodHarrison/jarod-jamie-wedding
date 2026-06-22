@@ -92,7 +92,7 @@ export function ItineraryScreen({ isPenthouse }: { isPenthouse: boolean }) {
 
   return (
     <div className="animate-fade-in pb-10">
-      <div className="sticky top-0 z-20 bg-[#f7f4ee]/90 px-8 pb-6 pt-14 text-center backdrop-blur-md">
+      <div className="wedding-screen-top sticky top-0 z-20 bg-[#f7f4ee]/90 px-8 pb-6 text-center backdrop-blur-md">
         <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">The Details</h2>
         <h1 className="font-serif text-3xl text-[#2a2723]">Schedule & Events</h1>
         <div className="mt-6 flex rounded-full bg-[#e2d5c4]/30 p-1 shadow-inner">

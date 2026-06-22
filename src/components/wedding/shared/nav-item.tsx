@@ -24,15 +24,15 @@ export function NavItem({
     <button
       type="button"
       onClick={() => setActiveTab(id)}
-      className={`flex ${compact ? "w-12" : "w-16"} flex-col items-center justify-center transition-all duration-300 ${isActive ? "-translate-y-1" : "opacity-60"}`}
+      className={`flex min-h-[44px] min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-0.5 transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-55"}`}
     >
       <div
-        className={`rounded-xl p-2 transition-colors ${isActive ? "bg-[#c3a379] text-white shadow-md" : "text-[#2a2723]"}`}
+        className={`rounded-xl transition-colors ${compact ? "p-1.5" : "p-2"} ${isActive ? "bg-[#c3a379] text-white shadow-md" : "text-[#2a2723]"}`}
       >
-        <Icon size={compact ? 18 : 20} />
+        <Icon size={compact ? 17 : 20} strokeWidth={isActive ? 2.25 : 2} />
       </div>
       <span
-        className={`mt-1 text-[8px] font-bold uppercase tracking-widest transition-colors ${isActive ? "text-[#c3a379]" : "text-gray-400"}`}
+        className={`max-w-full truncate px-0.5 text-[7px] font-bold uppercase leading-tight tracking-wide sm:text-[8px] sm:tracking-widest ${isActive ? "text-[#c3a379]" : "text-gray-400"}`}
       >
         {label}
       </span>

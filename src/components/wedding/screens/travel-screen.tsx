@@ -1,4 +1,4 @@
-import { ExternalLink, Phone, Plane } from "lucide-react";
+import { ExternalLink, Phone, Plane, Bus } from "lucide-react";
 import { AccommodationForm } from "@/components/wedding/forms/accommodation-form";
 import { flightTransferAccordion } from "@/components/wedding/data/flight-transfers";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
@@ -153,6 +153,14 @@ export function TravelScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => 
             <li>Run back and forth during the break between the ceremony and reception (perfect for a costume change!).</li>
             <li>Offer several return trips at the end of the evening.</li>
           </ul>
+          <button
+            type="button"
+            onClick={() => setActiveTab("shuttle")}
+            className="mt-5 flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-xs font-bold uppercase tracking-widest shadow-md transition-transform active:scale-95"
+            style={{ backgroundColor: theme.btnDark, color: theme.gold }}
+          >
+            <Bus size={16} /> Live Wedding Shuttle
+          </button>
         </div>
 
         <div className="rounded-3xl border bg-white/60 p-6 shadow-sm" style={{ borderColor: theme.border }}>

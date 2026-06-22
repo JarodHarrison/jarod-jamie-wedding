@@ -8,6 +8,7 @@ import { PhoneFrame } from "@/components/wedding/phone-frame";
 import { NavItem } from "@/components/wedding/shared/nav-item";
 import { AttractionsScreen } from "@/components/wedding/screens/attractions-screen";
 import { FAQScreen, WishingWellScreen } from "@/components/wedding/screens/faq-screen";
+import { GuestShuttleScreen } from "@/components/wedding/screens/guest-shuttle-screen";
 import { GlowUpScreen, OnSiteScreen } from "@/components/wedding/screens/guide-sub-screens";
 import { GuideScreen } from "@/components/wedding/screens/guide-screen";
 import { HomeScreen } from "@/components/wedding/screens/home-screen";
@@ -58,7 +59,7 @@ export function WeddingApp() {
   if (loading) {
     return (
       <PhoneFrame>
-        <div className="flex h-full items-center justify-center">
+        <div className="flex min-h-0 flex-1 items-center justify-center">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-400">Loading...</p>
         </div>
       </PhoneFrame>
@@ -112,6 +113,8 @@ export function WeddingApp() {
         return <WishingWellScreen setActiveTab={setActiveTab} />;
       case "travel":
         return <TravelScreen setActiveTab={setActiveTab} />;
+      case "shuttle":
+        return <GuestShuttleScreen setActiveTab={setActiveTab} />;
       case "photos":
         return <PhotosScreen setActiveTab={setActiveTab} />;
       case "attractions":
@@ -133,29 +136,28 @@ export function WeddingApp() {
 
   return (
     <PhoneFrame>
-      <div className="relative h-full">
-        <div className="h-full overflow-y-auto scroll-smooth pb-28">{renderScreen()}</div>
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <main className="min-h-0 flex-1 overflow-y-auto scroll-smooth">{renderScreen()}</main>
         <WeddingChatbot open={chatOpen} onOpenChange={setChatOpen} />
+        {!chatOpen && (
+          <nav
+            className={`wedding-bottom-nav z-50 grid w-full shrink-0 items-end border-t bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-0.5 pt-1.5 ${navItems.length > 5 ? "grid-cols-6" : "grid-cols-5"}`}
+            style={{ borderColor: theme.border }}
+          >
+            {navItems.map(({ id, label, icon }) => (
+              <NavItem
+                key={id}
+                id={id}
+                icon={icon}
+                label={label}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                compact={!!admin}
+              />
+            ))}
+          </nav>
+        )}
       </div>
-
-      {!chatOpen && (
-      <nav
-        className="absolute bottom-0 z-50 flex w-full items-center justify-around border-t bg-white/90 px-1 pb-6 pt-3 backdrop-blur-md transition-all"
-        style={{ borderColor: theme.border }}
-      >
-        {navItems.map(({ id, label, icon }) => (
-          <NavItem
-            key={id}
-            id={id}
-            icon={icon}
-            label={label}
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            compact={!!admin}
-          />
-        ))}
-      </nav>
-      )}
     </PhoneFrame>
   );
 }

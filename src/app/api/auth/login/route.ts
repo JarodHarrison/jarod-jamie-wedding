@@ -14,52 +14,52 @@ export async function POST(request: Request) {
       return jsonError("Email and password are required.", 400);
     }
 
-    const guest = await prisma.guest.findUnique({ where: { email } });
+    const [guest, admin] = await Promise.all([
+      prisma.guest.findUnique({ where: { email } }),
+      prisma.admin.findUnique({ where: { email } }),
+    ]);
+
+    if (admin) {
+      const adminValid = await verifyPassword(password, admin.passwordHash);
+      if (adminValid) {
+        await setSessionCookie({
+          type: "admin",
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+        });
+
+        return NextResponse.json({
+          admin: { id: admin.id, name: admin.name, email: admin.email },
+        });
+      }
+    }
+
     if (guest) {
       const valid = await verifyPassword(password, guest.passwordHash);
-      if (!valid) {
-        return jsonError("Invalid email or password.", 401);
-      }
-
-      await setSessionCookie({
-        type: "guest",
-        id: guest.id,
-        name: guest.name,
-        email: guest.email,
-        tier: guest.tier,
-      });
-
-      return NextResponse.json({
-        user: {
+      if (valid) {
+        await setSessionCookie({
+          type: "guest",
           id: guest.id,
           name: guest.name,
           email: guest.email,
           tier: guest.tier,
-        },
-      });
+        });
+
+        return NextResponse.json({
+          user: {
+            id: guest.id,
+            name: guest.name,
+            email: guest.email,
+            tier: guest.tier,
+          },
+        });
+      }
     }
 
-    const admin = await prisma.admin.findUnique({ where: { email } });
-    if (!admin) {
-      return jsonError("Invalid email or password.", 401);
-    }
-
-    const adminValid = await verifyPassword(password, admin.passwordHash);
-    if (!adminValid) {
-      return jsonError("Invalid email or password.", 401);
-    }
-
-    await setSessionCookie({
-      type: "admin",
-      id: admin.id,
-      name: admin.name,
-      email: admin.email,
-    });
-
-    return NextResponse.json({
-      admin: { id: admin.id, name: admin.name, email: admin.email },
-    });
-  } catch {
+    return jsonError("Invalid email or password.", 401);
+  } catch (error) {
+    console.error("[login]", error);
     return jsonError("Login failed.", 500);
   }
 }

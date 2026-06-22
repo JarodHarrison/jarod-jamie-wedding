@@ -20,6 +20,7 @@ export type SubTab =
   | "faq"
   | "wishingwell"
   | "travel"
+  | "shuttle"
   | "photos"
   | "attractions"
   | "glowup"
@@ -69,6 +70,7 @@ export type AdminGuest = {
   glowUpInterest: string | null;
   onSiteServiceInterest: string | null;
   interestsSubmittedAt: string | null;
+  isAdmin?: boolean;
 };
 
 export type GuestProfile = Omit<AdminGuest, "createdAt"> & { createdAt: string };

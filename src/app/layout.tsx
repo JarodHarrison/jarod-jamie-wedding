@@ -1,10 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Jarod & Jamie | 26.09.26",
   description: "Wedding celebration for Jarod and Jamie",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({
@@ -14,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${fontVariables} h-full antialiased`}>
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+      <body className="flex min-h-dvh flex-col overflow-x-hidden font-sans max-sm:overflow-hidden">
+        {children}
+      </body>
     </html>
   );
 }

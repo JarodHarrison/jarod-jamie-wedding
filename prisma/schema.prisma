@@ -20,6 +20,19 @@ enum GuestTier {
   OFF_SITE
 }
 
+enum ShuttleSessionStatus {
+  ACTIVE
+  ENDED
+}
+
+enum ShuttleStopStatusType {
+  PENDING
+  EN_ROUTE
+  ARRIVED
+  DEPARTED
+  COMPLETED
+}
+
 model Guest {
   id           String     @id @default(cuid())
   name         String
@@ -74,18 +87,97 @@ model Admin {
 }
 
 model GoldCoastTrip {
-  id          String   @id @default(cuid())
-  guestId     String   @unique
-  guest       Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
-  amountPaid  Decimal  @default(0) @db.Decimal(10, 2)
-  balanceDue  Decimal  @default(0) @db.Decimal(10, 2)
-  createdAt   DateTime @default(now()) @db.Timestamptz
-  updatedAt   DateTime @updatedAt @db.Timestamptz
+  id         String   @id @default(cuid())
+  guestId    String   @unique
+  guest      Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  amountPaid Decimal  @default(0) @db.Decimal(10, 2)
+  balanceDue Decimal  @default(0) @db.Decimal(10, 2)
+  createdAt  DateTime @default(now()) @db.Timestamptz
+  updatedAt  DateTime @updatedAt @db.Timestamptz
 }
 
-model ShuttlePing {
-  id        String   @id @default(cuid())
-  latitude  Float
-  longitude Float
-  timestamp DateTime @default(now()) @db.Timestamptz
+model ShuttleRoute {
+  id        String           @id @default(cuid())
+  name      String
+  active    Boolean          @default(true)
+  createdAt DateTime         @default(now()) @db.Timestamptz
+  stops     ShuttleStop[]
+  sessions  ShuttleSession[]
+}
+
+model ShuttleStop {
+  id                   String              @id @default(cuid())
+  routeId              String
+  route                ShuttleRoute        @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  slug                 String
+  name                 String
+  address              String
+  latitude             Float
+  longitude            Float
+  stopOrder            Int
+  plannedDepartureTime DateTime?           @db.Timestamptz
+  stopStatuses         ShuttleStopStatus[]
+
+  @@unique([routeId, slug])
+  @@unique([routeId, stopOrder])
+}
+
+model Driver {
+  id          String             @id @default(cuid())
+  name        String
+  phone       String?
+  pinHash     String
+  createdAt   DateTime           @default(now()) @db.Timestamptz
+  magicTokens DriverMagicToken[]
+  sessions    ShuttleSession[]
+}
+
+model DriverMagicToken {
+  id        String    @id @default(cuid())
+  driverId  String
+  driver    Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime  @db.Timestamptz
+  usedAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+}
+
+model ShuttleSession {
+  id           String               @id @default(cuid())
+  routeId      String
+  route        ShuttleRoute         @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  driverId     String
+  driver       Driver               @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  status       ShuttleSessionStatus @default(ACTIVE)
+  startedAt    DateTime             @default(now()) @db.Timestamptz
+  endedAt      DateTime?            @db.Timestamptz
+  locations    ShuttleLocation[]
+  stopStatuses ShuttleStopStatus[]
+}
+
+model ShuttleLocation {
+  id         String         @id @default(cuid())
+  sessionId  String
+  session    ShuttleSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  latitude   Float
+  longitude  Float
+  speed      Float?
+  heading    Float?
+  accuracy   Float?
+  recordedAt DateTime       @default(now()) @db.Timestamptz
+
+  @@index([sessionId, recordedAt(sort: Desc)])
+}
+
+model ShuttleStopStatus {
+  id         String                @id @default(cuid())
+  sessionId  String
+  session    ShuttleSession        @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  stopId     String
+  stop       ShuttleStop           @relation(fields: [stopId], references: [id], onDelete: Cascade)
+  status     ShuttleStopStatusType @default(PENDING)
+  arrivedAt  DateTime?             @db.Timestamptz
+  departedAt DateTime?             @db.Timestamptz
+
+  @@unique([sessionId, stopId])
 }
