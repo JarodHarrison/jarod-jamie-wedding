@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import type { GuestTier } from "@/types/wedding";
 
 export type GuestSession = {
@@ -21,6 +22,18 @@ export type SessionPayload = GuestSession | AdminSession;
 
 const COOKIE_NAME = "wedding_session";
 const MAX_AGE = 60 * 60 * 24 * 14; // 14 days
+
+export { COOKIE_NAME };
+
+function sessionCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    maxAge: MAX_AGE,
+    path: "/",
+  };
+}
 
 function getSecret(): Uint8Array {
   const secret = process.env.AUTH_SECRET;
@@ -49,13 +62,18 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 export async function setSessionCookie(payload: SessionPayload): Promise<void> {
   const token = await createSessionToken(payload);
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: MAX_AGE,
-    path: "/",
-  });
+  cookieStore.set(COOKIE_NAME, token, sessionCookieOptions());
+}
+
+export async function createSessionCookieValue(payload: SessionPayload): Promise<string> {
+  return createSessionToken(payload);
+}
+
+export function applySessionCookie(
+  response: { cookies: { set: (name: string, value: string, options: ReturnType<typeof sessionCookieOptions>) => void } },
+  token: string,
+) {
+  response.cookies.set(COOKIE_NAME, token, sessionCookieOptions());
 }
 
 export async function clearSessionCookie(): Promise<void> {
@@ -77,8 +95,6 @@ export async function requireAdminSession(): Promise<AdminSession> {
   }
   return session;
 }
-
-import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 
 export async function requireGuestSession(): Promise<GuestSession> {
   const session = await getSession();

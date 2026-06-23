@@ -65,6 +65,14 @@ export function WeddingApp() {
   }, []);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const auth = params.get("auth");
+    if (auth === "google_signin" || auth === "google_signup") {
+      window.history.replaceState({}, "", window.location.pathname);
+      void refreshSession().finally(() => setLoading(false));
+      return;
+    }
+
     void refreshSession().finally(() => setLoading(false));
   }, [refreshSession]);
 

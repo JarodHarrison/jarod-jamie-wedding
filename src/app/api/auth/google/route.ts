@@ -5,7 +5,7 @@ import {
   type GoogleOAuthMode,
 } from "@/lib/auth/google-oauth";
 import { getRequestOrigin } from "@/lib/auth/request-origin";
-import { createOAuthState, setOAuthStateCookie } from "@/lib/auth/oauth-state";
+import { createOAuthState } from "@/lib/auth/oauth-state";
 
 export async function GET(request: Request) {
   if (!isGoogleOAuthConfigured()) {
@@ -17,9 +17,7 @@ export async function GET(request: Request) {
   const mode: GoogleOAuthMode = modeParam === "signup" ? "signup" : "signin";
   const origin = getRequestOrigin(request);
 
-  const state = createOAuthState(mode);
-  await setOAuthStateCookie(state);
-
+  const state = await createOAuthState(mode);
   const authUrl = buildGoogleAuthUrl(origin, state, mode);
   return NextResponse.redirect(authUrl);
 }

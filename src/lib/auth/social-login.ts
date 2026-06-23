@@ -2,8 +2,8 @@ import { normalizeEmail } from "@/lib/api-utils";
 import {
   createAdminSessionResponse,
   createGuestSessionResponse,
-  setAdminSessionCookie,
-  setGuestSessionCookie,
+  redirectWithAdminSession,
+  redirectWithGuestSession,
 } from "@/lib/auth/create-session";
 import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
@@ -40,7 +40,7 @@ export async function signInWithEmailAccount(email: string) {
   return null;
 }
 
-export async function signInWithEmailAccountRedirect(email: string) {
+export async function signInWithEmailAccountRedirect(email: string, redirectUrl: URL) {
   const normalized = normalizeEmail(email);
   const [guest, admin] = await Promise.all([
     prisma.guest.findUnique({ where: { email: normalized }, select: guestSelect }),
@@ -48,13 +48,11 @@ export async function signInWithEmailAccountRedirect(email: string) {
   ]);
 
   if (guest) {
-    await setGuestSessionCookie(guest);
-    return "guest" as const;
+    return redirectWithGuestSession(guest, redirectUrl);
   }
 
   if (admin) {
-    await setAdminSessionCookie(admin);
-    return "admin" as const;
+    return redirectWithAdminSession(admin, redirectUrl);
   }
 
   return null;
@@ -83,7 +81,7 @@ export async function signUpWithGoogleAccount(email: string, name: string) {
   return createGuestSessionResponse(guest);
 }
 
-export async function signUpWithGoogleAccountRedirect(email: string, name: string) {
+export async function signUpWithGoogleAccountRedirect(email: string, name: string, redirectUrl: URL) {
   const normalized = normalizeEmail(email);
   const existing = await prisma.guest.findUnique({ where: { email: normalized }, select: { id: true } });
   if (existing) {
@@ -103,6 +101,5 @@ export async function signUpWithGoogleAccountRedirect(email: string, name: strin
     select: guestSelect,
   });
 
-  await setGuestSessionCookie(guest);
-  return guest;
+  return redirectWithGuestSession(guest, redirectUrl);
 }
