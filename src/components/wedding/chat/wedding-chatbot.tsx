@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Send, X } from "lucide-react";
+import { Send, Mic, Volume2, VolumeX, X } from "lucide-react";
 import { ChatMessageContent } from "@/components/wedding/chat/chat-message-content";
 import {
   ANNITA,
@@ -15,6 +15,8 @@ import { isDisgustingUserMessage } from "@/lib/annita-reactions";
 import { getIncompleteProfileTasks } from "@/lib/guest-profile-checklist";
 import { theme } from "@/lib/theme";
 import type { GuestProfile } from "@/types/wedding";
+import { useAnnitaVoice } from "@/components/wedding/hooks/use-annita-voice";
+import { useSpeechInput } from "@/components/wedding/hooks/use-speech-input";
 
 type ChatSource = {
   title: string;
@@ -228,6 +230,22 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const [fullscreenSrc, setFullscreenSrc] = useState<string>(ANNITA.avatarSrc);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [inputFocused, setInputFocused] = useState(false);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+
+  const compactHeader = inputFocused || keyboardOpen;
+  const { speakEnabled, speak, stop: stopSpeaking, toggleSpeak } = useAnnitaVoice();
+  const {
+    supported: speechSupported,
+    listening: speechListening,
+    start: startSpeechInput,
+    stop: stopSpeechInput,
+  } = useSpeechInput({
+    onInterim: (text) => setInput(text),
+    onFinal: (text) => setInput(text),
+    onError: (message) => setError(message),
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -258,14 +276,50 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   }, [open]);
 
   useEffect(() => {
+    if (!open) {
+      setInputFocused(false);
+      setKeyboardOpen(false);
+      stopSpeaking();
+      stopSpeechInput();
+    }
+  }, [open, stopSpeechInput, stopSpeaking]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const vv = window.visualViewport;
+    const panel = panelRef.current;
+    if (!vv || !panel) return;
+
+    const syncViewport = () => {
+      const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      setKeyboardOpen(inset > 120 || vv.height < window.innerHeight * 0.72);
+      panel.style.height = `${vv.height}px`;
+      panel.style.top = `${vv.offsetTop}px`;
+    };
+
+    syncViewport();
+    vv.addEventListener("resize", syncViewport);
+    vv.addEventListener("scroll", syncViewport);
+
+    return () => {
+      vv.removeEventListener("resize", syncViewport);
+      vv.removeEventListener("scroll", syncViewport);
+      panel.style.height = "";
+      panel.style.top = "";
+    };
+  }, [open]);
+
+  useEffect(() => {
     if (open && !fullscreenOpen) {
-      inputRef.current?.focus();
+      const prefersTouch = window.matchMedia("(pointer: coarse)").matches;
+      if (!prefersTouch) inputRef.current?.focus();
     }
   }, [open, fullscreenOpen]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, compactHeader]);
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
@@ -317,6 +371,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       }
 
       setInputPlaceholder(pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS));
+      if (speakEnabled) void speak(data.reply);
     } catch {
       setError("Network error — please try again.");
       setMessages(messages);
@@ -351,14 +406,20 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       )}
 
       {open && (
-        <div className="absolute inset-0 z-[100] flex flex-col bg-[#f7f4ee]">
+        <div
+          ref={panelRef}
+          className="absolute inset-x-0 z-[100] flex flex-col bg-[#f7f4ee]"
+        >
           <header
-            className="wedding-screen-top flex shrink-0 items-center justify-between border-b px-5 pb-4"
+            className={`flex shrink-0 items-center justify-between border-b px-4 transition-[padding] duration-200 ${
+              compactHeader ? "py-2 wedding-screen-top" : "wedding-screen-top px-5 pb-4"
+            }`}
             style={{ borderColor: theme.border, background: "linear-gradient(to right, #fdf2f8, #f7f4ee)" }}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
               <AnnitaAvatar
-                variant="header"
+                size={compactHeader ? 36 : undefined}
+                variant={compactHeader ? "message" : "header"}
                 mood={loading ? loadingMood : "default"}
                 onTap={() =>
                   openAnnitaFullscreen(
@@ -366,21 +427,38 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
                   )
                 }
               />
-              <div>
-                <p className="font-serif text-lg text-[#2a2723]">{ANNITA.name}</p>
-                <p className="text-[10px] font-bold uppercase tracking-wider text-pink-400">
-                  {ANNITA.tagline}
+              <div className="min-w-0">
+                <p className={`font-serif text-[#2a2723] ${compactHeader ? "text-base" : "text-lg"}`}>
+                  {ANNITA.name}
                 </p>
+                {!compactHeader && (
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-pink-400">
+                    {ANNITA.tagline}
+                  </p>
+                )}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              className="rounded-full p-2 text-gray-400 transition-colors hover:text-[#2a2723]"
-              aria-label={`Close ${ANNITA.name}`}
-            >
-              <X size={20} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={toggleSpeak}
+                className={`rounded-full p-2 transition-colors ${
+                  speakEnabled ? "text-pink-500" : "text-gray-400 hover:text-[#2a2723]"
+                }`}
+                aria-label={speakEnabled ? "Mute Annita voice" : "Enable Annita voice"}
+                title={speakEnabled ? "Annita will speak replies" : "Hear Annita speak replies"}
+              >
+                {speakEnabled ? <Volume2 size={18} /> : <VolumeX size={18} />}
+              </button>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-full p-2 text-gray-400 transition-colors hover:text-[#2a2723]"
+                aria-label={`Close ${ANNITA.name}`}
+              >
+                <X size={20} />
+              </button>
+            </div>
           </header>
 
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
@@ -488,16 +566,45 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
           <form
             onSubmit={handleSubmit}
-            className="shrink-0 border-t bg-white/90 px-4 py-4 pb-6 backdrop-blur-md"
+            className={`shrink-0 border-t bg-white/90 px-4 backdrop-blur-md ${
+              compactHeader ? "py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]" : "py-4 pb-6"
+            }`}
             style={{ borderColor: theme.border }}
           >
             <div className="flex items-center gap-2">
+              {speechSupported && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (speechListening) {
+                      stopSpeechInput();
+                      return;
+                    }
+                    setError("");
+                    startSpeechInput();
+                  }}
+                  disabled={loading}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-transform active:scale-95 disabled:opacity-40 ${
+                    speechListening ? "animate-pulse text-white" : "text-[#2a2723]"
+                  }`}
+                  style={{
+                    borderColor: ANNITA.bubbleBorder,
+                    backgroundColor: speechListening ? ANNITA.accent : "white",
+                  }}
+                  aria-label={speechListening ? "Stop listening" : "Voice input"}
+                  title={speechListening ? "Listening…" : "Speak your question"}
+                >
+                  <Mic size={16} />
+                </button>
+              )}
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder={inputPlaceholder}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
+                placeholder={speechListening ? "Listening…" : inputPlaceholder}
                 disabled={loading}
                 className="flex-1 rounded-full border bg-[#f7f4ee] px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-pink-300 disabled:opacity-60"
                 style={{ borderColor: ANNITA.bubbleBorder }}
