@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { exchangeGoogleCode, isGoogleOAuthConfigured } from "@/lib/auth/google-oauth";
+import { getRequestOrigin } from "@/lib/auth/request-origin";
 import { validateOAuthState } from "@/lib/auth/oauth-state";
 import {
   signInWithEmailAccountRedirect,
@@ -32,7 +33,7 @@ export async function GET(request: Request) {
     return redirectWithError(request, "google_state_invalid");
   }
 
-  const origin = process.env.NEXT_PUBLIC_APP_URL ?? url.origin;
+  const origin = getRequestOrigin(request);
 
   try {
     const profile = await exchangeGoogleCode(origin, code);
