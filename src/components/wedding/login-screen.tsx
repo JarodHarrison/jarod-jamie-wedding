@@ -5,6 +5,7 @@ import { ChevronRight, Fingerprint, Lock, Mail, User } from "lucide-react";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/constants";
 import { theme } from "@/lib/theme";
 import { HeroImage } from "@/components/wedding/shared/hero-image";
+import { InstallAppPopup } from "@/components/wedding/shared/install-app-popup";
 import {
   AUTH_ERROR_MESSAGES,
   signInWithPasskey,
@@ -127,6 +128,7 @@ export function LoginScreen({ onGuestLogin, onAdminLogin }: LoginScreenProps) {
 
   return (
     <div className="animate-fade-in relative flex min-h-0 flex-1 flex-col items-center overflow-y-auto overscroll-contain px-6 py-6 sm:justify-center sm:px-8 sm:py-8">
+      <InstallAppPopup />
       <div className="absolute inset-0 z-0">
         <HeroImage alt="Background" className="object-cover opacity-30" />
         <div className="absolute inset-0 bg-gradient-to-b from-[#f7f4ee]/80 via-[#f7f4ee]/60 to-[#f7f4ee]" />

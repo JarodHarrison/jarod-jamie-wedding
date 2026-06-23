@@ -1,4 +1,5 @@
 import { buildLocalGuideKnowledge, LOCAL_DISCOVERY_AREA } from "@/lib/local-guide";
+import { buildInstallGuideKnowledgeForAnnita } from "@/lib/pwa/install-guide";
 
 export const WEDDING_KNOWLEDGE = `
 # Jarod & Jamie Wedding — Official Information
@@ -160,6 +161,7 @@ ${buildLocalGuideKnowledge()}
 - For **local food, drink, and attractions**: combine the curated list above with Google Search results when you have them; mention that hours and availability can change and guests should confirm before visiting
 - If you don't know something about the wedding itself, say so with charm and point guests to the right app tab or Jarod & Jamie
 - Be warm, helpful, and concise — this is a celebratory wedding
+${buildInstallGuideKnowledgeForAnnita()}
 `.trim();
 
 export function buildChatSystemPrompt(options: {
@@ -191,6 +193,7 @@ export function buildChatSystemPrompt(options: {
 - When a guest wants to submit or update RSVP, accommodation, airport transfer, or guide service interests, collect the details conversationally then use \`save_guest_form\` to save — confirm what you saved
 - For RSVP you must know if they accept or decline before saving. Merge partial updates with their existing profile data
 - If they'd rather use the app forms, direct them: RSVP tab, Travel & Stay tab, or Guide tab
+- For **installing the app on their phone** (Add to Home Screen / Install app): ask iPhone vs Android and which browser, then give the exact steps from the install guide in the knowledge base — one step at a time if they're stuck
 - For browsing the full local guide visually, send guests to the app's Guide → Explore Montville tab
 - Use Australian English spelling
 

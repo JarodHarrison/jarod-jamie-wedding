@@ -110,8 +110,8 @@ export const ANNITA = {
   starters: [
     "What time is the ceremony, darling?",
     "How do I get from Brisbane Airport?",
+    "How do I install this app on my phone?",
     "What restaurants are near Montville?",
-    "Things to do around Maleny?",
   ],
   bubbleBg: "#fdf2f8",
   bubbleBorder: "#fbcfe8",
