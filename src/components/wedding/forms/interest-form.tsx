@@ -36,9 +36,9 @@ export function InterestForm({ field, options }: InterestFormProps) {
         ? { glowUpInterest: selection }
         : { onSiteServiceInterest: selection };
 
-    const ok = await saveSection("interests", payload);
+    const result = await saveSection("interests", payload);
     setSubmitting(false);
-    if (ok) setSaved(true);
+    if (result.ok) setSaved(true);
   };
 
   if (loading) {

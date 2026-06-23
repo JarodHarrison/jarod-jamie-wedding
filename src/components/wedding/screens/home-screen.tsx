@@ -2,8 +2,10 @@ import { Camera, ChevronRight, Gift, Heart, Info, MapPin, MessageCircle, Plane }
 import { useState } from "react";
 import { theme } from "@/lib/theme";
 import { Countdown } from "@/components/wedding/shared/countdown";
+import { WeddingWeather } from "@/components/wedding/shared/wedding-weather";
 import { HeroImage } from "@/components/wedding/shared/hero-image";
 import { MenuRow } from "@/components/wedding/shared/menu-row";
+import { NotificationBell } from "@/components/wedding/shared/notification-bell";
 import { PasskeySettings } from "@/components/wedding/auth/social-auth";
 import type { AppTab } from "@/types/wedding";
 
@@ -29,6 +31,9 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat }: Hom
             Sign Out
           </button>
         )}
+        <div className="wedding-top-offset absolute left-6">
+          <NotificationBell />
+        </div>
         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
           Welcome, {userName}
         </p>
@@ -60,7 +65,12 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat }: Hom
         <div className="relative h-[420px] overflow-hidden rounded-[2rem] shadow-xl transition-transform duration-500 group-hover:scale-[1.02]">
           <HeroImage alt="Spicers Clovelly Estate Pavilion" />
           <div className="absolute inset-0 z-10 flex flex-col items-center justify-end bg-gradient-to-t from-black/80 via-black/20 to-transparent px-6 pb-8 text-center text-white">
-            <h3 className="mb-1 font-serif text-2xl tracking-wide">Spicers Clovelly Estate</h3>
+            <div className="mb-3 inline-flex max-w-full flex-col items-stretch">
+              <div className="pointer-events-auto mb-3" onClick={(event) => event.stopPropagation()}>
+                <WeddingWeather variant="overlay" className="w-full" />
+              </div>
+              <h3 className="mb-1 font-serif text-2xl tracking-wide">Spicers Clovelly Estate</h3>
+            </div>
             <p className="mb-6 flex items-center gap-1 text-xs uppercase tracking-widest text-white/80">
               <MapPin size={12} /> Montville, QLD
             </p>

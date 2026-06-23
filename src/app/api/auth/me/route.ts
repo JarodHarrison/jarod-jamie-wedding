@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
+import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import { getSession } from "@/lib/auth/session";
 
 export async function GET() {
@@ -9,13 +10,18 @@ export async function GET() {
   }
 
   if (session.type === "guest") {
-    const canAccessAdmin = await guestHasAdminAccess(session.email);
+    const fresh = await syncGuestSessionFromDb(session);
+    if (!fresh) {
+      return NextResponse.json({ user: null, admin: null, canAccessAdmin: false });
+    }
+
+    const canAccessAdmin = await guestHasAdminAccess(fresh.email);
     return NextResponse.json({
       user: {
-        id: session.id,
-        name: session.name,
-        email: session.email,
-        tier: session.tier,
+        id: fresh.id,
+        name: fresh.name,
+        email: fresh.email,
+        tier: fresh.tier,
       },
       admin: null,
       canAccessAdmin,

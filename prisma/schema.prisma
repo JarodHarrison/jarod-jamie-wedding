@@ -78,6 +78,20 @@ model Guest {
   goldCoastTrip GoldCoastTrip?
   passwordResetTokens GuestPasswordResetToken[]
   passkeyCredentials PasskeyCredential[]
+  notifications InAppNotification[]
+}
+
+model InAppNotification {
+  id        String    @id @default(cuid())
+  guestId   String
+  guest     Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  readAt    DateTime? @db.Timestamptz
+  createdAt DateTime  @default(now()) @db.Timestamptz
+
+  @@index([guestId, createdAt(sort: Desc)])
+  @@index([guestId, readAt])
 }
 
 model GuestPasswordResetToken {

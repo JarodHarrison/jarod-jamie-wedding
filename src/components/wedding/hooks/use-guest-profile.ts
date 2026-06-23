@@ -42,10 +42,15 @@ export function useGuestProfile() {
     const data = await res.json();
     if (!res.ok) {
       setError(data.error ?? "Failed to save.");
-      return false;
+      return { ok: false as const };
     }
     setProfile(data.profile);
-    return true;
+    if (data.tierUpdated && data.profile?.tier) {
+      window.dispatchEvent(
+        new CustomEvent("wedding:guest-tier", { detail: data.profile.tier }),
+      );
+    }
+    return { ok: true as const, tierUpdated: Boolean(data.tierUpdated) };
   };
 
   return { profile, loading, error, saveSection, reload: loadProfile, setError };

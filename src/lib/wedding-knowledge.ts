@@ -15,8 +15,11 @@ export const WEDDING_KNOWLEDGE = `
 ## Wedding Weekend Schedule
 
 ### Friday 25 September 2026
-- 6:00pm — Meet & Greet for on-site guests at Spicers Clovelly Estate (smart casual)
-- On-site guests invited to welcome meet-and-greet and BBQ overlooking the lake on Friday night
+- 6:00pm — Lakeside Meet & Greet for on-site guests only (smart casual)
+- Lake View Deck welcome drinks with cheese and charcuterie platters
+- Relaxed gourmet barbecue at The Long Apron restaurant
+- Firepit gathering after dinner on the lakeside
+- Selecting "On-site at Spicers Clovelly Estate" in accommodation preferences auto-unlocks on-site itinerary access in the app
 
 ### Saturday 26 September 2026
 - 3:00pm — Ceremony at Spicers Clovelly Estate (colourful cocktail attire). Adults-only ceremony.
@@ -40,7 +43,7 @@ export const WEDDING_KNOWLEDGE = `
 ## On-Site Accommodation (Spicers Clovelly Estate)
 - All on-site accommodation for the wedding weekend is FULLY BOOKED
 - Secured rooms: Spicers will email for payment ($500 per room, per night)
-- Friday night on-site guests get meet-and-greet + BBQ; Saturday includes breakfast and BBQ lunch options
+- Friday night on-site guests: Lake View Deck welcome, cheese & charcuterie, gourmet BBQ at The Long Apron, firepit after dinner; Saturday includes breakfast and BBQ lunch options
 
 ## Off-Site Accommodation (Montville Area)
 - Special Expedia rates for guests:
@@ -96,26 +99,33 @@ Direct from BNE:
 ## Gold Coast Trip (Penthouse guests — pre-wedding)
 Penthouse package: $550 per person ($1100 per couple) — accommodation + minivan
 
-### Tue 22 Sep
-- 08:00 Depart Brisbane (minivan from Pullman Brisbane Airport) — penthouse only
-- 09:15 Warner Bros. Movie World
-- 17:00 Depart Movie World → Surfers Paradise
-- 17:40 Hotel check-in Novotel Surfers Paradise
-- 18:30 SkyPoint Observation Deck, Surfers Paradise
-- 20:00 Little Truffle dinner, Mermaid Beach ($89 4-course group booking)
+### Tue 22 Sep — Byron Bay & Skydeck
+- 09:00 Depart Brisbane (minivan from Pullman Brisbane Airport) — penthouse only
+- 11:00–13:00 Byron Bay lunch
+- 13:00 Depart Byron Bay — penthouse minivan
+- 14:15 Penthouse check-in, Gold Coast — penthouse only
+- 17:00 Q1 Skydeck / SkyPoint (sunset ~17:40)
 
-### Wed 23 Sep
-- 07:30 Depart for Byron Bay (penthouse minivan)
-- 08:45 Byron Bay breakfast stop
-- 10:45 Dreamworld (Ride Express passes)
+### Wed 23 Sep — Movie World & Fine Dining
+- 09:15 Depart hotel — penthouse minivan
+- 10:00–17:00 Warner Bros. Movie World
+- 17:00 Depart Movie World
+- 17:45 Freshen up at hotel
+- 19:00 Little Truffle dinner, Mermaid Beach ($89 4-course group booking)
+
+### Thu 24 Sep — Dreamworld & Dracula's
+- 09:15 Depart hotel — penthouse minivan
+- 10:00–17:00 Dreamworld (Ride Express passes)
 - 17:00 Depart Dreamworld
-- 18:45 Dracula's Cabaret, Broadbeach (A-Reserve VIP, 3-course dinner)
+- 17:45 Freshen up at hotel
+- 18:15 Uber to Dracula's Cabaret, Broadbeach
+- 19:00 Dracula's show & dinner (A-Reserve VIP, 3-course)
 
-### Thu 24 Sep
-- 08:00 Depart Gold Coast (penthouse minivan)
-- 10:00 Australia Zoo, Beerwah
-- 14:00 Depart zoo
-- 14:40 Arrive Spicers Clovelly Estate, Montville
+### Fri 25 Sep — Australia Zoo & The Hinterland
+- 07:30 Check out & depart Gold Coast — penthouse minivan
+- 10:00 Australia Zoo, Beerwah (~2hr drive with coffee stop) — optional Animal Encounters book separately at go.australiazoo.com.au/experiences/encounters; book encounters as far ahead as possible (sell out fast)
+- 14:30 Depart zoo
+- 15:00 Arrive Spicers Clovelly Estate, Montville
 
 Non-penthouse guests may join some Gold Coast activities but book themselves.
 

@@ -78,10 +78,18 @@ export async function requireAdminSession(): Promise<AdminSession> {
   return session;
 }
 
+import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
+
 export async function requireGuestSession(): Promise<GuestSession> {
   const session = await getSession();
   if (!session || session.type !== "guest") {
     throw new Error("Unauthorized");
   }
-  return session;
+
+  const fresh = await syncGuestSessionFromDb(session);
+  if (!fresh) {
+    throw new Error("Unauthorized");
+  }
+
+  return fresh;
 }

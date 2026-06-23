@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, LogOut, Plus, RefreshCw, Shield, Trash2 } from "lucide-react";
-import { GUEST_TIER_LABELS } from "@/lib/api-utils";
-import { theme } from "@/lib/theme";
-import { AdminGuestEditor } from "@/components/admin/admin-guest-editor";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Bus, LogOut, Mail, Users } from "lucide-react";
 import { AdminBroadcastEmail } from "@/components/admin/admin-broadcast-email";
-import type { AdminGuest, GuestTier } from "@/types/wedding";
+import { AdminBroadcastPush } from "@/components/admin/admin-broadcast-push";
+import { AdminGuestList } from "@/components/admin/admin-guest-list";
+import { AdminSectionCard } from "@/components/admin/admin-section-card";
+import { theme } from "@/lib/theme";
+import type { AdminGuest } from "@/types/wedding";
 
 type AdminDashboardProps = {
   adminName: string;
@@ -14,28 +15,23 @@ type AdminDashboardProps = {
   onUnauthorized?: () => void;
 };
 
-const TIERS: GuestTier[] = ["PENTHOUSE", "ON_SITE", "OFF_SITE"];
+type AdminView = "hub" | "guests" | "shuttle" | "updates";
 
 export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDashboardProps) {
   const [guests, setGuests] = useState<AdminGuest[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [tempPassword, setTempPassword] = useState<string | null>(null);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [view, setView] = useState<AdminView>("hub");
   const [filter, setFilter] = useState<"all" | "pending-rsvp" | "submitted">("all");
   const [driverLink, setDriverLink] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  const [newGuest, setNewGuest] = useState({
-    name: "",
-    email: "",
-    tier: "OFF_SITE" as GuestTier,
-    password: "",
-  });
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [view]);
 
   const loadGuests = useCallback(async () => {
     setLoading(true);
-    setMessage("");
     try {
       const res = await fetch("/api/admin/guests");
       const data = await res.json();
@@ -59,90 +55,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
     loadGuests();
   }, [loadGuests]);
 
-  const filteredGuests = guests.filter((guest) => {
-    if (filter === "pending-rsvp") return guest.rsvpStatus === "PENDING";
-    if (filter === "submitted") return guest.rsvpSubmittedAt !== null;
-    return true;
-  });
-
   const stats = {
     total: guests.length,
-    accepted: guests.filter((g) => g.rsvpStatus === "ACCEPTED").length,
-    declined: guests.filter((g) => g.rsvpStatus === "DECLINED").length,
+    rsvpIn: guests.filter((g) => g.rsvpStatus === "ACCEPTED").length,
+    onSite: guests.filter((g) => g.tier === "ON_SITE" || g.tier === "PENTHOUSE").length,
+    offSite: guests.filter((g) => g.tier === "OFF_SITE").length,
+    transfers: guests.filter((g) => g.transferSubmittedAt).length,
     pending: guests.filter((g) => g.rsvpStatus === "PENDING").length,
-    accommodation: guests.filter((g) => g.accommodationSubmittedAt).length,
-    transfer: guests.filter((g) => g.transferSubmittedAt).length,
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage("");
-    setTempPassword(null);
-
-    const res = await fetch("/api/admin/guests", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: newGuest.name,
-        email: newGuest.email,
-        tier: newGuest.tier,
-        password: newGuest.password || undefined,
-      }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) {
-      setMessage(data.error ?? "Failed to create guest.");
-      return;
-    }
-
-    setTempPassword(data.temporaryPassword);
-    setMessage(`Guest "${data.guest.name}" created successfully.`);
-    setNewGuest({ name: "", email: "", tier: "OFF_SITE", password: "" });
-    setShowAddForm(false);
-    loadGuests();
-  };
-
-  const handleTierChange = async (id: string, tier: GuestTier) => {
-    const res = await fetch(`/api/admin/guests/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tier }),
-    });
-    if (res.ok) loadGuests();
-  };
-
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Remove guest "${name}"?`)) return;
-    const res = await fetch(`/api/admin/guests/${id}`, { method: "DELETE" });
-    if (res.ok) {
-      setMessage(`Removed ${name}.`);
-      if (expandedId === id) setExpandedId(null);
-      loadGuests();
-    }
-  };
-
-  const handleMakeAdmin = async (id: string, name: string) => {
-    if (!confirm(`Grant admin access to "${name}"? They can sign in with their existing password.`)) {
-      return;
-    }
-
-    setMessage("");
-    const res = await fetch(`/api/admin/guests/${id}/make-admin`, { method: "POST" });
-    const data = await res.json();
-
-    if (!res.ok) {
-      setMessage(data.error ?? "Failed to grant admin access.");
-      return;
-    }
-
-    setMessage(data.message ?? `${name} is now an admin.`);
-    loadGuests();
-  };
-
-  const handleGuestUpdated = (updated: AdminGuest) => {
-    setGuests((current) => current.map((g) => (g.id === updated.id ? updated : g)));
-    setMessage(`Updated ${updated.name}.`);
   };
 
   const handleDriverMagicLink = async () => {
@@ -154,13 +73,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
       return;
     }
     setDriverLink(data.url);
-    setMessage("Driver magic link created — valid for 1 hour. Send it to your shuttle driver.");
+    setMessage("Driver magic link created — valid for 1 hour.");
   };
 
-  const rsvpColor = (status: AdminGuest["rsvpStatus"]) => {
-    if (status === "ACCEPTED") return "text-emerald-600";
-    if (status === "DECLINED") return "text-rose-500";
-    return "text-gray-400";
+  const subViewTitle: Record<Exclude<AdminView, "hub">, string> = {
+    guests: "Guest List",
+    shuttle: "Shuttle Driver",
+    updates: "Guest Updates",
   };
 
   return (
@@ -176,253 +95,131 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
         >
           <LogOut size={12} /> Sign Out
         </button>
-        <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
-          Admin · {adminName}
-        </p>
-        <h1 className="font-serif text-2xl text-[#2a2723]">Guest Management</h1>
-        <p className="mt-1 text-xs text-gray-500">
-          {stats.total} guests · {stats.accepted} attending · {stats.pending} pending RSVP
-        </p>
+
+        {view !== "hub" ? (
+          <button
+            type="button"
+            onClick={() => setView("hub")}
+            className="mb-3 flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#c3a379]"
+          >
+            <ArrowLeft size={12} /> Back
+          </button>
+        ) : (
+          <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-400">
+            Admin · {adminName}
+          </p>
+        )}
+
+        <h1 className="font-serif text-2xl text-[#2a2723]">
+          {view === "hub" ? "Guest Management" : subViewTitle[view]}
+        </h1>
+        {view === "hub" && (
+          <p className="mt-1 text-xs text-gray-500">
+            {stats.total} guests · {stats.rsvpIn} attending · {stats.pending} pending RSVP
+          </p>
+        )}
       </header>
 
-      <div className="flex-1 overflow-y-auto scroll-smooth px-6 py-6 pb-6">
-        {(message || tempPassword) && (
+      <div ref={contentRef} className="flex-1 overflow-y-auto scroll-smooth px-6 py-6 pb-6">
+        {message && (
           <div
             className="mb-6 rounded-2xl border bg-white p-4 shadow-sm"
             style={{ borderColor: theme.border }}
           >
-            {message && <p className="text-sm text-[#2a2723]">{message}</p>}
-            {tempPassword && (
-              <p className="mt-2 font-mono text-lg font-bold text-[#c3a379]">{tempPassword}</p>
-            )}
+            <p className="text-sm text-[#2a2723]">{message}</p>
           </div>
         )}
 
-        <section className="mb-6 grid grid-cols-3 gap-2">
-          {[
-            { label: "RSVP In", value: stats.accepted },
-            { label: "Accommodation", value: stats.accommodation },
-            { label: "Transfers", value: stats.transfer },
-          ].map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-xl border bg-white p-3 text-center shadow-sm"
-              style={{ borderColor: theme.border }}
-            >
-              <p className="text-lg font-bold text-[#2a2723]">{stat.value}</p>
-              <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">{stat.label}</p>
+        {view === "hub" && (
+          <>
+            <section className="mb-8 grid grid-cols-2 gap-2">
+              {[
+                { label: "RSVP In", value: stats.rsvpIn },
+                { label: "On-site", value: stats.onSite },
+                { label: "Off-site", value: stats.offSite },
+                { label: "Transfers", value: stats.transfers },
+              ].map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-xl border bg-white p-3 text-center shadow-sm"
+                  style={{ borderColor: theme.border }}
+                >
+                  <p className="text-lg font-bold text-[#2a2723]">{stat.value}</p>
+                  <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </section>
+
+            <div className="space-y-4">
+              <AdminSectionCard
+                title="Guest List"
+                description="Add guests, edit RSVPs, accommodation, transfers, and admin access."
+                actionLabel="Manage Guests"
+                icon={Users}
+                variant="dark"
+                onClick={() => setView("guests")}
+              />
+              <AdminSectionCard
+                title="Shuttle Driver"
+                description="Generate a one-time magic link for your courtesy bus driver portal."
+                actionLabel="Driver Portal"
+                icon={Bus}
+                onClick={() => setView("shuttle")}
+              />
+              <AdminSectionCard
+                title="Guest Updates"
+                description="Send email broadcasts or in-app push notifications to guests."
+                actionLabel="Send Updates"
+                icon={Mail}
+                variant="gold"
+                onClick={() => setView("updates")}
+              />
             </div>
-          ))}
-        </section>
+          </>
+        )}
 
-        <section className="mb-6 rounded-2xl border bg-white p-4 shadow-sm" style={{ borderColor: theme.border }}>
-          <h2 className="mb-2 font-serif text-lg text-[#2a2723]">Shuttle Driver</h2>
-          <p className="mb-3 text-xs text-gray-500">
-            Driver portal: <span className="font-mono">/driver</span> — PIN from seed (default 260926) or generate a one-time magic link.
-          </p>
-          <button
-            type="button"
-            onClick={handleDriverMagicLink}
-            className="w-full rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest"
-            style={{ backgroundColor: theme.btnDark, color: theme.gold }}
-          >
-            Generate Driver Magic Link
-          </button>
-          {driverLink && (
-            <p className="mt-3 break-all font-mono text-[10px] text-[#2a2723]">{driverLink}</p>
-          )}
-        </section>
+        {view === "guests" && (
+          <AdminGuestList
+            guests={guests}
+            loading={loading}
+            filter={filter}
+            onFilterChange={setFilter}
+            onRefresh={loadGuests}
+            onMessage={setMessage}
+            onGuestsChange={setGuests}
+          />
+        )}
 
-        <AdminBroadcastEmail guestCount={guests.length} onMessage={setMessage} />
-
-        <section className="mb-6">
-          <button
-            type="button"
-            onClick={() => setShowAddForm((open) => !open)}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-xs font-bold uppercase tracking-widest shadow-md"
-            style={{ backgroundColor: theme.btnDark, color: theme.gold }}
-          >
-            <Plus size={14} /> {showAddForm ? "Cancel" : "Add Guest"}
-          </button>
-
-          {showAddForm && (
-            <form
-              onSubmit={handleCreate}
-              className="mt-4 space-y-3 rounded-2xl border bg-white p-4 shadow-sm"
-              style={{ borderColor: theme.border }}
-            >
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={newGuest.name}
-                onChange={(e) => setNewGuest({ ...newGuest, name: e.target.value })}
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c3a379]"
-                style={{ borderColor: theme.border }}
-                required
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                value={newGuest.email}
-                onChange={(e) => setNewGuest({ ...newGuest, email: e.target.value })}
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c3a379]"
-                style={{ borderColor: theme.border }}
-                required
-              />
-              <select
-                value={newGuest.tier}
-                onChange={(e) =>
-                  setNewGuest({ ...newGuest, tier: e.target.value as GuestTier })
-                }
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c3a379]"
-                style={{ borderColor: theme.border }}
-              >
-                {TIERS.map((tier) => (
-                  <option key={tier} value={tier}>
-                    {GUEST_TIER_LABELS[tier]}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="text"
-                placeholder="Password (auto if blank)"
-                value={newGuest.password}
-                onChange={(e) => setNewGuest({ ...newGuest, password: e.target.value })}
-                className="w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c3a379]"
-                style={{ borderColor: theme.border }}
-              />
-              <button
-                type="submit"
-                className="w-full rounded-xl py-3 text-xs font-bold uppercase tracking-widest"
-                style={{ backgroundColor: theme.btnDark, color: theme.gold }}
-              >
-                Create Guest
-              </button>
-            </form>
-          )}
-        </section>
-
-        <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-lg text-[#2a2723]">All Guests</h2>
+        {view === "shuttle" && (
+          <section className="rounded-2xl border bg-white p-5 shadow-sm" style={{ borderColor: theme.border }}>
+            <p className="mb-4 text-sm text-gray-500">
+              Driver portal lives at <span className="font-mono text-[#2a2723]">/driver</span>. Use the
+              seeded PIN (default 260926) or generate a one-time magic link below.
+            </p>
             <button
               type="button"
-              onClick={loadGuests}
-              className="flex items-center gap-1 text-xs text-gray-500 hover:text-[#2a2723]"
+              onClick={handleDriverMagicLink}
+              className="w-full rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest"
+              style={{ backgroundColor: theme.btnDark, color: theme.gold }}
             >
-              <RefreshCw size={12} /> Refresh
+              Generate Driver Magic Link
             </button>
+            {driverLink && (
+              <p className="mt-4 break-all rounded-xl bg-[#f7f4ee] p-3 font-mono text-[10px] text-[#2a2723]">
+                {driverLink}
+              </p>
+            )}
+          </section>
+        )}
+
+        {view === "updates" && (
+          <div className="space-y-6">
+            <AdminBroadcastPush guestCount={guests.length} onMessage={setMessage} />
+            <AdminBroadcastEmail guestCount={guests.length} onMessage={setMessage} />
           </div>
-
-          <div className="mb-4 flex gap-2">
-            {(
-              [
-                ["all", "All"],
-                ["pending-rsvp", "Pending RSVP"],
-                ["submitted", "RSVP Submitted"],
-              ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFilter(key)}
-                className={`rounded-lg px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                  filter === key
-                    ? "bg-[#2a2723] text-[#c3a379]"
-                    : "border bg-white text-gray-500"
-                }`}
-                style={filter !== key ? { borderColor: theme.border } : undefined}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {loading ? (
-            <p className="py-8 text-center text-sm text-gray-400">Loading guests...</p>
-          ) : filteredGuests.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-400">No guests match this filter.</p>
-          ) : (
-            <div className="space-y-3">
-              {filteredGuests.map((guest) => {
-                const isExpanded = expandedId === guest.id;
-                return (
-                  <div
-                    key={guest.id}
-                    className="rounded-2xl border bg-white p-4 shadow-sm"
-                    style={{ borderColor: theme.border }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setExpandedId(isExpanded ? null : guest.id)}
-                      className="flex w-full items-start justify-between gap-3 text-left"
-                    >
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-[#2a2723]">{guest.name}</p>
-                          {guest.isAdmin && (
-                            <span className="inline-flex items-center gap-1 rounded-md bg-[#2a2723] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#c3a379]">
-                              <Shield size={10} /> Admin
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500">{guest.email}</p>
-                        <p className={`mt-1 text-[10px] font-bold uppercase tracking-wider ${rsvpColor(guest.rsvpStatus)}`}>
-                          RSVP: {guest.rsvpStatus}
-                        </p>
-                      </div>
-                      <ChevronDown
-                        size={18}
-                        className={`mt-1 shrink-0 text-[#c3a379] transition-transform ${isExpanded ? "rotate-180" : ""}`}
-                      />
-                    </button>
-
-                    {isExpanded && (
-                      <>
-                        <AdminGuestEditor
-                          guest={guest}
-                          onUpdated={handleGuestUpdated}
-                          onError={setMessage}
-                        />
-                        <select
-                          value={guest.tier}
-                          onChange={(e) => handleTierChange(guest.id, e.target.value as GuestTier)}
-                          className="mb-3 mt-4 w-full rounded-lg border px-3 py-2 text-xs font-bold uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#c3a379]"
-                          style={{ borderColor: theme.border }}
-                        >
-                          {TIERS.map((tier) => (
-                            <option key={tier} value={tier}>
-                              {GUEST_TIER_LABELS[tier]}
-                            </option>
-                          ))}
-                        </select>
-                        <div className="flex gap-2">
-                          {!guest.isAdmin && (
-                            <button
-                              type="button"
-                              onClick={() => handleMakeAdmin(guest.id, guest.name)}
-                              className="flex flex-1 items-center justify-center gap-1 rounded-lg border px-3 py-2 text-[10px] font-bold uppercase tracking-wider hover:bg-gray-50"
-                              style={{ borderColor: theme.border, color: theme.btnDark }}
-                            >
-                              <Shield size={12} /> Make Admin
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(guest.id, guest.name)}
-                            className="flex-1 rounded-lg border border-red-100 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-red-500 hover:bg-red-50"
-                          >
-                            <Trash2 size={14} className="mx-auto" />
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
+        )}
       </div>
     </div>
   );

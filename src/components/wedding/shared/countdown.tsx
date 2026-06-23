@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { WEDDING_CEREMONY_ISO } from "@/lib/wedding-date";
 
 function TimeBox({ value, label }: { value: number; label: string }) {
   return (
@@ -17,7 +18,7 @@ export function Countdown() {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
 
   useEffect(() => {
-    const targetDate = new Date("2026-09-26T15:00:00+10:00").getTime();
+    const targetDate = new Date(WEDDING_CEREMONY_ISO).getTime();
 
     const update = () => {
       const difference = targetDate - Date.now();

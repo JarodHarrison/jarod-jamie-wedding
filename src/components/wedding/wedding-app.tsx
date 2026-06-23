@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BookOpen, Calendar, Home, MapPin, Shield, Users } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { LoginScreen } from "@/components/wedding/login-screen";
@@ -20,7 +20,8 @@ import { StoryScreen } from "@/components/wedding/screens/story-screen";
 import { TravelScreen } from "@/components/wedding/screens/travel-screen";
 import { WeddingChatbot } from "@/components/wedding/chat/wedding-chatbot";
 import { theme } from "@/lib/theme";
-import type { AdminUser, AppTab, MainTab, WeddingUser } from "@/types/wedding";
+import type { AdminUser, AppTab, GuestTier, MainTab, WeddingUser } from "@/types/wedding";
+import { hasOnSiteAppAccess } from "@/lib/on-site-access";
 
 const guestNav: { id: MainTab; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Home", icon: Home },
@@ -32,6 +33,8 @@ const guestNav: { id: MainTab; label: string; icon: typeof Home }[] = [
 
 const adminNavItem = { id: "admin" as const, label: "Admin", icon: Shield };
 
+const SESSION_REFRESH_MS = 30_000;
+
 export function WeddingApp() {
   const [activeTab, setActiveTab] = useState<AppTab>("home");
   const [chatOpen, setChatOpen] = useState(false);
@@ -39,21 +42,60 @@ export function WeddingApp() {
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [canAccessAdmin, setCanAccessAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.user) setUser(data.user);
-        if (data.admin) setAdmin(data.admin);
-        setCanAccessAdmin(Boolean(data.canAccessAdmin));
-      })
-      .catch(() => {
-        setUser(null);
-        setAdmin(null);
-        setCanAccessAdmin(false);
-      })
-      .finally(() => setLoading(false));
+    mainRef.current?.scrollTo({ top: 0, left: 0 });
+  }, [activeTab]);
+
+  const refreshSession = useCallback(async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      const data = await res.json();
+      if (data.user) setUser(data.user);
+      else setUser(null);
+      if (data.admin) setAdmin(data.admin);
+      else setAdmin(null);
+      setCanAccessAdmin(Boolean(data.canAccessAdmin));
+    } catch {
+      setUser(null);
+      setAdmin(null);
+      setCanAccessAdmin(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshSession().finally(() => setLoading(false));
+  }, [refreshSession]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user && !admin) return;
+
+    const interval = window.setInterval(() => void refreshSession(), SESSION_REFRESH_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refreshSession();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
+    return () => {
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [loading, user, admin, refreshSession]);
+
+  useEffect(() => {
+    if (loading || (!user && !admin)) return;
+    void refreshSession();
+  }, [activeTab, loading, user, admin, refreshSession]);
+
+  useEffect(() => {
+    const onTierUpdated = (event: Event) => {
+      const tier = (event as CustomEvent<GuestTier>).detail;
+      setUser((current) => (current ? { ...current, tier } : current));
+    };
+    window.addEventListener("wedding:guest-tier", onTierUpdated);
+    return () => window.removeEventListener("wedding:guest-tier", onTierUpdated);
   }, []);
 
   const applySession = (data: {
@@ -102,6 +144,7 @@ export function WeddingApp() {
 
   const displayName = user?.name ?? admin!.name;
   const isPenthouse = user?.tier === "PENTHOUSE" || canAccessAdmin;
+  const isOnSite = hasOnSiteAppAccess(user?.tier) || canAccessAdmin;
   const showAdminNav = canAccessAdmin;
   const navItems = showAdminNav ? [...guestNav, adminNavItem] : guestNav;
 
@@ -125,7 +168,7 @@ export function WeddingApp() {
           />
         );
       case "itinerary":
-        return <ItineraryScreen isPenthouse={isPenthouse} />;
+        return <ItineraryScreen isPenthouse={isPenthouse} isOnSite={isOnSite} />;
       case "rsvp":
         return <RSVPScreen />;
       case "guide":
@@ -166,7 +209,7 @@ export function WeddingApp() {
   return (
     <PhoneFrame>
       <div className="relative flex min-h-0 flex-1 flex-col">
-        <main className="min-h-0 flex-1 overflow-y-auto scroll-smooth">{renderScreen()}</main>
+        <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">{renderScreen()}</main>
         <WeddingChatbot open={chatOpen} onOpenChange={setChatOpen} />
         {!chatOpen && (
           <nav

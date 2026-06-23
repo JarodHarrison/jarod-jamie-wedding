@@ -19,6 +19,7 @@ export function AccommodationForm() {
   const [accommodationNotes, setAccommodationNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [onSiteUnlocked, setOnSiteUnlocked] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -37,7 +38,7 @@ export function AccommodationForm() {
     setSaved(false);
     setSubmitting(true);
 
-    const ok = await saveSection("accommodation", {
+    const result = await saveSection("accommodation", {
       accommodationType,
       accommodationName,
       accommodationAddress,
@@ -48,7 +49,12 @@ export function AccommodationForm() {
     });
 
     setSubmitting(false);
-    if (ok) setSaved(true);
+    if (result.ok) {
+      setSaved(true);
+      if (result.tierUpdated) {
+        setOnSiteUnlocked(true);
+      }
+    }
   };
 
   if (loading) {
@@ -130,6 +136,11 @@ export function AccommodationForm() {
       {saved && (
         <p className="text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">
           Accommodation preferences saved!
+        </p>
+      )}
+      {onSiteUnlocked && (
+        <p className="text-[10px] font-bold uppercase leading-relaxed tracking-wider text-[#2a2723]">
+          On-site access unlocked — Friday&apos;s lakeside welcome is now in your itinerary.
         </p>
       )}
       <button

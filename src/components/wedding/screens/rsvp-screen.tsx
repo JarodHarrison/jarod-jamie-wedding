@@ -33,7 +33,7 @@ export function RSVPScreen() {
     setSaved(false);
     setSubmitting(true);
 
-    const ok = await saveSection("rsvp", {
+    const result = await saveSection("rsvp", {
       phone,
       attending,
       plusOneName,
@@ -42,7 +42,7 @@ export function RSVPScreen() {
     });
 
     setSubmitting(false);
-    if (ok) setSaved(true);
+    if (result.ok) setSaved(true);
   };
 
   if (loading) {

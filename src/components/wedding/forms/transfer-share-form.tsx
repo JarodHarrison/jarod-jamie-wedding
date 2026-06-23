@@ -43,7 +43,7 @@ export function TransferShareForm() {
     setSaved(false);
     setSubmitting(true);
 
-    const ok = await saveSection("transfer", {
+    const result = await saveSection("transfer", {
       wantsSharedTransfer,
       arrivalAirport,
       arrivalDate,
@@ -57,7 +57,7 @@ export function TransferShareForm() {
     });
 
     setSubmitting(false);
-    if (ok) setSaved(true);
+    if (result.ok) setSaved(true);
   };
 
   if (loading) {
