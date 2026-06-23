@@ -217,13 +217,15 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const [welcomed, setWelcomed] = useState(false);
   const [profile, setProfile] = useState<GuestProfile | null>(null);
   const [starters, setStarters] = useState<string[]>([...ANNITA.starters]);
-  const [loadingMessage, setLoadingMessage] = useState(() => pickAnnitaLine(ANNITA_LOADING_MESSAGES));
+  const [loadingMessage, setLoadingMessage] = useState<string>(() =>
+    pickAnnitaLine(ANNITA_LOADING_MESSAGES),
+  );
   const [loadingMood, setLoadingMood] = useState<AnnitaMood>("thinking");
   const [inputPlaceholder, setInputPlaceholder] = useState(() =>
     pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS),
   );
   const [fullscreenOpen, setFullscreenOpen] = useState(false);
-  const [fullscreenSrc, setFullscreenSrc] = useState(ANNITA.avatarSrc);
+  const [fullscreenSrc, setFullscreenSrc] = useState<string>(ANNITA.avatarSrc);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -325,7 +327,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
     }
   };
 
-  const openAnnitaFullscreen = (src = ANNITA.avatarSrc) => {
+  const openAnnitaFullscreen = (src: string = ANNITA.avatarSrc) => {
     setFullscreenSrc(src);
     setFullscreenOpen(true);
   };
