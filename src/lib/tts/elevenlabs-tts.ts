@@ -28,7 +28,11 @@ export async function synthesizeElevenLabsTTS(text: string): Promise<Buffer | nu
     }),
   });
 
-  if (!res.ok) return null;
+  if (!res.ok) {
+    const detail = await res.text();
+    console.error("[elevenlabs-tts]", res.status, detail.slice(0, 300));
+    return null;
+  }
 
   return Buffer.from(await res.arrayBuffer());
 }

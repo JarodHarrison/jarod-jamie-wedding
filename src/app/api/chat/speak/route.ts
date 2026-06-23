@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
 import { getSession } from "@/lib/auth/session";
 import { plainTextForSpeech } from "@/lib/speech/plain-text";
-import { getConfiguredTtsProviders, synthesizeAnnitaSpeech } from "@/lib/tts";
+import { getConfiguredTtsProviders, isElevenLabsConfigured, synthesizeAnnitaSpeech } from "@/lib/tts";
 
 export async function GET() {
   return NextResponse.json({
@@ -22,7 +22,13 @@ export async function POST(request: Request) {
 
     const result = await synthesizeAnnitaSpeech(text);
     if (!result) {
-      return jsonError("Server voice not configured — the app will use your device voice instead.", 503);
+      const configured = isElevenLabsConfigured();
+      return jsonError(
+        configured
+          ? "Annita's voice couldn't be generated. Check your ElevenLabs Voice ID and credits."
+          : "Server voice not configured — add ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID, then redeploy.",
+        503,
+      );
     }
 
     return new NextResponse(new Uint8Array(result.audio), {

@@ -1,3 +1,4 @@
+export { isElevenLabsConfigured, synthesizeElevenLabsTTS } from "@/lib/tts/elevenlabs-tts";
 import { synthesizeElevenLabsTTS, isElevenLabsConfigured } from "@/lib/tts/elevenlabs-tts";
 import { synthesizeGoogleTTS } from "@/lib/tts/google-tts";
 
