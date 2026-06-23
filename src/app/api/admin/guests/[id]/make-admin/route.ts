@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError } from "@/lib/api-utils";
 import { prisma } from "@/lib/prisma";
 
@@ -7,7 +7,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(_request: Request, context: RouteContext) {
   try {
-    await requireAdminSession();
+    await requireAdminAccess();
     const { id } = await context.params;
 
     const guest = await prisma.guest.findUnique({

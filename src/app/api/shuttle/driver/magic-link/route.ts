@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError } from "@/lib/api-utils";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
-    await requireAdminSession();
+    await requireAdminAccess();
     const body = await request.json();
     const driverId = body.driverId as string | undefined;
 

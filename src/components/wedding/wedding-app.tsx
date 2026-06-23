@@ -37,6 +37,7 @@ export function WeddingApp() {
   const [chatOpen, setChatOpen] = useState(false);
   const [user, setUser] = useState<WeddingUser | null>(null);
   const [admin, setAdmin] = useState<AdminUser | null>(null);
+  const [canAccessAdmin, setCanAccessAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,14 +46,32 @@ export function WeddingApp() {
       .then((data) => {
         if (data.user) setUser(data.user);
         if (data.admin) setAdmin(data.admin);
+        setCanAccessAdmin(Boolean(data.canAccessAdmin));
+      })
+      .catch(() => {
+        setUser(null);
+        setAdmin(null);
+        setCanAccessAdmin(false);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const applySession = (data: {
+    user?: WeddingUser | null;
+    admin?: AdminUser | null;
+    canAccessAdmin?: boolean;
+  }) => {
+    setUser(data.user ?? null);
+    setAdmin(data.admin ?? null);
+    setCanAccessAdmin(Boolean(data.canAccessAdmin));
+    setActiveTab("home");
+  };
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
     setAdmin(null);
+    setCanAccessAdmin(false);
     setActiveTab("home");
   };
 
@@ -69,21 +88,29 @@ export function WeddingApp() {
   if (!user && !admin) {
     return (
       <PhoneFrame>
-        <LoginScreen onGuestLogin={setUser} onAdminLogin={setAdmin} />
+        <LoginScreen
+          onGuestLogin={(loggedInUser, canAccessAdmin) => {
+            applySession({ user: loggedInUser, admin: null, canAccessAdmin });
+          }}
+          onAdminLogin={(loggedInAdmin) => {
+            applySession({ user: null, admin: loggedInAdmin, canAccessAdmin: true });
+          }}
+        />
       </PhoneFrame>
     );
   }
 
   const displayName = user?.name ?? admin!.name;
-  const isPenthouse = user?.tier === "PENTHOUSE" || !!admin;
-  const navItems = admin ? [...guestNav, adminNavItem] : guestNav;
+  const isPenthouse = user?.tier === "PENTHOUSE" || canAccessAdmin;
+  const showAdminNav = canAccessAdmin;
+  const navItems = showAdminNav ? [...guestNav, adminNavItem] : guestNav;
 
   const renderScreen = () => {
     switch (activeTab) {
       case "admin":
         return (
           <AdminDashboard
-            adminName={admin!.name}
+            adminName={user?.name ?? admin?.name ?? "Admin"}
             onLogout={handleLogout}
             onUnauthorized={handleLogout}
           />
@@ -154,7 +181,7 @@ export function WeddingApp() {
                 label={label}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
-                compact={!!admin}
+                compact={showAdminNav}
               />
             ))}
           </nav>

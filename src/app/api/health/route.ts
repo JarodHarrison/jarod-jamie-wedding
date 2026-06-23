@@ -9,8 +9,11 @@ export async function GET() {
   };
 
   try {
-    const adminCount = await prisma.admin.count();
-    return NextResponse.json({ ok: true, checks, adminCount });
+    const [adminCount, guestCount] = await Promise.all([
+      prisma.admin.count(),
+      prisma.guest.count(),
+    ]);
+    return NextResponse.json({ ok: true, checks, adminCount, guestCount });
   } catch (error) {
     console.error("[health]", error);
     return NextResponse.json(

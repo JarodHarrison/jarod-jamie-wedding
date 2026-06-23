@@ -97,7 +97,15 @@ export function GuestShuttleScreen({ setActiveTab }: GuestShuttleScreenProps) {
 
             <ShuttleMap
               stops={state.stops}
-              busLocation={state.location}
+              busLocation={
+                state.location
+                  ? {
+                      latitude: state.location.latitude,
+                      longitude: state.location.longitude,
+                      heading: state.location.heading,
+                    }
+                  : null
+              }
               nextStopId={state.nextStop?.id}
               className="h-72 w-full"
             />

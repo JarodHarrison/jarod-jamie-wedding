@@ -5,6 +5,7 @@ import { ChevronDown, LogOut, Plus, RefreshCw, Shield, Trash2 } from "lucide-rea
 import { GUEST_TIER_LABELS } from "@/lib/api-utils";
 import { theme } from "@/lib/theme";
 import { AdminGuestEditor } from "@/components/admin/admin-guest-editor";
+import { AdminBroadcastEmail } from "@/components/admin/admin-broadcast-email";
 import type { AdminGuest, GuestTier } from "@/types/wedding";
 
 type AdminDashboardProps = {
@@ -34,14 +35,21 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
   const loadGuests = useCallback(async () => {
     setLoading(true);
+    setMessage("");
     try {
       const res = await fetch("/api/admin/guests");
+      const data = await res.json();
       if (res.status === 401) {
         onUnauthorized?.();
         return;
       }
-      const data = await res.json();
+      if (!res.ok) {
+        setMessage(data.error ?? "Failed to load guests.");
+        return;
+      }
       setGuests(data.guests ?? []);
+    } catch {
+      setMessage("Failed to load guests. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -224,6 +232,8 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
             <p className="mt-3 break-all font-mono text-[10px] text-[#2a2723]">{driverLink}</p>
           )}
         </section>
+
+        <AdminBroadcastEmail guestCount={guests.length} onMessage={setMessage} />
 
         <section className="mb-6">
           <button

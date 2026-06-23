@@ -1,3 +1,14 @@
+export const ANNITA_DISGUSTED_LOADING_MESSAGES = [
+  "Excuse me??",
+  "I just gagged on my gloss…",
+  "Not in this chat, honey…",
+  "Clutching my pearls AND my stomach…",
+  "Ma'am. Sir. Whichever. No.",
+  "I need a lavender moment…",
+  "That just walked right over my last nerve…",
+  "Wiping that from my memory…",
+] as const;
+
 export const ANNITA_LOADING_MESSAGES = [
   "Touching up my lashes…",
   "Consulting the glitter oracle…",
@@ -92,6 +103,8 @@ export const ANNITA = {
   name: "Annita Help",
   tagline: "Your fabulous wedding concierge",
   avatarSrc: "/annita-help.png",
+  thinkingAvatarSrc: "/annita-thinking.png",
+  disgustedAvatarSrc: "/annita-disgusted.png",
   welcomeMessage:
     "Hey gorgeous — I'm Annita Help, your sassy wedding concierge for Jarod & Jamie's big day. Ask me about the schedule, travel, shuttles, dress code, or where to stay — I can scout nearby spots too, and help you complete your RSVP and travel forms right here in chat.",
   starters: [

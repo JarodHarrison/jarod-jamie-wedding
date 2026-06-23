@@ -1,8 +1,24 @@
 import { NextResponse } from "next/server";
+import { guestHasAdminAccess } from "@/lib/auth/admin-access";
 import { verifyPassword } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
 import { prisma } from "@/lib/prisma";
+
+const guestLoginSelect = {
+  id: true,
+  name: true,
+  email: true,
+  tier: true,
+  passwordHash: true,
+} as const;
+
+const adminLoginSelect = {
+  id: true,
+  name: true,
+  email: true,
+  passwordHash: true,
+} as const;
 
 export async function POST(request: Request) {
   try {
@@ -15,46 +31,48 @@ export async function POST(request: Request) {
     }
 
     const [guest, admin] = await Promise.all([
-      prisma.guest.findUnique({ where: { email } }),
-      prisma.admin.findUnique({ where: { email } }),
+      prisma.guest.findUnique({ where: { email }, select: guestLoginSelect }),
+      prisma.admin.findUnique({ where: { email }, select: adminLoginSelect }),
     ]);
 
-    if (admin) {
-      const adminValid = await verifyPassword(password, admin.passwordHash);
-      if (adminValid) {
-        await setSessionCookie({
-          type: "admin",
-          id: admin.id,
-          name: admin.name,
-          email: admin.email,
-        });
+    const guestValid = guest ? await verifyPassword(password, guest.passwordHash) : false;
+    const adminValid = admin ? await verifyPassword(password, admin.passwordHash) : false;
 
-        return NextResponse.json({
-          admin: { id: admin.id, name: admin.name, email: admin.email },
-        });
-      }
-    }
+    // Prefer a guest session when both exist so RSVP/forms keep working.
+    if (guest && guestValid) {
+      await setSessionCookie({
+        type: "guest",
+        id: guest.id,
+        name: guest.name,
+        email: guest.email,
+        tier: guest.tier,
+      });
 
-    if (guest) {
-      const valid = await verifyPassword(password, guest.passwordHash);
-      if (valid) {
-        await setSessionCookie({
-          type: "guest",
+      const canAccessAdmin = admin ? true : await guestHasAdminAccess(guest.email);
+
+      return NextResponse.json({
+        user: {
           id: guest.id,
           name: guest.name,
           email: guest.email,
           tier: guest.tier,
-        });
+        },
+        canAccessAdmin,
+      });
+    }
 
-        return NextResponse.json({
-          user: {
-            id: guest.id,
-            name: guest.name,
-            email: guest.email,
-            tier: guest.tier,
-          },
-        });
-      }
+    if (admin && adminValid) {
+      await setSessionCookie({
+        type: "admin",
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+      });
+
+      return NextResponse.json({
+        admin: { id: admin.id, name: admin.name, email: admin.email },
+        canAccessAdmin: true,
+      });
     }
 
     return jsonError("Invalid email or password.", 401);

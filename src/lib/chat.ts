@@ -1,5 +1,10 @@
 import { wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
 import { GUEST_FORM_TOOL, executeGuestFormSave } from "@/lib/chat-form-tools";
+import {
+  isMetaLeakReply,
+  localDiscoveryFallbackReply,
+  sanitizeChatReply,
+} from "@/lib/chat-sanitize";
 import { buildProfileStatusSummary } from "@/lib/guest-profile-checklist";
 import type { SerializedGuestProfile } from "@/lib/guest-profile";
 import { buildChatSystemPrompt } from "@/lib/wedding-knowledge";
@@ -86,9 +91,11 @@ async function callGemini(
   model: string,
   systemInstruction: string,
   contents: GeminiContent[],
-  tools?: Record<string, unknown>[],
+  options?: { tools?: Record<string, unknown>[]; useWebSearch?: boolean },
 ): Promise<GeminiResponse> {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+  const useWebSearch = options?.useWebSearch ?? false;
+  const tools = options?.tools;
 
   const body: Record<string, unknown> = {
     systemInstruction: {
@@ -96,7 +103,7 @@ async function callGemini(
     },
     contents,
     generationConfig: {
-      temperature: 0.75,
+      temperature: useWebSearch ? 0.55 : 0.75,
       maxOutputTokens: tools?.some((t) => "google_search" in t) ? 900 : 700,
     },
   };
@@ -123,6 +130,44 @@ async function callGemini(
   return data;
 }
 
+function finalizeReply(raw: string, usedWebSearch: boolean): string {
+  const cleaned = sanitizeChatReply(raw);
+  if (cleaned && !isMetaLeakReply(cleaned)) return cleaned;
+  if (usedWebSearch || isLocalDiscoveryContext(cleaned || raw)) {
+    return localDiscoveryFallbackReply();
+  }
+  return cleaned || raw.trim();
+}
+
+function isLocalDiscoveryContext(text: string): boolean {
+  return /\b(restaurant|montville|maleny|eat|food|attraction)\b/i.test(text);
+}
+
+async function runChatRound(
+  apiKey: string,
+  model: string,
+  systemInstruction: string,
+  contents: GeminiContent[],
+  tools: Record<string, unknown>[] | undefined,
+  useWebSearch: boolean,
+): Promise<{ reply: string; sources: ChatSource[]; parts: GeminiPart[]; functionCall?: GeminiPart["functionCall"] }> {
+  const data = await callGemini(apiKey, model, systemInstruction, contents, {
+    tools,
+    useWebSearch,
+  });
+
+  const parts = data.candidates?.[0]?.content?.parts ?? [];
+  const functionCall = parts.find((part) => part.functionCall)?.functionCall;
+  const reply = finalizeReply(extractText(parts), useWebSearch);
+
+  return {
+    reply,
+    sources: extractSources(data),
+    parts,
+    functionCall,
+  };
+}
+
 export async function generateChatReply(
   messages: ChatMessage[],
   context: ChatContext,
@@ -143,6 +188,7 @@ export async function generateChatReply(
     guestTier: context.guestTier,
     profileStatus,
     canSaveForms: useFormTools,
+    useWebSearch,
   });
 
   const contents: GeminiContent[] = messages.map((m) => ({
@@ -161,28 +207,25 @@ export async function generateChatReply(
   let updatedProfile = context.profile;
 
   for (let round = 0; round < 3; round++) {
-    const data = await callGemini(
+    const roundResult = await runChatRound(
       apiKey,
       model,
       systemInstruction,
       contents,
       tools.length ? tools : undefined,
+      useWebSearch,
     );
 
-    const parts = data.candidates?.[0]?.content?.parts ?? [];
-    const functionCall = parts.find((part) => part.functionCall)?.functionCall;
+    const { reply, sources, parts, functionCall } = roundResult;
 
     if (!functionCall || !context.guestId) {
-      const reply = extractText(parts);
       if (!reply) {
-        const blocked = data.promptFeedback?.blockReason;
-        if (blocked) throw new Error(`Response blocked: ${blocked}`);
         throw new Error("Empty response from AI.");
       }
 
       return {
         reply,
-        sources: extractSources(data),
+        sources,
         profileUpdated: profileUpdated || undefined,
         profile: updatedProfile,
       };

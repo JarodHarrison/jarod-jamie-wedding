@@ -4,7 +4,7 @@ import {
   generateTemporaryPassword,
 } from "@/lib/auth/password";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/constants";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError, normalizeEmail, isValidGuestTier } from "@/lib/api-utils";
 import { adminGuestSelect, serializeAdminGuest } from "@/lib/guest-profile";
 import { prisma } from "@/lib/prisma";
@@ -13,7 +13,7 @@ type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminSession();
+    await requireAdminAccess();
     const { id } = await context.params;
     const body = await request.json();
 
@@ -93,7 +93,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
-    await requireAdminSession();
+    await requireAdminAccess();
     const { id } = await context.params;
     await prisma.guest.delete({ where: { id } });
     return NextResponse.json({ ok: true });

@@ -6,14 +6,14 @@ import {
   serializeGuestProfile,
 } from "@/lib/guest-profile";
 import { buildGuestProfileSectionUpdate } from "@/lib/guest-profile-update";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    await requireAdminSession();
+    await requireAdminAccess();
     const { id } = await context.params;
     const body = await request.json();
     const section = body.section as string;

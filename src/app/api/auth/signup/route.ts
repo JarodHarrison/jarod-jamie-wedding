@@ -30,7 +30,10 @@ export async function POST(request: Request) {
       return jsonError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters.`, 400);
     }
 
-    const existing = await prisma.guest.findUnique({ where: { email } });
+    const existing = await prisma.guest.findUnique({
+      where: { email },
+      select: { id: true },
+    });
     if (existing) {
       return jsonError("An account with this email already exists. Please sign in.", 409);
     }

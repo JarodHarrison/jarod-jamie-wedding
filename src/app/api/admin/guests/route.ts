@@ -4,7 +4,7 @@ import {
   generateTemporaryPassword,
   MIN_PASSWORD_LENGTH,
 } from "@/lib/auth/password";
-import { requireAdminSession } from "@/lib/auth/session";
+import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError, normalizeEmail, isValidGuestTier } from "@/lib/api-utils";
 import { adminGuestSelect, serializeAdminGuest } from "@/lib/guest-profile";
 import { sendGuestInviteEmail } from "@/lib/guest-emails";
@@ -12,7 +12,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET() {
   try {
-    await requireAdminSession();
+    await requireAdminAccess();
     const guests = await prisma.guest.findMany({
       orderBy: { name: "asc" },
       select: adminGuestSelect,
@@ -26,14 +26,18 @@ export async function GET() {
         isAdmin: adminEmails.has(g.email),
       })),
     });
-  } catch {
-    return jsonError("Unauthorized", 401);
+  } catch (error) {
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return jsonError("Unauthorized", 401);
+    }
+    console.error("[admin/guests GET]", error);
+    return jsonError("Failed to load guests.", 500);
   }
 }
 
 export async function POST(request: Request) {
   try {
-    await requireAdminSession();
+    await requireAdminAccess();
     const body = await request.json();
     const name = (body.name ?? "").trim();
     const email = normalizeEmail(body.email ?? "");

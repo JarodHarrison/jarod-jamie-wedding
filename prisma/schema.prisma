@@ -77,6 +77,7 @@ model Guest {
 
   goldCoastTrip GoldCoastTrip?
   passwordResetTokens GuestPasswordResetToken[]
+  passkeyCredentials PasskeyCredential[]
 }
 
 model GuestPasswordResetToken {
@@ -98,6 +99,27 @@ model Admin {
   passwordHash String
   createdAt    DateTime @default(now()) @db.Timestamptz
   updatedAt    DateTime @updatedAt @db.Timestamptz
+  passkeyCredentials PasskeyCredential[]
+}
+
+model PasskeyCredential {
+  id           String    @id @default(cuid())
+  guestId      String?
+  guest        Guest?    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  adminId      String?
+  admin        Admin?    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  credentialId String    @unique
+  publicKey    String
+  counter      BigInt    @default(0)
+  deviceType   String?
+  backedUp     Boolean   @default(false)
+  transports   String?
+  nickname     String?
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  lastUsedAt   DateTime? @db.Timestamptz
+
+  @@index([guestId])
+  @@index([adminId])
 }
 
 model GoldCoastTrip {

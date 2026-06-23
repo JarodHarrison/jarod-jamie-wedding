@@ -27,7 +27,7 @@ ${appUrl}${guestEmailFooter()}`;
     <p>With love,<br/>Jarod &amp; Jamie<br/>26 September 2026 · Spicers Clovelly Estate, Montville QLD</p>
   `;
 
-  return sendEmail({ to: guest.email, subject, text, html });
+  return sendEmail({ to: guest.email, subject, text, html, from: "updates" });
 }
 
 export async function sendGuestInviteEmail(guest: {
@@ -59,7 +59,7 @@ ${appUrl}${guestEmailFooter()}`;
     <p>With love,<br/>Jarod &amp; Jamie</p>
   `;
 
-  return sendEmail({ to: guest.email, subject, text, html });
+  return sendEmail({ to: guest.email, subject, text, html, from: "updates" });
 }
 
 export async function sendPasswordResetEmail(guest: {
@@ -85,5 +85,26 @@ If you didn't request this, you can safely ignore this email.${guestEmailFooter(
     <p>With love,<br/>Jarod &amp; Jamie</p>
   `;
 
-  return sendEmail({ to: guest.email, subject, text, html });
+  return sendEmail({ to: guest.email, subject, text, html, from: "noreply" });
+}
+
+export async function sendGuestUpdateEmail(guest: { name: string; email: string }, subject: string, message: string) {
+  const appUrl = getAppUrl();
+  const text = `Hi ${guest.name},
+
+${message}
+
+Open the wedding app: ${appUrl}${guestEmailFooter()}`;
+
+  const html = `
+    <p>Hi ${guest.name},</p>
+    ${message
+      .split(/\n{2,}/)
+      .map((block) => `<p>${block.replace(/\n/g, "<br/>")}</p>`)
+      .join("")}
+    <p><a href="${appUrl}">Open the wedding app</a></p>
+    <p>With love,<br/>Jarod &amp; Jamie<br/>26 September 2026 · Spicers Clovelly Estate, Montville QLD</p>
+  `;
+
+  return sendEmail({ to: guest.email, subject, text, html, from: "updates" });
 }

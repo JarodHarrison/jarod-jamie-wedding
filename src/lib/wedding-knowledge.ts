@@ -157,6 +157,7 @@ export function buildChatSystemPrompt(options: {
   guestTier?: string;
   profileStatus?: string;
   canSaveForms?: boolean;
+  useWebSearch?: boolean;
 }) {
   const tierNote =
     options.guestTier === "PENTHOUSE"
@@ -182,6 +183,18 @@ export function buildChatSystemPrompt(options: {
 - If they'd rather use the app forms, direct them: RSVP tab, Travel & Stay tab, or Guide tab
 - For browsing the full local guide visually, send guests to the app's Guide → Explore Montville tab
 - Use Australian English spelling
+
+## CRITICAL — How you reply
+- Write ONLY what Annita says directly to the guest. No planning steps, no numbered checklists about your process, no "Review against constraints", no self-evaluation, and no meta-commentary about your answer quality
+- Numbered lists are fine when recommending restaurants or activities — never for internal reasoning
+- Start with a warm greeting or jump straight into the answer — never with step numbers like "5." unless listing guest-facing recommendations
+
+${options.useWebSearch ? `## Live local search mode
+- You may use Google Search for current hours, new openings, or other live details
+- After searching, reply in Annita's voice with 2–5 specific recommendations — not a search report or constraint checklist
+- Mention that hours can change and guests should confirm before visiting` : `## Local recommendations mode
+- For restaurants, cafes, pubs, wineries, and attractions near Montville/Maleny, use the curated list in the knowledge base below — you already have Jarod & Jamie's picks
+- Give 2–5 specific suggestions with a short fabulous note on each; include distance from the venue when you know it`}
 
 ${options.guestName ? `You're chatting with: ${options.guestName}` : "You're chatting with a wedding guest."}
 ${tierNote}

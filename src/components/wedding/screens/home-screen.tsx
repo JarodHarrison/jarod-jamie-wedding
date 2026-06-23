@@ -1,8 +1,10 @@
 import { Camera, ChevronRight, Gift, Heart, Info, MapPin, MessageCircle, Plane } from "lucide-react";
+import { useState } from "react";
 import { theme } from "@/lib/theme";
 import { Countdown } from "@/components/wedding/shared/countdown";
 import { HeroImage } from "@/components/wedding/shared/hero-image";
 import { MenuRow } from "@/components/wedding/shared/menu-row";
+import { PasskeySettings } from "@/components/wedding/auth/social-auth";
 import type { AppTab } from "@/types/wedding";
 
 type HomeScreenProps = {
@@ -13,6 +15,8 @@ type HomeScreenProps = {
 };
 
 export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat }: HomeScreenProps) {
+  const [passkeyMessage, setPasskeyMessage] = useState("");
+
   return (
     <div className="animate-fade-in animate-slide-up">
       <div className="wedding-screen-top relative px-6 pb-4 text-center">
@@ -72,6 +76,12 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat }: Hom
 
       <div className="space-y-4 px-8 pb-10">
         <h3 className="mb-4 font-serif text-xl text-[#2a2723]">Quick Links</h3>
+        {passkeyMessage && (
+          <p className="rounded-xl border bg-white px-4 py-3 text-xs text-[#2a2723]" style={{ borderColor: theme.border }}>
+            {passkeyMessage}
+          </p>
+        )}
+        <PasskeySettings onMessage={setPasskeyMessage} />
         <MenuRow icon={Heart} title="Our Story" onClick={() => setActiveTab("story")} />
         <MenuRow icon={MessageCircle} title="Annita Help" onClick={() => onOpenChat?.()} />
         <MenuRow icon={Camera} title="Photos" onClick={() => setActiveTab("photos")} />
