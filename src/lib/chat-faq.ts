@@ -90,14 +90,20 @@ const INSTANT_FAQ: FaqEntry[] = [
     reply: "On-site parking is available at Spicers Clovelly Estate. If you're outside the shuttle route, check the app for designated shuttle stops.",
   },
   {
-    patterns: [/\b(mcy|sunshine coast airport)\b/i],
-    reply:
-      "Sunshine Coast Airport (MCY) is closest — about **35 minutes** (~30km) to the venue. Uber/rideshare roughly $50–$80; pre-book return transport from Montville.",
-  },
-  {
-    patterns: [/\b(bne|brisbane airport)\b/i],
+    patterns: [
+      /\b(bne|brisbane airport)\b/i,
+      /\bhow (do|can) i get\b.*\b(brisbane|bne)\b/i,
+    ],
     reply:
       "Brisbane Airport (BNE) is about **90 minutes** (~100km) from the venue. Cheapest route is Airtrain to Landsborough + taxi up the range; direct Uber/taxi $150–$350+. Pre-book return trips — Ubers out of Montville are scarce.",
+  },
+  {
+    patterns: [
+      /\b(mcy|sunshine coast airport)\b/i,
+      /\bhow (do|can) i get\b.*\b(sunshine coast|mcy)\b/i,
+    ],
+    reply:
+      "Sunshine Coast Airport (MCY) is closest — about **35 minutes** (~30km) to the venue. Uber/rideshare roughly $50–$80; pre-book return transport from Montville.",
   },
   {
     patterns: [/\bwishing well\b/i, /\bgift\b/i, /\bpresent\b/i],

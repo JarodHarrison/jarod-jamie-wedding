@@ -5,12 +5,26 @@ type ChatMessage = {
 
 const FORM_INTENT_PATTERNS = [
   /\b(rsvp|attending|declin(e|ing)|dietary|plus[- ]?one|song request)\b/i,
-  /\b(accommodation|staying at|where (i'm|we're) staying|check[- ]?in|check[- ]?out|shuttle)\b/i,
-  /\b(flight|airport|transfer|arrival|departure|passenger|mcy|bne)\b/i,
+  /\b(accommodation|staying at|where (i'm|we're) staying|check[- ]?in|check[- ]?out)\b/i,
   /\b(glow[- ]?up|botox|teeth|whiten|hair|make[- ]?up|barber|pre-wedding service)\b/i,
-  /\b(save|submit|update|fill in|complete).*(form|rsvp|accommodation|profile|details)\b/i,
+  /\b(save|submit|update|fill in|complete).*(form|rsvp|accommodation|profile|details|flight|transfer)\b/i,
   /\bhelp me (with )?(my )?(rsvp|accommodation|flight|transfer|forms?)\b/i,
-  /\bmy (phone|dietary|plus[- ]?one|accommodation|flight)\b/i,
+  /\bmy (phone|dietary|plus[- ]?one|accommodation|flight|transfer|arrival|departure)\b/i,
+  /\b(register|add).*(flight|transfer|shuttle|interest)\b/i,
+  /\bneed to add my (accommodation|flight|rsvp)\b/i,
+];
+
+const WELCOME_OR_BROADCAST_PATTERNS = [
+  /\bask me about the schedule\b/i,
+  /\byour sassy wedding concierge\b/i,
+  /\bstill need:\b/i,
+  /\bwant me to help you fill those in\b/i,
+];
+
+const FORM_COLLECTION_ASSISTANT_PATTERNS = [
+  /\b(what'?s|send|need|share|tell me) your\b/i,
+  /\b(attending|declining|plus[- ]?one|dietary|phone|accommodation|flight)\b[^.]{0,40}\?/i,
+  /\bi('ll| will) (save|update|submit)\b/i,
 ];
 
 const INSTALL_GUIDE_PATTERNS = [
@@ -71,7 +85,20 @@ export function wantsFormTools(messages: ChatMessage[]): boolean {
   const userIndex = messages.lastIndexOf(lastUser);
   if (userIndex <= assistantIndex) return false;
 
-  return FORM_FOLLOWUP_PATTERNS.some((pattern) => pattern.test(lastAssistant.content));
+  if (WELCOME_OR_BROADCAST_PATTERNS.some((pattern) => pattern.test(lastAssistant.content))) {
+    return false;
+  }
+
+  return (
+    FORM_COLLECTION_ASSISTANT_PATTERNS.some((pattern) => pattern.test(lastAssistant.content)) &&
+    FORM_FOLLOWUP_PATTERNS.some((pattern) => pattern.test(lastAssistant.content))
+  );
+}
+
+export function userExplicitlyWantsFormHelp(messages: ChatMessage[]): boolean {
+  const userText = recentUserText(messages);
+  return /\b(help|complete|fill|save|submit|update|add my)\b/i.test(userText) &&
+    wantsFormTools(messages);
 }
 
 export function wantsTravelKnowledge(messages: ChatMessage[]): boolean {

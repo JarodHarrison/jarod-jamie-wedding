@@ -44,8 +44,8 @@ export function toFriendlyChatError(raw: string): string {
     return "Annita's getting a lot of love right now — give her a few seconds and try again, honey.";
   }
 
-  if (lower.includes("rate limit")) {
-    return "Too many questions at once, darling — wait a moment and try again.";
+  if (lower.includes("rate limit") || lower.includes("quota exceeded") || lower.includes("exceeded your current quota")) {
+    return "Annita's hit her API limit for now, honey — try again in a few minutes, or ask Jarod to enable billing on the Google AI key.";
   }
 
   if (lower.includes("empty response")) {

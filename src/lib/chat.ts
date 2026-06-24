@@ -3,6 +3,7 @@ import {
   wantsInstallGuideHelp,
   wantsPenthouseKnowledge,
   wantsTravelKnowledge,
+  userExplicitlyWantsFormHelp,
 } from "@/lib/chat-intents";
 import { isLocalDiscoveryQuestion, wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
 import { matchInstantFaq } from "@/lib/chat-faq";
@@ -161,7 +162,8 @@ function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean, quick =
 }
 
 function tryInstantFaq(messages: ChatMessage[]): string | null {
-  if (wantsFormTools(messages) || wantsLocalDiscoverySearch(messages)) return null;
+  if (wantsLocalDiscoverySearch(messages)) return null;
+  if (userExplicitlyWantsFormHelp(messages)) return null;
   return matchInstantFaq(messages);
 }
 
