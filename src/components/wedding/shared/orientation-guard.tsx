@@ -33,7 +33,10 @@ export function OrientationGuard() {
 
     const lockPortrait = async () => {
       try {
-        await screen.orientation?.lock?.("portrait-primary");
+        const orientation = screen.orientation as ScreenOrientation & {
+          lock?: (orientation: OrientationLockType) => Promise<void>;
+        };
+        await orientation?.lock?.("portrait-primary");
       } catch {
         // iOS PWA can't programmatically lock — manifest + overlay handle it.
       }
