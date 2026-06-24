@@ -471,6 +471,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       if (streamRafRef.current !== null) {
         cancelAnimationFrame(streamRafRef.current);
         streamRafRef.current = null;
+        flushStreamUi(streamedReply);
       }
 
       if (streamError) {

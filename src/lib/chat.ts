@@ -161,8 +161,11 @@ function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean) {
 function extractStreamDelta(assembled: string, chunk: string): string {
   if (!chunk) return "";
   if (!assembled) return chunk;
+  // Cumulative snapshot: Gemini sometimes sends the full prefix-so-far.
   if (chunk.startsWith(assembled)) return chunk.slice(assembled.length);
-  if (assembled.endsWith(chunk) || assembled.includes(chunk)) return "";
+  if (chunk === assembled) return "";
+  // Incremental token(s): append as-is. Do not use includes/endsWith — they drop
+  // repeated characters (e.g. the second "0" in "3:00pm" or "m" in "pm").
   return chunk;
 }
 
@@ -460,14 +463,9 @@ async function* streamGeminiOnce(
   }
 
   if (buffer.trim()) {
-    const line = buffer.split("\n").find((entry) => entry.startsWith("data: "));
-    if (line) {
-      const data = parseGeminiSsePayload(line.slice(6).trim());
-      if (data) {
-        for (const delta of yieldGeminiStreamText(data, assembled)) {
-          yield delta;
-        }
-      }
+    const trailing = processGeminiSseBuffer(`${buffer}\n\n`, assembled);
+    for (const delta of trailing.deltas) {
+      yield delta;
     }
   }
 }
