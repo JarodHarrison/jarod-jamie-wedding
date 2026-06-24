@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@/lib/chat";
+import { recentUserText } from "@/lib/chat-intents";
 
 const LOCAL_DISCOVERY_PATTERNS = [
   /\b(restaurant|café|cafe|coffee|brunch|breakfast|lunch|dinner|eat|eating|food|drink|drinks|bar|pub|brewery|winery|dining|takeaway|take away)\b/i,
@@ -16,14 +17,6 @@ const LIVE_WEB_PATTERNS = [
   /\b(phone number|call|book(ing)? a table|reservation|menu today)\b/i,
   /\b(search online|google it|look up|find me)\b/i,
 ];
-
-function recentUserText(messages: ChatMessage[]): string {
-  return messages
-    .filter((m) => m.role === "user")
-    .slice(-3)
-    .map((m) => m.content)
-    .join(" ");
-}
 
 export function isLocalDiscoveryQuestion(messages: ChatMessage[]): boolean {
   const text = recentUserText(messages);

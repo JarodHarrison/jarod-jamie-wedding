@@ -215,6 +215,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [streamingReply, setStreamingReply] = useState("");
   const [error, setError] = useState("");
   const [welcomed, setWelcomed] = useState(false);
   const [profile, setProfile] = useState<GuestProfile | null>(null);
@@ -319,7 +320,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading, compactHeader]);
+  }, [messages, loading, compactHeader, streamingReply]);
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
@@ -336,6 +337,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       pickAnnitaLine(disgusted ? ANNITA_DISGUSTED_LOADING_MESSAGES : ANNITA_LOADING_MESSAGES),
     );
     setLoading(true);
+    setStreamingReply("");
 
     try {
       const res = await fetch("/api/chat", {
@@ -343,12 +345,88 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages: nextMessages.map(({ role, content }) => ({ role, content })),
+          stream: true,
         }),
       });
-      const data = await res.json();
 
       if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
         setError(data.error ?? "Something went wrong.");
+        setMessages(messages);
+        setInput(trimmed);
+        return;
+      }
+
+      if (!res.body) {
+        throw new Error("No response body");
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let streamedReply = "";
+      let finalReply = "";
+      let sources: ChatSource[] | undefined;
+      let profileUpdated = false;
+      let updatedProfile: GuestProfile | null = null;
+      let streamError = "";
+
+      setMessages([...nextMessages, { role: "assistant", content: "", mood: disgusted ? "disgusted" : "default" }]);
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const events = buffer.split("\n\n");
+        buffer = events.pop() ?? "";
+
+        for (const event of events) {
+          const line = event.split("\n").find((entry) => entry.startsWith("data: "));
+          if (!line) continue;
+
+          const payload = JSON.parse(line.slice(6)) as
+            | { type: "token"; text: string }
+            | {
+                type: "done";
+                reply: string;
+                sources?: ChatSource[];
+                profileUpdated?: boolean;
+                profile?: GuestProfile;
+              }
+            | { type: "error"; message: string };
+
+          if (payload.type === "token") {
+            streamedReply += payload.text;
+            setStreamingReply(streamedReply);
+            setMessages([
+              ...nextMessages,
+              {
+                role: "assistant",
+                content: streamedReply,
+                mood: disgusted ? "disgusted" : "default",
+              },
+            ]);
+          } else if (payload.type === "done") {
+            finalReply = payload.reply;
+            sources = Array.isArray(payload.sources) ? payload.sources : undefined;
+            profileUpdated = Boolean(payload.profileUpdated);
+            updatedProfile = (payload.profile as GuestProfile | undefined) ?? null;
+          } else if (payload.type === "error") {
+            streamError = payload.message;
+          }
+        }
+      }
+
+      if (streamError) {
+        setError(streamError);
+        setMessages(messages);
+        setInput(trimmed);
+        return;
+      }
+
+      if (!finalReply && !streamedReply) {
+        setError("Something went wrong.");
         setMessages(messages);
         setInput(trimmed);
         return;
@@ -358,26 +436,26 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         ...nextMessages,
         {
           role: "assistant",
-          content: data.reply,
-          sources: Array.isArray(data.sources) ? data.sources : undefined,
+          content: finalReply || streamedReply,
+          sources,
           mood: disgusted ? "disgusted" : "default",
         },
       ]);
 
-      if (data.profileUpdated && data.profile) {
-        const guestProfile = data.profile as GuestProfile;
-        setProfile(guestProfile);
-        setStarters(buildStarters(guestProfile));
+      if (profileUpdated && updatedProfile) {
+        setProfile(updatedProfile);
+        setStarters(buildStarters(updatedProfile));
       }
 
       setInputPlaceholder(pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS));
-      if (speakEnabled) void speak(data.reply);
+      if (speakEnabled) void speak(finalReply || streamedReply);
     } catch {
       setError("Network error — please try again.");
       setMessages(messages);
       setInput(trimmed);
     } finally {
       setLoading(false);
+      setStreamingReply("");
       setLoadingMood("thinking");
     }
   };
@@ -536,7 +614,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
                 </div>
               ))}
 
-              {loading && (
+              {loading && !streamingReply && (
                 <div className="flex items-end gap-2 justify-start">
                   <AnnitaAvatar
                     variant="message"

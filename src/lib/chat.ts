@@ -1,4 +1,10 @@
-import { wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
+import {
+  shouldIncludeProfileStatus,
+  wantsFormTools,
+  wantsInstallGuideHelp,
+  wantsPenthouseKnowledge,
+} from "@/lib/chat-intents";
+import { isLocalDiscoveryQuestion, wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
 import { GUEST_FORM_TOOL, executeGuestFormSave } from "@/lib/chat-form-tools";
 import {
   isMetaLeakReply,
@@ -25,6 +31,17 @@ export type ChatReply = {
   profileUpdated?: boolean;
   profile?: SerializedGuestProfile;
 };
+
+export type ChatStreamEvent =
+  | { type: "token"; text: string }
+  | {
+      type: "done";
+      reply: string;
+      sources: ChatSource[];
+      profileUpdated?: boolean;
+      profile?: SerializedGuestProfile;
+    }
+  | { type: "error"; message: string };
 
 type GeminiPart = {
   text?: string;
@@ -60,6 +77,13 @@ export type ChatContext = {
   profile?: SerializedGuestProfile;
 };
 
+const API_MESSAGE_LIMIT = 12;
+const DEFAULT_MODEL = "gemini-2.0-flash";
+
+function getGeminiModel() {
+  return process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
+}
+
 function extractSources(data: GeminiResponse): ChatSource[] {
   const chunks = data.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
   const seen = new Set<string>();
@@ -86,6 +110,92 @@ function extractText(parts: GeminiPart[]): string {
     .trim();
 }
 
+function finalizeReply(raw: string, usedWebSearch: boolean): string {
+  const cleaned = sanitizeChatReply(raw);
+  if (cleaned && !isMetaLeakReply(cleaned)) return cleaned;
+  if (usedWebSearch || isLocalDiscoveryContext(cleaned || raw)) {
+    return localDiscoveryFallbackReply();
+  }
+  return cleaned || raw.trim();
+}
+
+function isLocalDiscoveryContext(text: string): boolean {
+  return /\b(restaurant|montville|maleny|eat|food|attraction)\b/i.test(text);
+}
+
+function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean) {
+  return {
+    temperature: useWebSearch ? 0.55 : 0.7,
+    maxOutputTokens: useWebSearch ? 768 : hasTools ? 640 : 512,
+  };
+}
+
+type ResolvedChatConfig = {
+  apiKey: string;
+  model: string;
+  systemInstruction: string;
+  contents: GeminiContent[];
+  tools: Record<string, unknown>[] | undefined;
+  useWebSearch: boolean;
+  guestId?: string;
+  profile?: SerializedGuestProfile;
+};
+
+function resolveChatConfig(messages: ChatMessage[], context: ChatContext): ResolvedChatConfig {
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) {
+    throw new Error("CHAT_NOT_CONFIGURED");
+  }
+
+  const trimmedMessages = messages.slice(-API_MESSAGE_LIMIT);
+  const useWebSearch = wantsLocalDiscoverySearch(trimmedMessages);
+  const includeLocalGuide = isLocalDiscoveryQuestion(trimmedMessages);
+  const includeInstallGuide = wantsInstallGuideHelp(trimmedMessages);
+  const includePenthouse = wantsPenthouseKnowledge(context.guestTier, trimmedMessages);
+  const formToolsRequested = Boolean(
+    context.guestId && context.profile && !useWebSearch && wantsFormTools(trimmedMessages),
+  );
+
+  const profileStatus =
+    context.profile && shouldIncludeProfileStatus(trimmedMessages)
+      ? buildProfileStatusSummary(context.profile)
+      : undefined;
+
+  const systemInstruction = buildChatSystemPrompt({
+    guestName: context.guestName,
+    guestTier: context.guestTier,
+    profileStatus,
+    canSaveForms: formToolsRequested,
+    useWebSearch,
+    includeLocalGuide,
+    includeInstallGuide,
+    includePenthouse,
+  });
+
+  const contents: GeminiContent[] = trimmedMessages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+
+  const tools: Record<string, unknown>[] = [];
+  if (useWebSearch) {
+    tools.push({ google_search: {} });
+  } else if (formToolsRequested) {
+    tools.push(GUEST_FORM_TOOL);
+  }
+
+  return {
+    apiKey,
+    model: getGeminiModel(),
+    systemInstruction,
+    contents,
+    tools: tools.length ? tools : undefined,
+    useWebSearch,
+    guestId: context.guestId,
+    profile: context.profile,
+  };
+}
+
 async function callGemini(
   apiKey: string,
   model: string,
@@ -93,19 +203,16 @@ async function callGemini(
   contents: GeminiContent[],
   options?: { tools?: Record<string, unknown>[]; useWebSearch?: boolean },
 ): Promise<GeminiResponse> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
   const useWebSearch = options?.useWebSearch ?? false;
   const tools = options?.tools;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
   const body: Record<string, unknown> = {
     systemInstruction: {
       parts: [{ text: systemInstruction }],
     },
     contents,
-    generationConfig: {
-      temperature: useWebSearch ? 0.55 : 0.75,
-      maxOutputTokens: tools?.some((t) => "google_search" in t) ? 900 : 700,
-    },
+    generationConfig: buildGenerationConfig(useWebSearch, Boolean(tools?.length)),
   };
 
   if (tools?.length) {
@@ -130,17 +237,71 @@ async function callGemini(
   return data;
 }
 
-function finalizeReply(raw: string, usedWebSearch: boolean): string {
-  const cleaned = sanitizeChatReply(raw);
-  if (cleaned && !isMetaLeakReply(cleaned)) return cleaned;
-  if (usedWebSearch || isLocalDiscoveryContext(cleaned || raw)) {
-    return localDiscoveryFallbackReply();
-  }
-  return cleaned || raw.trim();
-}
+async function* streamGeminiText(
+  apiKey: string,
+  model: string,
+  systemInstruction: string,
+  contents: GeminiContent[],
+  useWebSearch: boolean,
+): AsyncGenerator<string> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
 
-function isLocalDiscoveryContext(text: string): boolean {
-  return /\b(restaurant|montville|maleny|eat|food|attraction)\b/i.test(text);
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-goog-api-key": apiKey,
+    },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [{ text: systemInstruction }],
+      },
+      contents,
+      generationConfig: buildGenerationConfig(useWebSearch, false),
+    }),
+  });
+
+  if (!response.ok) {
+    const data = (await response.json()) as GeminiResponse;
+    throw new Error(data.error?.message ?? "Failed to stream AI response.");
+  }
+
+  if (!response.body) {
+    throw new Error("Failed to stream AI response.");
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const chunks = buffer.split("\n\n");
+    buffer = chunks.pop() ?? "";
+
+    for (const chunk of chunks) {
+      const line = chunk
+        .split("\n")
+        .find((entry) => entry.startsWith("data: "));
+      if (!line) continue;
+
+      const payload = line.slice(6).trim();
+      if (!payload || payload === "[DONE]") continue;
+
+      let data: GeminiResponse;
+      try {
+        data = JSON.parse(payload) as GeminiResponse;
+      } catch {
+        continue;
+      }
+
+      const text = extractText(data.candidates?.[0]?.content?.parts ?? []);
+      if (text) yield text;
+    }
+  }
 }
 
 async function runChatRound(
@@ -168,57 +329,24 @@ async function runChatRound(
   };
 }
 
-export async function generateChatReply(
-  messages: ChatMessage[],
-  context: ChatContext,
-): Promise<ChatReply> {
-  const apiKey = process.env.GOOGLE_API_KEY;
-  if (!apiKey) {
-    throw new Error("CHAT_NOT_CONFIGURED");
-  }
-
-  const model = process.env.GEMINI_MODEL ?? "gemini-flash-latest";
-  const useWebSearch = wantsLocalDiscoverySearch(messages);
-  const useFormTools = Boolean(context.guestId && context.profile && !useWebSearch);
-
-  const profileStatus = context.profile ? buildProfileStatusSummary(context.profile) : undefined;
-
-  const systemInstruction = buildChatSystemPrompt({
-    guestName: context.guestName,
-    guestTier: context.guestTier,
-    profileStatus,
-    canSaveForms: useFormTools,
-    useWebSearch,
-  });
-
-  const contents: GeminiContent[] = messages.map((m) => ({
-    role: m.role === "assistant" ? "model" : "user",
-    parts: [{ text: m.content }],
-  }));
-
-  const tools: Record<string, unknown>[] = [];
-  if (useWebSearch) {
-    tools.push({ google_search: {} });
-  } else if (useFormTools) {
-    tools.push(GUEST_FORM_TOOL);
-  }
-
+async function runToolLoop(config: ResolvedChatConfig): Promise<ChatReply> {
+  const contents = [...config.contents];
   let profileUpdated = false;
-  let updatedProfile = context.profile;
+  let updatedProfile = config.profile;
 
   for (let round = 0; round < 3; round++) {
     const roundResult = await runChatRound(
-      apiKey,
-      model,
-      systemInstruction,
+      config.apiKey,
+      config.model,
+      config.systemInstruction,
       contents,
-      tools.length ? tools : undefined,
-      useWebSearch,
+      config.tools,
+      config.useWebSearch,
     );
 
     const { reply, sources, parts, functionCall } = roundResult;
 
-    if (!functionCall || !context.guestId) {
+    if (!functionCall || !config.guestId) {
       if (!reply) {
         throw new Error("Empty response from AI.");
       }
@@ -233,7 +361,7 @@ export async function generateChatReply(
 
     contents.push({ role: "model", parts });
 
-    const saveResult = await executeGuestFormSave(context.guestId, functionCall.args ?? {});
+    const saveResult = await executeGuestFormSave(config.guestId, functionCall.args ?? {});
 
     if (saveResult.profile) {
       profileUpdated = true;
@@ -257,4 +385,76 @@ export async function generateChatReply(
   }
 
   throw new Error("Too many form update steps — please try again.");
+}
+
+export async function generateChatReply(
+  messages: ChatMessage[],
+  context: ChatContext,
+): Promise<ChatReply> {
+  const config = resolveChatConfig(messages, context);
+  return runToolLoop(config);
+}
+
+export function createChatReplyStream(
+  messages: ChatMessage[],
+  context: ChatContext,
+): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+
+  const send = (
+    controller: ReadableStreamDefaultController<Uint8Array>,
+    event: ChatStreamEvent,
+  ) => {
+    controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+  };
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const config = resolveChatConfig(messages, context);
+
+        if (config.tools?.length) {
+          const result = await runToolLoop(config);
+          send(controller, {
+            type: "done",
+            reply: result.reply,
+            sources: result.sources,
+            profileUpdated: result.profileUpdated,
+            profile: result.profile,
+          });
+          controller.close();
+          return;
+        }
+
+        let rawReply = "";
+        for await (const chunk of streamGeminiText(
+          config.apiKey,
+          config.model,
+          config.systemInstruction,
+          config.contents,
+          config.useWebSearch,
+        )) {
+          rawReply += chunk;
+          send(controller, { type: "token", text: chunk });
+        }
+
+        const reply = finalizeReply(rawReply, config.useWebSearch);
+        if (!reply) {
+          throw new Error("Empty response from AI.");
+        }
+
+        send(controller, {
+          type: "done",
+          reply,
+          sources: [],
+        });
+        controller.close();
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Sorry, I couldn't process that. Please try again.";
+        send(controller, { type: "error", message });
+        controller.close();
+      }
+    },
+  });
 }

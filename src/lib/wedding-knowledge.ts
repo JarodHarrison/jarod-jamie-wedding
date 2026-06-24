@@ -1,7 +1,7 @@
 import { buildLocalGuideKnowledge, LOCAL_DISCOVERY_AREA } from "@/lib/local-guide";
 import { buildInstallGuideKnowledgeForAnnita } from "@/lib/pwa/install-guide";
 
-export const WEDDING_KNOWLEDGE = `
+const WEDDING_CORE_KNOWLEDGE = `
 # Jarod & Jamie Wedding — Official Information
 
 ## Basics
@@ -96,7 +96,9 @@ Direct from BNE:
 - MAGS Private Chauffeur: 1300 626 656 / 0414 711 804 — wedding & event transfers, pre-book essential
 - Suncoast Cabs: 131 008 — book ahead for hinterland
 - Queensland Chauffeurs: 0410 167 100 — private airport & hinterland transfers
+`.trim();
 
+const WEDDING_PENTHOUSE_KNOWLEDGE = `
 ## Gold Coast Trip (Penthouse guests — pre-wedding)
 Penthouse package: $550 per person ($1100 per couple) — accommodation + minivan
 
@@ -129,7 +131,9 @@ Penthouse package: $550 per person ($1100 per couple) — accommodation + miniva
 - 15:00 Arrive Spicers Clovelly Estate, Montville
 
 Non-penthouse guests may join some Gold Coast activities but book themselves.
+`.trim();
 
+const WEDDING_LOCAL_INTRO = `
 ## Explore Montville / Local Guide
 - App Guide tab has the full curated local guide (Eat, Do, Adventure, Oddities)
 - For restaurants, cafes, pubs, wineries, attractions, and hidden gems near the wedding, use the curated list below AND Google Search when available for current opening hours, menus, and newly opened spots
@@ -137,8 +141,9 @@ Non-penthouse guests may join some Gold Coast activities but book themselves.
 - Ubers and taxis are limited in the hinterland — remind guests to pre-book transport for evening dining
 
 ## Curated Local Spots (Jarod & Jamie's picks)
-${buildLocalGuideKnowledge()}
+`.trim();
 
+const WEDDING_TAIL_KNOWLEDGE = `
 ## Pre-Wedding Services (register interest in app)
 - Glow Up: teeth whitening, botox pump party
 - On-Site Services: hair & make-up, barber on wedding morning
@@ -161,8 +166,38 @@ ${buildLocalGuideKnowledge()}
 - For **local food, drink, and attractions**: combine the curated list above with Google Search results when you have them; mention that hours and availability can change and guests should confirm before visiting
 - If you don't know something about the wedding itself, say so with charm and point guests to the right app tab or Jarod & Jamie
 - Be warm, helpful, and concise — this is a celebratory wedding
-${buildInstallGuideKnowledgeForAnnita()}
 `.trim();
+
+export function buildWeddingKnowledge(options: {
+  includeLocalGuide?: boolean;
+  includeInstallGuide?: boolean;
+  includePenthouse?: boolean;
+}) {
+  const sections = [WEDDING_CORE_KNOWLEDGE];
+
+  if (options.includePenthouse) {
+    sections.push(WEDDING_PENTHOUSE_KNOWLEDGE);
+  }
+
+  if (options.includeLocalGuide) {
+    sections.push(WEDDING_LOCAL_INTRO, buildLocalGuideKnowledge());
+  }
+
+  sections.push(WEDDING_TAIL_KNOWLEDGE);
+
+  if (options.includeInstallGuide) {
+    sections.push(buildInstallGuideKnowledgeForAnnita());
+  }
+
+  return sections.join("\n\n");
+}
+
+/** Full knowledge base — used where size is not a concern (e.g. docs). */
+export const WEDDING_KNOWLEDGE = buildWeddingKnowledge({
+  includeLocalGuide: true,
+  includeInstallGuide: true,
+  includePenthouse: true,
+});
 
 export function buildChatSystemPrompt(options: {
   guestName?: string;
@@ -170,6 +205,9 @@ export function buildChatSystemPrompt(options: {
   profileStatus?: string;
   canSaveForms?: boolean;
   useWebSearch?: boolean;
+  includeLocalGuide?: boolean;
+  includeInstallGuide?: boolean;
+  includePenthouse?: boolean;
 }) {
   const tierNote =
     options.guestTier === "PENTHOUSE"
@@ -215,6 +253,10 @@ ${options.profileStatus ? `\n--- GUEST PROFILE STATUS ---\n${options.profileStat
 ${options.canSaveForms ? "\nYou have the `save_guest_form` tool to save form updates for this guest. Use it when they provide details to submit." : ""}
 
 --- OFFICIAL WEDDING KNOWLEDGE ---
-${WEDDING_KNOWLEDGE}
+${buildWeddingKnowledge({
+  includeLocalGuide: options.includeLocalGuide ?? false,
+  includeInstallGuide: options.includeInstallGuide ?? false,
+  includePenthouse: options.includePenthouse ?? false,
+})}
 --- END KNOWLEDGE ---`;
 }

@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
-import { generateChatReply, type ChatMessage } from "@/lib/chat";
+import {
+  createChatReplyStream,
+  generateChatReply,
+  type ChatMessage,
+} from "@/lib/chat";
+import {
+  shouldIncludeProfileStatus,
+  wantsFormTools,
+} from "@/lib/chat-intents";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +35,28 @@ function sanitizeMessages(raw: unknown): ChatMessage[] {
     .slice(-MAX_MESSAGES);
 }
 
+async function loadGuestContext(session: Extract<Awaited<ReturnType<typeof getSession>>, { type: "guest" }>, messages: ChatMessage[]) {
+  const needsProfile =
+    wantsFormTools(messages) || shouldIncludeProfileStatus(messages);
+
+  if (!needsProfile) {
+    return {
+      guestId: session.id,
+      profile: undefined,
+    };
+  }
+
+  const guest = await prisma.guest.findUnique({
+    where: { id: session.id },
+    select: guestProfileSelect,
+  });
+
+  return {
+    guestId: session.id,
+    profile: guest ? serializeGuestProfile(guest) : undefined,
+  };
+}
+
 export async function POST(request: Request) {
   try {
     const session = await getSession();
@@ -34,6 +64,7 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     const messages = sanitizeMessages(body.messages);
+    const stream = body.stream === true;
 
     if (messages.length === 0 || messages[messages.length - 1]?.role !== "user") {
       return jsonError("Please send a message.", 400);
@@ -43,14 +74,9 @@ export async function POST(request: Request) {
     let profile;
 
     if (session.type === "guest") {
-      guestId = session.id;
-      const guest = await prisma.guest.findUnique({
-        where: { id: session.id },
-        select: guestProfileSelect,
-      });
-      if (guest) {
-        profile = serializeGuestProfile(guest);
-      }
+      const guestContext = await loadGuestContext(session, messages);
+      guestId = guestContext.guestId;
+      profile = guestContext.profile;
     }
 
     const context =
@@ -62,6 +88,16 @@ export async function POST(request: Request) {
             profile,
           }
         : { guestName: session.name, guestTier: "ADMIN" };
+
+    if (stream) {
+      return new Response(createChatReplyStream(messages, context), {
+        headers: {
+          "Content-Type": "text/event-stream; charset=utf-8",
+          "Cache-Control": "no-cache, no-transform",
+          Connection: "keep-alive",
+        },
+      });
+    }
 
     const { reply, sources, profileUpdated, profile: updatedProfile } =
       await generateChatReply(messages, context);
