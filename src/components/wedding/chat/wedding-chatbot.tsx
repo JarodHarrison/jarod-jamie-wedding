@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Send, Mic, Volume2, VolumeX, X } from "lucide-react";
+import { Send, Mic, Volume2, VolumeX, X, ChevronUp } from "lucide-react";
 import { ChatMessageContent } from "@/components/wedding/chat/chat-message-content";
 import {
   ANNITA,
@@ -234,8 +234,12 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const panelRef = useRef<HTMLDivElement>(null);
   const [inputFocused, setInputFocused] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [folded, setFolded] = useState(false);
 
   const compactHeader = inputFocused || keyboardOpen;
+  const chatStarted = messages.some((message) => message.role === "user");
+  const compactChrome = compactHeader || chatStarted;
+  const lastUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content;
   const { speakEnabled, speak, stop: stopSpeaking, toggleSpeak } = useAnnitaVoice();
   const {
     supported: speechSupported,
@@ -247,6 +251,10 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
     onFinal: (text) => setInput(text),
     onError: (message) => setError(message),
   });
+
+  useEffect(() => {
+    if (open) setFolded(false);
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -320,7 +328,21 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading, compactHeader, streamingReply]);
+  }, [messages, loading, compactChrome, streamingReply]);
+
+  const handleOpen = () => {
+    setFolded(false);
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    if (chatStarted) {
+      setFolded(true);
+    } else {
+      setFolded(false);
+    }
+    setOpen(false);
+  };
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
@@ -489,14 +511,35 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
   return (
     <>
-      {!open && (
+      {!open && !folded && (
         <button
           type="button"
-          onClick={() => setOpen(true)}
+          onClick={handleOpen}
           className="absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 touch-manipulation transition-transform active:scale-95 sm:bottom-20"
           aria-label={`Open ${ANNITA.name}`}
         >
           <AnnitaAvatar size={75} variant="fab" className="shadow-xl ring-4 ring-pink-200" />
+        </button>
+      )}
+
+      {!open && folded && (
+        <button
+          type="button"
+          onClick={handleOpen}
+          className="absolute inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] z-40 border-t bg-white/95 px-4 py-3 shadow-[0_-8px_24px_rgba(0,0,0,0.08)] backdrop-blur-md sm:bottom-20"
+          style={{ borderColor: theme.border, background: "linear-gradient(to right, #fdf2f8, #ffffff)" }}
+          aria-label={`Continue chat with ${ANNITA.name}`}
+        >
+          <div className="flex items-center gap-3">
+            <AnnitaAvatar size={40} variant="message" mood="default" />
+            <div className="min-w-0 flex-1 text-left">
+              <p className="font-serif text-base text-[#2a2723]">{ANNITA.name}</p>
+              <p className="truncate text-xs text-gray-500">
+                {loading ? "Annita is typing…" : lastUserMessage ?? "Tap to continue your chat"}
+              </p>
+            </div>
+            <ChevronUp size={18} className="shrink-0 text-pink-400" aria-hidden="true" />
+          </div>
         </button>
       )}
 
@@ -507,14 +550,14 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         >
           <header
             className={`flex shrink-0 items-center justify-between border-b px-4 transition-[padding] duration-200 ${
-              compactHeader ? "py-2 wedding-screen-top" : "wedding-screen-top px-5 pb-4"
+              compactChrome ? "py-2 wedding-screen-top" : "wedding-screen-top px-5 pb-4"
             }`}
             style={{ borderColor: theme.border, background: "linear-gradient(to right, #fdf2f8, #f7f4ee)" }}
           >
             <div className="flex min-w-0 items-center gap-2.5">
               <AnnitaAvatar
-                size={compactHeader ? 36 : undefined}
-                variant={compactHeader ? "message" : "header"}
+                size={compactChrome ? 36 : undefined}
+                variant={compactChrome ? "message" : "header"}
                 mood={loading ? loadingMood : "default"}
                 onTap={() =>
                   openAnnitaFullscreen(
@@ -523,10 +566,10 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
                 }
               />
               <div className="min-w-0">
-                <p className={`font-serif text-[#2a2723] ${compactHeader ? "text-base" : "text-lg"}`}>
+                <p className={`font-serif text-[#2a2723] ${compactChrome ? "text-base" : "text-lg"}`}>
                   {ANNITA.name}
                 </p>
-                {!compactHeader && (
+                {!compactChrome && (
                   <p className="text-[10px] font-bold uppercase tracking-wider text-pink-400">
                     {ANNITA.tagline}
                   </p>
@@ -547,9 +590,9 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
               </button>
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={handleClose}
                 className="rounded-full p-2 text-gray-400 transition-colors hover:text-[#2a2723]"
-                aria-label={`Close ${ANNITA.name}`}
+                aria-label={chatStarted ? `Minimize ${ANNITA.name}` : `Close ${ANNITA.name}`}
               >
                 <X size={20} />
               </button>
@@ -662,7 +705,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
           <form
             onSubmit={handleSubmit}
             className={`shrink-0 border-t bg-white/90 px-4 backdrop-blur-md ${
-              compactHeader ? "py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]" : "py-4 pb-6"
+              compactChrome ? "py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]" : "py-4 pb-6"
             }`}
             style={{ borderColor: theme.border }}
           >
