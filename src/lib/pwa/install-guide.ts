@@ -26,7 +26,7 @@ export type InstallGuideContent = {
   tip?: string;
 };
 
-function isIosDevice(): boolean {
+export function isIosDevice(): boolean {
   if (typeof navigator === "undefined") return false;
   return (
     /iPad|iPhone|iPod/.test(navigator.userAgent) ||
