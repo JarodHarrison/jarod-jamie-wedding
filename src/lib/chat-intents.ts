@@ -28,6 +28,12 @@ const FORM_FOLLOWUP_PATTERNS = [
   /\b(rsvp|accommodation|flight|transfer|phone number|dietary|plus[- ]?one|save|submit)\b/i,
 ];
 
+const TRAVEL_KNOWLEDGE_PATTERNS = [
+  /\b(airport|flight|bne|mcy|brisbane airport|sunshine coast airport)\b/i,
+  /\b(uber|taxi|shuttle|transport|driving|parking|expedia|accommodation|staying)\b/i,
+  /\b(get(ting)? (to|from)|how do i get|travel|airtrain)\b/i,
+];
+
 export function recentUserText(messages: ChatMessage[]): string {
   return messages
     .filter((m) => m.role === "user")
@@ -61,8 +67,7 @@ export function wantsFormTools(messages: ChatMessage[]): boolean {
   return FORM_FOLLOWUP_PATTERNS.some((pattern) => pattern.test(lastAssistant.content));
 }
 
-export function shouldIncludeProfileStatus(messages: ChatMessage[]): boolean {
-  if (wantsFormTools(messages)) return true;
-  const userTurns = messages.filter((m) => m.role === "user").length;
-  return userTurns <= 2;
+export function wantsTravelKnowledge(messages: ChatMessage[]): boolean {
+  const text = recentUserText(messages);
+  return TRAVEL_KNOWLEDGE_PATTERNS.some((pattern) => pattern.test(text));
 }

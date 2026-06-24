@@ -232,6 +232,8 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const streamRafRef = useRef<number | null>(null);
+  const streamPendingRef = useRef("");
   const [inputFocused, setInputFocused] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [folded, setFolded] = useState(false);
@@ -327,7 +329,10 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   }, [open, fullscreenOpen]);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: loading && streamingReply ? "auto" : "smooth",
+    });
   }, [messages, loading, compactChrome, streamingReply]);
 
   const handleOpen = () => {
@@ -395,6 +400,25 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
       setMessages([...nextMessages, { role: "assistant", content: "", mood: disgusted ? "disgusted" : "default" }]);
 
+      const assistantMood = disgusted ? "disgusted" : "default";
+
+      const flushStreamUi = (content: string) => {
+        setStreamingReply(content);
+        setMessages([
+          ...nextMessages,
+          { role: "assistant", content, mood: assistantMood },
+        ]);
+      };
+
+      const scheduleStreamUi = (content: string) => {
+        streamPendingRef.current = content;
+        if (streamRafRef.current !== null) return;
+        streamRafRef.current = requestAnimationFrame(() => {
+          streamRafRef.current = null;
+          flushStreamUi(streamPendingRef.current);
+        });
+      };
+
       const handleStreamEvent = (event: string) => {
         const line = event.split("\n").find((entry) => entry.startsWith("data: "));
         if (!line) return;
@@ -412,15 +436,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
         if (payload.type === "token") {
           streamedReply += payload.text;
-          setStreamingReply(streamedReply);
-          setMessages([
-            ...nextMessages,
-            {
-              role: "assistant",
-              content: streamedReply,
-              mood: disgusted ? "disgusted" : "default",
-            },
-          ]);
+          scheduleStreamUi(streamedReply);
         } else if (payload.type === "done") {
           finalReply = payload.reply;
           sources = Array.isArray(payload.sources) ? payload.sources : undefined;
@@ -450,6 +466,11 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
       if (buffer.trim()) {
         handleStreamEvent(buffer);
+      }
+
+      if (streamRafRef.current !== null) {
+        cancelAnimationFrame(streamRafRef.current);
+        streamRafRef.current = null;
       }
 
       if (streamError) {
@@ -651,7 +672,15 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
                       {msg.role === "user" ? (
                         msg.content
                       ) : (
-                        <ChatMessageContent content={msg.content} />
+                        <ChatMessageContent
+                          content={msg.content}
+                          isStreaming={
+                            loading &&
+                            i === messages.length - 1 &&
+                            msg.role === "assistant" &&
+                            Boolean(msg.content)
+                          }
+                        />
                       )}
                     </div>
                     {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (

@@ -1,8 +1,8 @@
 import {
-  shouldIncludeProfileStatus,
   wantsFormTools,
   wantsInstallGuideHelp,
   wantsPenthouseKnowledge,
+  wantsTravelKnowledge,
 } from "@/lib/chat-intents";
 import { isLocalDiscoveryQuestion, wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
 import { GUEST_FORM_TOOL, executeGuestFormSave } from "@/lib/chat-form-tools";
@@ -85,7 +85,7 @@ export type ChatContext = {
   profile?: SerializedGuestProfile;
 };
 
-const API_MESSAGE_LIMIT = 12;
+const API_MESSAGE_LIMIT = 8;
 
 class GeminiChatError extends Error {
   constructor(raw: string) {
@@ -153,7 +153,7 @@ function isLocalDiscoveryContext(text: string): boolean {
 
 function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean) {
   return {
-    temperature: useWebSearch ? 0.55 : 0.7,
+    temperature: useWebSearch ? 0.5 : 0.65,
     maxOutputTokens: useWebSearch ? 1536 : hasTools ? 1024 : 1024,
   };
 }
@@ -252,12 +252,15 @@ function resolveChatConfig(messages: ChatMessage[], context: ChatContext): Resol
   const includeLocalGuide = isLocalDiscoveryQuestion(trimmedMessages);
   const includeInstallGuide = wantsInstallGuideHelp(trimmedMessages);
   const includePenthouse = wantsPenthouseKnowledge(context.guestTier, trimmedMessages);
+  const includeTravel = wantsTravelKnowledge(trimmedMessages);
   const formToolsRequested = Boolean(
     context.guestId && context.profile && !useWebSearch && wantsFormTools(trimmedMessages),
   );
+  const useEssentials =
+    !includePenthouse && !includeInstallGuide && !includeTravel && !formToolsRequested;
 
   const profileStatus =
-    context.profile && shouldIncludeProfileStatus(trimmedMessages)
+    context.profile && formToolsRequested
       ? buildProfileStatusSummary(context.profile)
       : undefined;
 
@@ -267,6 +270,7 @@ function resolveChatConfig(messages: ChatMessage[], context: ChatContext): Resol
     profileStatus,
     canSaveForms: formToolsRequested,
     useWebSearch,
+    useEssentials,
     includeLocalGuide,
     includeInstallGuide,
     includePenthouse,
@@ -468,7 +472,7 @@ async function* streamGeminiOnce(
   }
 }
 
-const STREAM_RETRY_DELAYS_MS = [400, 900] as const;
+const STREAM_RETRY_DELAYS_MS = [200, 500] as const;
 
 async function* streamGeminiWithFallback(
   apiKey: string,

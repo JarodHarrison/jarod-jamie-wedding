@@ -98,6 +98,16 @@ Direct from BNE:
 - Queensland Chauffeurs: 0410 167 100 — private airport & hinterland transfers
 `.trim();
 
+const WEDDING_ESSENTIALS = `
+# Jarod & Jamie Wedding — Essentials
+- Sat 26 Sep 2026 | Spicers Clovelly Estate, Montville QLD | #J-rodandJamo
+- Fri 6pm meet & greet (on-site guests, smart casual) | Sat 3pm ceremony, 4:30pm garden party, 6pm reception (colourful cocktail attire, adults-only ceremony & reception)
+- Sun 9am family breakfast | Reception nanny on-site; no children at reception dinner
+- RSVP in app (late RSVPs accepted) | On-site rooms fully booked | Off-site: Expedia links in Travel tab
+- Montville courtesy shuttle — submit accommodation in app | Ubers/taxis limited — pre-book
+- MCY ~35 min, BNE ~90 min from venue | Wishing well: pocketwell.com.au/events/jarod-and-jamie
+`.trim();
+
 const WEDDING_PENTHOUSE_KNOWLEDGE = `
 ## Gold Coast Trip (Penthouse guests — pre-wedding)
 Penthouse package: $550 per person ($1100 per couple) — accommodation + minivan
@@ -169,11 +179,12 @@ const WEDDING_TAIL_KNOWLEDGE = `
 `.trim();
 
 export function buildWeddingKnowledge(options: {
+  useEssentials?: boolean;
   includeLocalGuide?: boolean;
   includeInstallGuide?: boolean;
   includePenthouse?: boolean;
 }) {
-  const sections = [WEDDING_CORE_KNOWLEDGE];
+  const sections = [options.useEssentials ? WEDDING_ESSENTIALS : WEDDING_CORE_KNOWLEDGE];
 
   if (options.includePenthouse) {
     sections.push(WEDDING_PENTHOUSE_KNOWLEDGE);
@@ -199,16 +210,23 @@ export const WEDDING_KNOWLEDGE = buildWeddingKnowledge({
   includePenthouse: true,
 });
 
+const promptCache = new Map<string, string>();
+
 export function buildChatSystemPrompt(options: {
   guestName?: string;
   guestTier?: string;
   profileStatus?: string;
   canSaveForms?: boolean;
   useWebSearch?: boolean;
+  useEssentials?: boolean;
   includeLocalGuide?: boolean;
   includeInstallGuide?: boolean;
   includePenthouse?: boolean;
 }) {
+  const cacheKey = JSON.stringify(options);
+  const cached = promptCache.get(cacheKey);
+  if (cached) return cached;
+
   const tierNote =
     options.guestTier === "PENTHOUSE"
       ? "This guest is a Penthouse guest with access to the full Gold Coast pre-wedding trip itinerary and minivan transport details."
@@ -218,45 +236,27 @@ export function buildChatSystemPrompt(options: {
           ? "This guest is an off-site guest staying in the Montville area or elsewhere."
           : "This user is an admin or guest — provide general wedding information.";
 
-  return `You are **Annita Help** — the sassy, glamorous drag queen wedding concierge for Jarod & Jamie's big day (26 September 2026, Spicers Clovelly Estate, Montville QLD).
+  const prompt = `You are **Annita Help** — sassy, warm wedding concierge for Jarod & Jamie (26 Sep 2026, Spicers Clovelly Estate, Montville QLD).
+- Fabulous drag-queen flair (honey, darling, babe) — never crude or mean. Australian English.
+- Wedding facts: never invent — use the knowledge base only. Keep replies concise unless listing recommendations.
+- Write ONLY what Annita says to the guest — no planning steps, meta-commentary, or self-review.
+${options.canSaveForms ? "- Use `save_guest_form` when the guest gives RSVP/accommodation/transfer/interests details to save." : ""}
+${options.includeInstallGuide ? "- For app install: ask device/browser, then give install-guide steps from the knowledge base." : ""}
+${options.useWebSearch ? "- You may use Google Search for live local info; give 2–5 specific picks in Annita's voice." : options.includeLocalGuide ? "- For local eats/attractions: use the curated list below; 2–5 suggestions with short notes." : ""}
 
-## Your persona
-- You are fabulous, warm, witty, and a little cheeky — think helpful best friend at the afterparty who still gets the details right
-- Use light drag-queen flair: occasional "honey", "darling", "babe", playful confidence, and celebratory energy — but never mean, never crude, and never offensive
-- Keep replies concise (2–4 short paragraphs max unless listing recommendations)
-- **Wedding facts** (schedule, RSVP, shuttles, dress code, etc.): sass is in the delivery, but never invent details — stick to the knowledge base
-- **Local eats & attractions**: recommend from the curated list first, then supplement with Google Search for current info (hours, what's open, new spots). Give 2–5 specific suggestions when asked
-- If you don't know something about the wedding, say so with charm and point guests to the right app tab or Jarod & Jamie
-- **Guest forms**: You can see their profile status below. Proactively remind them about missing required info (especially RSVP and accommodation for off-site guests) in a warm, non-naggy way
-- When a guest wants to submit or update RSVP, accommodation, airport transfer, or guide service interests, collect the details conversationally then use \`save_guest_form\` to save — confirm what you saved
-- For RSVP you must know if they accept or decline before saving. Merge partial updates with their existing profile data
-- If they'd rather use the app forms, direct them: RSVP tab, Travel & Stay tab, or Guide tab
-- For **installing the app on their phone** (Add to Home Screen / Install app): ask iPhone vs Android and which browser, then give the exact steps from the install guide in the knowledge base — one step at a time if they're stuck
-- For browsing the full local guide visually, send guests to the app's Guide → Explore Montville tab
-- Use Australian English spelling
-
-## CRITICAL — How you reply
-- Write ONLY what Annita says directly to the guest. No planning steps, no numbered checklists about your process, no "Review against constraints", no self-evaluation, and no meta-commentary about your answer quality
-- Numbered lists are fine when recommending restaurants or activities — never for internal reasoning
-- Start with a warm greeting or jump straight into the answer — never with step numbers like "5." unless listing guest-facing recommendations
-
-${options.useWebSearch ? `## Live local search mode
-- You may use Google Search for current hours, new openings, or other live details
-- After searching, reply in Annita's voice with 2–5 specific recommendations — not a search report or constraint checklist
-- Mention that hours can change and guests should confirm before visiting` : `## Local recommendations mode
-- For restaurants, cafes, pubs, wineries, and attractions near Montville/Maleny, use the curated list in the knowledge base below — you already have Jarod & Jamie's picks
-- Give 2–5 specific suggestions with a short fabulous note on each; include distance from the venue when you know it`}
-
-${options.guestName ? `You're chatting with: ${options.guestName}` : "You're chatting with a wedding guest."}
+${options.guestName ? `Guest: ${options.guestName}` : "Guest: wedding guest"}
 ${tierNote}
-${options.profileStatus ? `\n--- GUEST PROFILE STATUS ---\n${options.profileStatus}\n--- END PROFILE ---` : ""}
-${options.canSaveForms ? "\nYou have the `save_guest_form` tool to save form updates for this guest. Use it when they provide details to submit." : ""}
+${options.profileStatus ? `\n--- GUEST PROFILE ---\n${options.profileStatus}\n---` : ""}
 
---- OFFICIAL WEDDING KNOWLEDGE ---
+--- KNOWLEDGE ---
 ${buildWeddingKnowledge({
+  useEssentials: options.useEssentials ?? false,
   includeLocalGuide: options.includeLocalGuide ?? false,
   includeInstallGuide: options.includeInstallGuide ?? false,
   includePenthouse: options.includePenthouse ?? false,
 })}
---- END KNOWLEDGE ---`;
+---`;
+
+  promptCache.set(cacheKey, prompt);
+  return prompt;
 }

@@ -6,10 +6,7 @@ import {
   generateChatReply,
   type ChatMessage,
 } from "@/lib/chat";
-import {
-  shouldIncludeProfileStatus,
-  wantsFormTools,
-} from "@/lib/chat-intents";
+import { wantsFormTools } from "@/lib/chat-intents";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -36,11 +33,11 @@ function sanitizeMessages(raw: unknown): ChatMessage[] {
     .slice(-MAX_MESSAGES);
 }
 
-async function loadGuestContext(session: Extract<Awaited<ReturnType<typeof getSession>>, { type: "guest" }>, messages: ChatMessage[]) {
-  const needsProfile =
-    wantsFormTools(messages) || shouldIncludeProfileStatus(messages);
-
-  if (!needsProfile) {
+async function loadGuestContext(
+  session: Extract<Awaited<ReturnType<typeof getSession>>, { type: "guest" }>,
+  messages: ChatMessage[],
+) {
+  if (!wantsFormTools(messages)) {
     return {
       guestId: session.id,
       profile: undefined,
@@ -60,10 +57,9 @@ async function loadGuestContext(session: Extract<Awaited<ReturnType<typeof getSe
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
+    const [session, body] = await Promise.all([getSession(), request.json()]);
     if (!session) return jsonError("Unauthorized", 401);
 
-    const body = await request.json();
     const messages = sanitizeMessages(body.messages);
     const stream = body.stream === true;
 

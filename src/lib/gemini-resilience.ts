@@ -1,8 +1,8 @@
-const DEFAULT_MODEL = "gemini-2.0-flash";
+const DEFAULT_MODEL = "gemini-2.0-flash-lite";
 
-const FALLBACK_MODELS = ["gemini-2.0-flash-lite", "gemini-1.5-flash"] as const;
+const FALLBACK_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"] as const;
 
-const RETRY_DELAYS_MS = [400, 900] as const;
+const RETRY_DELAYS_MS = [200, 500] as const;
 
 export function getGeminiModelCandidates(): string[] {
   const primary = process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
