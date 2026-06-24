@@ -424,6 +424,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         if (!line) return;
 
         const payload = JSON.parse(line.slice(6)) as
+          | { type: "started" }
           | { type: "token"; text: string }
           | {
               type: "done";
@@ -434,11 +435,16 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
             }
           | { type: "error"; message: string };
 
-        if (payload.type === "token") {
+        if (payload.type === "started") {
+          setStreamingReply(" ");
+        } else if (payload.type === "token") {
           streamedReply += payload.text;
           scheduleStreamUi(streamedReply);
         } else if (payload.type === "done") {
           finalReply = payload.reply;
+          if (!streamedReply.trim()) {
+            streamedReply = payload.reply;
+          }
           sources = Array.isArray(payload.sources) ? payload.sources : undefined;
           profileUpdated = Boolean(payload.profileUpdated);
           updatedProfile = (payload.profile as GuestProfile | undefined) ?? null;

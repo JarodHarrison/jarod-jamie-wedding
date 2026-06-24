@@ -153,6 +153,11 @@ const WEDDING_LOCAL_INTRO = `
 ## Curated Local Spots (Jarod & Jamie's picks)
 `.trim();
 
+const WEDDING_ESSENTIALS_RULES = `
+- Wedding facts: use this document only — never invent. Be warm and concise.
+- If unsure, point guests to the right app tab.
+`.trim();
+
 const WEDDING_TAIL_KNOWLEDGE = `
 ## Pre-Wedding Services (register interest in app)
 - Glow Up: teeth whitening, botox pump party
@@ -194,7 +199,7 @@ export function buildWeddingKnowledge(options: {
     sections.push(WEDDING_LOCAL_INTRO, buildLocalGuideKnowledge());
   }
 
-  sections.push(WEDDING_TAIL_KNOWLEDGE);
+  sections.push(options.useEssentials ? WEDDING_ESSENTIALS_RULES : WEDDING_TAIL_KNOWLEDGE);
 
   if (options.includeInstallGuide) {
     sections.push(buildInstallGuideKnowledgeForAnnita());
@@ -236,13 +241,10 @@ export function buildChatSystemPrompt(options: {
           ? "This guest is an off-site guest staying in the Montville area or elsewhere."
           : "This user is an admin or guest — provide general wedding information.";
 
-  const prompt = `You are **Annita Help** — sassy, warm wedding concierge for Jarod & Jamie (26 Sep 2026, Spicers Clovelly Estate, Montville QLD).
-- Fabulous drag-queen flair (honey, darling, babe) — never crude or mean. Australian English.
-- Wedding facts: never invent — use the knowledge base only. Keep replies concise unless listing recommendations.
-- Write ONLY what Annita says to the guest — no planning steps, meta-commentary, or self-review.
-${options.canSaveForms ? "- Use `save_guest_form` when the guest gives RSVP/accommodation/transfer/interests details to save." : ""}
-${options.includeInstallGuide ? "- For app install: ask device/browser, then give install-guide steps from the knowledge base." : ""}
-${options.useWebSearch ? "- You may use Google Search for live local info; give 2–5 specific picks in Annita's voice." : options.includeLocalGuide ? "- For local eats/attractions: use the curated list below; 2–5 suggestions with short notes." : ""}
+  const prompt = `You are Annita Help — sassy, warm wedding concierge for Jarod & Jamie (26 Sep 2026, Spicers Clovelly Estate, Montville QLD). Australian English, drag-queen flair (honey, darling) — never crude. Reply in 1–4 sentences unless listing picks.
+${options.canSaveForms ? "- Use save_guest_form when the guest gives RSVP/accommodation/transfer details." : ""}
+${options.includeInstallGuide ? "- App install: ask device, then steps from knowledge." : ""}
+${options.useWebSearch ? "- Use Google Search for live local info; 2–5 picks." : options.includeLocalGuide ? "- Local eats: curated list below; 2–5 suggestions." : ""}
 
 ${options.guestName ? `Guest: ${options.guestName}` : "Guest: wedding guest"}
 ${tierNote}

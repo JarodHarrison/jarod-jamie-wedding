@@ -47,9 +47,16 @@ export function wantsInstallGuideHelp(messages: ChatMessage[]): boolean {
 }
 
 export function wantsPenthouseKnowledge(guestTier?: string, messages?: ChatMessage[]): boolean {
-  if (guestTier === "PENTHOUSE") return true;
   if (!messages?.length) return false;
-  return PENTHOUSE_PATTERNS.some((pattern) => pattern.test(recentUserText(messages)));
+  const text = recentUserText(messages);
+  if (PENTHOUSE_PATTERNS.some((pattern) => pattern.test(text))) return true;
+  if (
+    guestTier === "PENTHOUSE" &&
+    /\b(itinerary|schedule|gold coast|trip|minivan|pre-wedding)\b/i.test(text)
+  ) {
+    return true;
+  }
+  return false;
 }
 
 export function wantsFormTools(messages: ChatMessage[]): boolean {

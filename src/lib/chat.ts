@@ -5,6 +5,7 @@ import {
   wantsTravelKnowledge,
 } from "@/lib/chat-intents";
 import { isLocalDiscoveryQuestion, wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
+import { matchInstantFaq } from "@/lib/chat-faq";
 import { GUEST_FORM_TOOL, executeGuestFormSave } from "@/lib/chat-form-tools";
 import {
   isMetaLeakReply,
@@ -41,6 +42,7 @@ export type ChatReply = {
 };
 
 export type ChatStreamEvent =
+  | { type: "started" }
   | { type: "token"; text: string }
   | {
       type: "done";
@@ -151,11 +153,16 @@ function isLocalDiscoveryContext(text: string): boolean {
   return /\b(restaurant|montville|maleny|eat|food|attraction)\b/i.test(text);
 }
 
-function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean) {
+function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean, quick = false) {
   return {
-    temperature: useWebSearch ? 0.5 : 0.65,
-    maxOutputTokens: useWebSearch ? 1536 : hasTools ? 1024 : 1024,
+    temperature: useWebSearch ? 0.5 : quick ? 0.55 : 0.65,
+    maxOutputTokens: useWebSearch ? 1536 : hasTools ? 1024 : quick ? 320 : 768,
   };
+}
+
+function tryInstantFaq(messages: ChatMessage[]): string | null {
+  if (wantsFormTools(messages) || wantsLocalDiscoverySearch(messages)) return null;
+  return matchInstantFaq(messages);
 }
 
 function extractStreamDelta(assembled: string, chunk: string): string {
@@ -240,6 +247,7 @@ type ResolvedChatConfig = {
   contents: GeminiContent[];
   tools: Record<string, unknown>[] | undefined;
   useWebSearch: boolean;
+  quickReply: boolean;
   guestId?: string;
   profile?: SerializedGuestProfile;
 };
@@ -297,6 +305,7 @@ function resolveChatConfig(messages: ChatMessage[], context: ChatContext): Resol
     contents,
     tools: tools.length ? tools : undefined,
     useWebSearch,
+    quickReply: useEssentials && !useWebSearch && !formToolsRequested,
     guestId: context.guestId,
     profile: context.profile,
   };
@@ -307,13 +316,14 @@ function buildGeminiBody(
   contents: GeminiContent[],
   useWebSearch: boolean,
   tools?: Record<string, unknown>[],
+  quick = false,
 ): Record<string, unknown> {
   const body: Record<string, unknown> = {
     systemInstruction: {
       parts: [{ text: systemInstruction }],
     },
     contents,
-    generationConfig: buildGenerationConfig(useWebSearch, Boolean(tools?.length)),
+    generationConfig: buildGenerationConfig(useWebSearch, Boolean(tools?.length), quick),
   };
 
   if (tools?.length) {
@@ -342,19 +352,25 @@ async function postGemini(
   });
 }
 
+type GeminiCallOptions = {
+  tools?: Record<string, unknown>[];
+  useWebSearch?: boolean;
+  quickReply?: boolean;
+};
+
 async function callGeminiOnce(
   apiKey: string,
   model: string,
   systemInstruction: string,
   contents: GeminiContent[],
-  options?: { tools?: Record<string, unknown>[]; useWebSearch?: boolean },
+  options?: GeminiCallOptions,
 ): Promise<GeminiResponse> {
   const useWebSearch = options?.useWebSearch ?? false;
   const tools = options?.tools;
   const response = await postGemini(
     apiKey,
     model,
-    buildGeminiBody(systemInstruction, contents, useWebSearch, tools),
+    buildGeminiBody(systemInstruction, contents, useWebSearch, tools, options?.quickReply),
   );
 
   const data = (await response.json()) as GeminiResponse;
@@ -378,7 +394,7 @@ async function callGeminiWithFallback(
   apiKey: string,
   systemInstruction: string,
   contents: GeminiContent[],
-  options?: { tools?: Record<string, unknown>[]; useWebSearch?: boolean },
+  options?: GeminiCallOptions,
 ): Promise<{ data: GeminiResponse; model: string }> {
   let lastError = "Failed to get AI response.";
   const [primaryModel] = getGeminiModelCandidates();
@@ -413,11 +429,12 @@ async function* streamGeminiOnce(
   systemInstruction: string,
   contents: GeminiContent[],
   useWebSearch: boolean,
+  quick = false,
 ): AsyncGenerator<string> {
   const response = await postGemini(
     apiKey,
     model,
-    buildGeminiBody(systemInstruction, contents, useWebSearch),
+    buildGeminiBody(systemInstruction, contents, useWebSearch, undefined, quick),
     true,
   );
 
@@ -477,6 +494,7 @@ async function* streamGeminiWithFallback(
   systemInstruction: string,
   contents: GeminiContent[],
   useWebSearch: boolean,
+  quick = false,
 ): AsyncGenerator<string> {
   let lastError = "Failed to stream AI response.";
   const [primaryModel] = getGeminiModelCandidates();
@@ -493,6 +511,7 @@ async function* streamGeminiWithFallback(
           systemInstruction,
           contents,
           useWebSearch,
+          quick,
         )) {
           yielded = true;
           rawReply += chunk;
@@ -541,10 +560,12 @@ async function runChatRound(
   contents: GeminiContent[],
   tools: Record<string, unknown>[] | undefined,
   useWebSearch: boolean,
+  quickReply = false,
 ): Promise<{ reply: string; sources: ChatSource[]; parts: GeminiPart[]; functionCall?: GeminiPart["functionCall"] }> {
   const { data } = await callGeminiWithFallback(apiKey, systemInstruction, contents, {
     tools,
     useWebSearch,
+    quickReply,
   });
 
   const parts = getResponseParts(data);
@@ -571,6 +592,7 @@ async function runToolLoop(config: ResolvedChatConfig): Promise<ChatReply> {
       contents,
       config.tools,
       config.useWebSearch,
+      config.quickReply,
     );
 
     const { reply, sources, parts, functionCall } = roundResult;
@@ -633,6 +655,11 @@ export async function generateChatReply(
   messages: ChatMessage[],
   context: ChatContext,
 ): Promise<ChatReply> {
+  const instant = tryInstantFaq(messages);
+  if (instant) {
+    return { reply: instant, sources: [] };
+  }
+
   const config = resolveChatConfig(messages, context);
   return runToolLoop(config);
 }
@@ -653,6 +680,15 @@ export function createChatReplyStream(
   return new ReadableStream({
     async start(controller) {
       try {
+        send(controller, { type: "started" });
+
+        const instant = tryInstantFaq(messages);
+        if (instant) {
+          send(controller, { type: "done", reply: instant, sources: [] });
+          controller.close();
+          return;
+        }
+
         const config = resolveChatConfig(messages, context);
 
         if (config.tools?.length) {
@@ -674,6 +710,7 @@ export function createChatReplyStream(
           config.systemInstruction,
           config.contents,
           config.useWebSearch,
+          config.quickReply,
         )) {
           rawReply += chunk;
           send(controller, { type: "token", text: chunk });
