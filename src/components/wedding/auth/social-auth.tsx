@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { startAuthentication, startRegistration } from "@simplewebauthn/browser";
 import { Fingerprint, KeyRound } from "lucide-react";
+import {
+  markPasskeyDeviceReady,
+  shouldShowPasskeyReminder,
+} from "@/lib/auth/passkey-reminder";
 import { theme } from "@/lib/theme";
 import type { AdminUser, WeddingUser } from "@/types/wedding";
 
@@ -18,6 +22,11 @@ type PasskeySettingsProps = {
 export function PasskeySettings({ onMessage }: PasskeySettingsProps) {
   const [loading, setLoading] = useState(false);
   const [passkeyCount, setPasskeyCount] = useState(0);
+  const [showReminder, setShowReminder] = useState(true);
+
+  useEffect(() => {
+    setShowReminder(shouldShowPasskeyReminder());
+  }, []);
 
   const loadPasskeys = useCallback(async () => {
     const res = await fetch("/api/auth/passkey");
@@ -61,6 +70,8 @@ export function PasskeySettings({ onMessage }: PasskeySettingsProps) {
       }
 
       onMessage?.(verifyData.message ?? "Passkey added.");
+      markPasskeyDeviceReady();
+      setShowReminder(false);
       await loadPasskeys();
     } catch {
       onMessage?.("Passkey setup was cancelled or failed.");
@@ -68,6 +79,8 @@ export function PasskeySettings({ onMessage }: PasskeySettingsProps) {
       setLoading(false);
     }
   };
+
+  if (!showReminder) return null;
 
   return (
     <section
@@ -139,11 +152,13 @@ export async function signInWithPasskey({
     }
 
     if (data.user) {
+      markPasskeyDeviceReady();
       onGuestLogin(data.user, Boolean(data.canAccessAdmin));
       return;
     }
 
     if (data.admin) {
+      markPasskeyDeviceReady();
       onAdminLogin(data.admin);
       return;
     }
