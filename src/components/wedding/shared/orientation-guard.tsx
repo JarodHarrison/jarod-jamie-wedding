@@ -34,7 +34,7 @@ export function OrientationGuard() {
     const lockPortrait = async () => {
       try {
         const orientation = screen.orientation as ScreenOrientation & {
-          lock?: (orientation: OrientationLockType) => Promise<void>;
+          lock?: (mode: string) => Promise<void>;
         };
         await orientation?.lock?.("portrait-primary");
       } catch {
