@@ -373,49 +373,61 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
       setMessages([...nextMessages, { role: "assistant", content: "", mood: disgusted ? "disgusted" : "default" }]);
 
+      const handleStreamEvent = (event: string) => {
+        const line = event.split("\n").find((entry) => entry.startsWith("data: "));
+        if (!line) return;
+
+        const payload = JSON.parse(line.slice(6)) as
+          | { type: "token"; text: string }
+          | {
+              type: "done";
+              reply: string;
+              sources?: ChatSource[];
+              profileUpdated?: boolean;
+              profile?: GuestProfile;
+            }
+          | { type: "error"; message: string };
+
+        if (payload.type === "token") {
+          streamedReply += payload.text;
+          setStreamingReply(streamedReply);
+          setMessages([
+            ...nextMessages,
+            {
+              role: "assistant",
+              content: streamedReply,
+              mood: disgusted ? "disgusted" : "default",
+            },
+          ]);
+        } else if (payload.type === "done") {
+          finalReply = payload.reply;
+          sources = Array.isArray(payload.sources) ? payload.sources : undefined;
+          profileUpdated = Boolean(payload.profileUpdated);
+          updatedProfile = (payload.profile as GuestProfile | undefined) ?? null;
+        } else if (payload.type === "error") {
+          streamError = payload.message;
+        }
+      };
+
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (value) {
+          buffer += decoder.decode(value, { stream: !done });
+        }
+        if (done) {
+          buffer += decoder.decode();
+          break;
+        }
 
-        buffer += decoder.decode(value, { stream: true });
         const events = buffer.split("\n\n");
         buffer = events.pop() ?? "";
-
         for (const event of events) {
-          const line = event.split("\n").find((entry) => entry.startsWith("data: "));
-          if (!line) continue;
-
-          const payload = JSON.parse(line.slice(6)) as
-            | { type: "token"; text: string }
-            | {
-                type: "done";
-                reply: string;
-                sources?: ChatSource[];
-                profileUpdated?: boolean;
-                profile?: GuestProfile;
-              }
-            | { type: "error"; message: string };
-
-          if (payload.type === "token") {
-            streamedReply += payload.text;
-            setStreamingReply(streamedReply);
-            setMessages([
-              ...nextMessages,
-              {
-                role: "assistant",
-                content: streamedReply,
-                mood: disgusted ? "disgusted" : "default",
-              },
-            ]);
-          } else if (payload.type === "done") {
-            finalReply = payload.reply;
-            sources = Array.isArray(payload.sources) ? payload.sources : undefined;
-            profileUpdated = Boolean(payload.profileUpdated);
-            updatedProfile = (payload.profile as GuestProfile | undefined) ?? null;
-          } else if (payload.type === "error") {
-            streamError = payload.message;
-          }
+          handleStreamEvent(event);
         }
+      }
+
+      if (buffer.trim()) {
+        handleStreamEvent(buffer);
       }
 
       if (streamError) {
@@ -432,11 +444,16 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         return;
       }
 
+      const displayReply =
+        finalReply && finalReply.length >= streamedReply.length
+          ? finalReply
+          : streamedReply || finalReply;
+
       setMessages([
         ...nextMessages,
         {
           role: "assistant",
-          content: finalReply || streamedReply,
+          content: displayReply,
           sources,
           mood: disgusted ? "disgusted" : "default",
         },
@@ -448,7 +465,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       }
 
       setInputPlaceholder(pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS));
-      if (speakEnabled) void speak(finalReply || streamedReply);
+      if (speakEnabled) void speak(displayReply);
     } catch {
       setError("Network error — please try again.");
       setMessages(messages);

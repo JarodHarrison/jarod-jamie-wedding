@@ -154,8 +154,81 @@ function isLocalDiscoveryContext(text: string): boolean {
 function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean) {
   return {
     temperature: useWebSearch ? 0.55 : 0.7,
-    maxOutputTokens: useWebSearch ? 768 : hasTools ? 640 : 512,
+    maxOutputTokens: useWebSearch ? 1536 : hasTools ? 1024 : 1024,
   };
+}
+
+function extractStreamDelta(assembled: string, chunk: string): string {
+  if (!chunk) return "";
+  if (!assembled) return chunk;
+  if (chunk.startsWith(assembled)) return chunk.slice(assembled.length);
+  if (assembled.endsWith(chunk) || assembled.includes(chunk)) return "";
+  return chunk;
+}
+
+function parseGeminiSsePayload(payload: string): GeminiResponse | null {
+  if (!payload || payload === "[DONE]") return null;
+  try {
+    return JSON.parse(payload) as GeminiResponse;
+  } catch {
+    return null;
+  }
+}
+
+function* yieldGeminiStreamText(
+  data: GeminiResponse,
+  assembled: { text: string },
+): Generator<string> {
+  const chunkText = extractText(data.candidates?.[0]?.content?.parts ?? []);
+  if (!chunkText) return;
+
+  const delta = extractStreamDelta(assembled.text, chunkText);
+  if (!delta) return;
+
+  assembled.text += delta;
+  yield delta;
+}
+
+function processGeminiSseBuffer(
+  buffer: string,
+  assembled: { text: string },
+): { remainder: string; deltas: string[] } {
+  const deltas: string[] = [];
+  const parts = buffer.split("\n\n");
+  const remainder = parts.pop() ?? "";
+
+  for (const part of parts) {
+    const line = part.split("\n").find((entry) => entry.startsWith("data: "));
+    if (!line) continue;
+
+    const data = parseGeminiSsePayload(line.slice(6).trim());
+    if (!data) continue;
+
+    for (const delta of yieldGeminiStreamText(data, assembled)) {
+      deltas.push(delta);
+    }
+  }
+
+  return { remainder, deltas };
+}
+
+function finalizeStreamedReply(raw: string, usedWebSearch: boolean): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+
+  const cleaned = sanitizeChatReply(trimmed);
+  if (cleaned && !isMetaLeakReply(cleaned)) {
+    return cleaned.length >= trimmed.length * 0.85 ? cleaned : trimmed;
+  }
+
+  if (isMetaLeakReply(cleaned) || isMetaLeakReply(trimmed)) {
+    if (usedWebSearch || isLocalDiscoveryContext(trimmed)) {
+      return localDiscoveryFallbackReply();
+    }
+    return cleaned || trimmed;
+  }
+
+  return cleaned || trimmed;
 }
 
 type ResolvedChatConfig = {
@@ -363,33 +436,34 @@ async function* streamGeminiOnce(
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  const assembled = { text: "" };
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
+    if (value) {
+      buffer += decoder.decode(value, { stream: !done });
+    }
+    if (done) {
+      buffer += decoder.decode();
+      break;
+    }
 
-    buffer += decoder.decode(value, { stream: true });
-    const chunks = buffer.split("\n\n");
-    buffer = chunks.pop() ?? "";
+    const parsed = processGeminiSseBuffer(buffer, assembled);
+    buffer = parsed.remainder;
+    for (const delta of parsed.deltas) {
+      yield delta;
+    }
+  }
 
-    for (const chunk of chunks) {
-      const line = chunk
-        .split("\n")
-        .find((entry) => entry.startsWith("data: "));
-      if (!line) continue;
-
-      const payload = line.slice(6).trim();
-      if (!payload || payload === "[DONE]") continue;
-
-      let data: GeminiResponse;
-      try {
-        data = JSON.parse(payload) as GeminiResponse;
-      } catch {
-        continue;
+  if (buffer.trim()) {
+    const line = buffer.split("\n").find((entry) => entry.startsWith("data: "));
+    if (line) {
+      const data = parseGeminiSsePayload(line.slice(6).trim());
+      if (data) {
+        for (const delta of yieldGeminiStreamText(data, assembled)) {
+          yield delta;
+        }
       }
-
-      const text = extractText(data.candidates?.[0]?.content?.parts ?? []);
-      if (text) yield text;
     }
   }
 }
@@ -603,14 +677,14 @@ export function createChatReplyStream(
           send(controller, { type: "token", text: chunk });
         }
 
-        const reply = finalizeReply(rawReply, config.useWebSearch);
+        const reply = finalizeStreamedReply(rawReply, config.useWebSearch);
         if (!reply) {
           throw new GeminiChatError("Empty response from AI.");
         }
 
         send(controller, {
           type: "done",
-          reply,
+          reply: reply.length >= rawReply.trim().length ? reply : rawReply.trim(),
           sources: [],
         });
         controller.close();
