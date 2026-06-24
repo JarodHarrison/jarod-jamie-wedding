@@ -637,7 +637,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
           </div>
 
           {error && (
-            <p className="shrink-0 px-5 pb-2 text-center text-[10px] font-bold uppercase tracking-wider text-red-500">
+            <p className="shrink-0 px-5 pb-2 text-center text-xs leading-relaxed text-red-500">
               {error}
             </p>
           )}

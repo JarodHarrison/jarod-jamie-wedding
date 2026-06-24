@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
 import {
   createChatReplyStream,
+  formatChatError,
   generateChatReply,
   type ChatMessage,
 } from "@/lib/chat";
@@ -119,6 +120,6 @@ export async function POST(request: Request) {
       return jsonError("Unauthorized", 401);
     }
     console.error("[chat]", error);
-    return jsonError("Sorry, I couldn't process that. Please try again.", 500);
+    return jsonError(formatChatError(error), 500);
   }
 }

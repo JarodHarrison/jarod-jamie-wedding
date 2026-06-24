@@ -11,6 +11,14 @@ import {
   localDiscoveryFallbackReply,
   sanitizeChatReply,
 } from "@/lib/chat-sanitize";
+import {
+  getGeminiModelCandidates,
+  isRetryableGeminiError,
+  isRetryableGeminiMessage,
+  sleep,
+  toFriendlyChatError,
+  withGeminiRetries,
+} from "@/lib/gemini-resilience";
 import { buildProfileStatusSummary } from "@/lib/guest-profile-checklist";
 import type { SerializedGuestProfile } from "@/lib/guest-profile";
 import { buildChatSystemPrompt } from "@/lib/wedding-knowledge";
@@ -67,7 +75,7 @@ type GeminiResponse = {
     };
   }[];
   promptFeedback?: { blockReason?: string };
-  error?: { message?: string };
+  error?: { message?: string; status?: string };
 };
 
 export type ChatContext = {
@@ -78,10 +86,12 @@ export type ChatContext = {
 };
 
 const API_MESSAGE_LIMIT = 12;
-const DEFAULT_MODEL = "gemini-2.0-flash";
 
-function getGeminiModel() {
-  return process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
+class GeminiChatError extends Error {
+  constructor(raw: string) {
+    super(toFriendlyChatError(raw));
+    this.name = "GeminiChatError";
+  }
 }
 
 function extractSources(data: GeminiResponse): ChatSource[] {
@@ -110,6 +120,24 @@ function extractText(parts: GeminiPart[]): string {
     .trim();
 }
 
+function getResponseParts(data: GeminiResponse): GeminiPart[] {
+  return data.candidates?.[0]?.content?.parts ?? [];
+}
+
+function hasFunctionCall(parts: GeminiPart[]): boolean {
+  return parts.some((part) => part.functionCall);
+}
+
+function isEmptyTextResponse(data: GeminiResponse): boolean {
+  const parts = getResponseParts(data);
+  if (hasFunctionCall(parts)) return false;
+
+  const finishReason = data.candidates?.[0]?.finishReason;
+  if (finishReason === "SAFETY" || finishReason === "RECITATION") return true;
+
+  return !extractText(parts);
+}
+
 function finalizeReply(raw: string, usedWebSearch: boolean): string {
   const cleaned = sanitizeChatReply(raw);
   if (cleaned && !isMetaLeakReply(cleaned)) return cleaned;
@@ -132,7 +160,6 @@ function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean) {
 
 type ResolvedChatConfig = {
   apiKey: string;
-  model: string;
   systemInstruction: string;
   contents: GeminiContent[];
   tools: Record<string, unknown>[] | undefined;
@@ -186,7 +213,6 @@ function resolveChatConfig(messages: ChatMessage[], context: ChatContext): Resol
 
   return {
     apiKey,
-    model: getGeminiModel(),
     systemInstruction,
     contents,
     tools: tools.length ? tools : undefined,
@@ -196,17 +222,12 @@ function resolveChatConfig(messages: ChatMessage[], context: ChatContext): Resol
   };
 }
 
-async function callGemini(
-  apiKey: string,
-  model: string,
+function buildGeminiBody(
   systemInstruction: string,
   contents: GeminiContent[],
-  options?: { tools?: Record<string, unknown>[]; useWebSearch?: boolean },
-): Promise<GeminiResponse> {
-  const useWebSearch = options?.useWebSearch ?? false;
-  const tools = options?.tools;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
+  useWebSearch: boolean,
+  tools?: Record<string, unknown>[],
+): Record<string, unknown> {
   const body: Record<string, unknown> = {
     systemInstruction: {
       parts: [{ text: systemInstruction }],
@@ -219,7 +240,19 @@ async function callGemini(
     body.tools = tools;
   }
 
-  const response = await fetch(url, {
+  return body;
+}
+
+async function postGemini(
+  apiKey: string,
+  model: string,
+  body: Record<string, unknown>,
+  stream = false,
+): Promise<Response> {
+  const action = stream ? "streamGenerateContent?alt=sse" : "generateContent";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:${action}`;
+
+  return fetch(url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -227,43 +260,100 @@ async function callGemini(
     },
     body: JSON.stringify(body),
   });
+}
+
+async function callGeminiOnce(
+  apiKey: string,
+  model: string,
+  systemInstruction: string,
+  contents: GeminiContent[],
+  options?: { tools?: Record<string, unknown>[]; useWebSearch?: boolean },
+): Promise<GeminiResponse> {
+  const useWebSearch = options?.useWebSearch ?? false;
+  const tools = options?.tools;
+  const response = await postGemini(
+    apiKey,
+    model,
+    buildGeminiBody(systemInstruction, contents, useWebSearch, tools),
+  );
 
   const data = (await response.json()) as GeminiResponse;
 
   if (!response.ok) {
-    throw new Error(data.error?.message ?? "Failed to get AI response.");
+    const message = data.error?.message ?? "Failed to get AI response.";
+    if (isRetryableGeminiError(response.status, message)) {
+      throw new Error(message);
+    }
+    throw new GeminiChatError(message);
+  }
+
+  if (isEmptyTextResponse(data) && !hasFunctionCall(getResponseParts(data))) {
+    throw new Error("Empty response from AI.");
   }
 
   return data;
 }
 
-async function* streamGeminiText(
+async function callGeminiWithFallback(
+  apiKey: string,
+  systemInstruction: string,
+  contents: GeminiContent[],
+  options?: { tools?: Record<string, unknown>[]; useWebSearch?: boolean },
+): Promise<{ data: GeminiResponse; model: string }> {
+  let lastError = "Failed to get AI response.";
+  const [primaryModel] = getGeminiModelCandidates();
+
+  for (const model of getGeminiModelCandidates()) {
+    try {
+      const data = await withGeminiRetries(
+        model,
+        () => callGeminiOnce(apiKey, model, systemInstruction, contents, options),
+        (error) => error instanceof GeminiChatError ? false : isRetryableGeminiMessage(
+            error instanceof Error ? error.message : "",
+          ),
+      );
+
+      if (model !== primaryModel) {
+        console.warn("[chat/gemini] used fallback model", model);
+      }
+
+      return { data, model };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : lastError;
+      console.warn("[chat/gemini] model failed", model, lastError);
+    }
+  }
+
+  throw new GeminiChatError(lastError);
+}
+
+async function* streamGeminiOnce(
   apiKey: string,
   model: string,
   systemInstruction: string,
   contents: GeminiContent[],
   useWebSearch: boolean,
 ): AsyncGenerator<string> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse`;
-
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-goog-api-key": apiKey,
-    },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemInstruction }],
-      },
-      contents,
-      generationConfig: buildGenerationConfig(useWebSearch, false),
-    }),
-  });
+  const response = await postGemini(
+    apiKey,
+    model,
+    buildGeminiBody(systemInstruction, contents, useWebSearch),
+    true,
+  );
 
   if (!response.ok) {
-    const data = (await response.json()) as GeminiResponse;
-    throw new Error(data.error?.message ?? "Failed to stream AI response.");
+    let message = "Failed to stream AI response.";
+    try {
+      const data = (await response.json()) as GeminiResponse;
+      message = data.error?.message ?? message;
+    } catch {
+      // ignore parse errors
+    }
+
+    if (isRetryableGeminiError(response.status, message)) {
+      throw new Error(message);
+    }
+    throw new GeminiChatError(message);
   }
 
   if (!response.body) {
@@ -304,20 +394,84 @@ async function* streamGeminiText(
   }
 }
 
+const STREAM_RETRY_DELAYS_MS = [400, 900] as const;
+
+async function* streamGeminiWithFallback(
+  apiKey: string,
+  systemInstruction: string,
+  contents: GeminiContent[],
+  useWebSearch: boolean,
+): AsyncGenerator<string> {
+  let lastError = "Failed to stream AI response.";
+  const [primaryModel] = getGeminiModelCandidates();
+
+  for (const model of getGeminiModelCandidates()) {
+    for (let attempt = 0; attempt <= STREAM_RETRY_DELAYS_MS.length; attempt++) {
+      let yielded = false;
+      let rawReply = "";
+
+      try {
+        for await (const chunk of streamGeminiOnce(
+          apiKey,
+          model,
+          systemInstruction,
+          contents,
+          useWebSearch,
+        )) {
+          yielded = true;
+          rawReply += chunk;
+          yield chunk;
+        }
+
+        if (!rawReply.trim()) {
+          throw new Error("Empty response from AI.");
+        }
+
+        if (model !== primaryModel) {
+          console.warn("[chat/gemini] used fallback model for stream", model);
+        }
+        return;
+      } catch (error) {
+        if (yielded) {
+          throw error instanceof GeminiChatError
+            ? error
+            : new GeminiChatError(error instanceof Error ? error.message : lastError);
+        }
+
+        lastError = error instanceof Error ? error.message : lastError;
+        const retryable =
+          attempt < STREAM_RETRY_DELAYS_MS.length &&
+          !(error instanceof GeminiChatError) &&
+          isRetryableGeminiMessage(lastError);
+
+        if (retryable) {
+          console.warn(`[chat/gemini] ${model}:stream retry ${attempt + 1}`);
+          await sleep(STREAM_RETRY_DELAYS_MS[attempt]!);
+          continue;
+        }
+
+        console.warn("[chat/gemini] stream model failed", model, lastError);
+        break;
+      }
+    }
+  }
+
+  throw new GeminiChatError(lastError);
+}
+
 async function runChatRound(
   apiKey: string,
-  model: string,
   systemInstruction: string,
   contents: GeminiContent[],
   tools: Record<string, unknown>[] | undefined,
   useWebSearch: boolean,
 ): Promise<{ reply: string; sources: ChatSource[]; parts: GeminiPart[]; functionCall?: GeminiPart["functionCall"] }> {
-  const data = await callGemini(apiKey, model, systemInstruction, contents, {
+  const { data } = await callGeminiWithFallback(apiKey, systemInstruction, contents, {
     tools,
     useWebSearch,
   });
 
-  const parts = data.candidates?.[0]?.content?.parts ?? [];
+  const parts = getResponseParts(data);
   const functionCall = parts.find((part) => part.functionCall)?.functionCall;
   const reply = finalizeReply(extractText(parts), useWebSearch);
 
@@ -337,7 +491,6 @@ async function runToolLoop(config: ResolvedChatConfig): Promise<ChatReply> {
   for (let round = 0; round < 3; round++) {
     const roundResult = await runChatRound(
       config.apiKey,
-      config.model,
       config.systemInstruction,
       contents,
       config.tools,
@@ -348,7 +501,7 @@ async function runToolLoop(config: ResolvedChatConfig): Promise<ChatReply> {
 
     if (!functionCall || !config.guestId) {
       if (!reply) {
-        throw new Error("Empty response from AI.");
+        throw new GeminiChatError("Empty response from AI.");
       }
 
       return {
@@ -384,7 +537,20 @@ async function runToolLoop(config: ResolvedChatConfig): Promise<ChatReply> {
     });
   }
 
-  throw new Error("Too many form update steps — please try again.");
+  throw new GeminiChatError("Too many form update steps — please try again.");
+}
+
+export function formatChatError(error: unknown): string {
+  if (error instanceof Error && error.message === "CHAT_NOT_CONFIGURED") {
+    return toFriendlyChatError("CHAT_NOT_CONFIGURED");
+  }
+  if (error instanceof GeminiChatError) {
+    return error.message;
+  }
+  if (error instanceof Error) {
+    return toFriendlyChatError(error.message);
+  }
+  return toFriendlyChatError("Sorry, I couldn't process that. Please try again.");
 }
 
 export async function generateChatReply(
@@ -427,9 +593,8 @@ export function createChatReplyStream(
         }
 
         let rawReply = "";
-        for await (const chunk of streamGeminiText(
+        for await (const chunk of streamGeminiWithFallback(
           config.apiKey,
-          config.model,
           config.systemInstruction,
           config.contents,
           config.useWebSearch,
@@ -440,7 +605,7 @@ export function createChatReplyStream(
 
         const reply = finalizeReply(rawReply, config.useWebSearch);
         if (!reply) {
-          throw new Error("Empty response from AI.");
+          throw new GeminiChatError("Empty response from AI.");
         }
 
         send(controller, {
@@ -450,9 +615,7 @@ export function createChatReplyStream(
         });
         controller.close();
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Sorry, I couldn't process that. Please try again.";
-        send(controller, { type: "error", message });
+        send(controller, { type: "error", message: formatChatError(error) });
         controller.close();
       }
     },
