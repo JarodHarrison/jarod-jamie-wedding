@@ -177,5 +177,7 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   google_state_invalid: "Google sign-in expired. Please try again.",
   google_no_account: "No account found for that Google email. Sign up first or use your password.",
   google_account_exists: "An account with this email already exists. Sign in instead.",
+  google_invalid_client: "Google sign-in isn't configured correctly on the server. Please use email/password for now.",
+  google_redirect_mismatch: "Google sign-in redirect mismatch. Contact Jarod & Jamie.",
   google_failed: "Google sign-in failed. Please try again.",
 };

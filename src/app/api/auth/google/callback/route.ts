@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { exchangeGoogleCode, isGoogleOAuthConfigured } from "@/lib/auth/google-oauth";
-import { getRequestOrigin } from "@/lib/auth/request-origin";
+import { getGoogleOAuthOrigin } from "@/lib/auth/request-origin";
 import { validateOAuthState } from "@/lib/auth/oauth-state";
 import {
   signInWithEmailAccountRedirect,
@@ -16,7 +16,7 @@ function redirectWithError(origin: string, code: string) {
 }
 
 export async function GET(request: Request) {
-  const origin = getRequestOrigin(request);
+  const origin = getGoogleOAuthOrigin(request);
 
   if (!isGoogleOAuthConfigured()) {
     return redirectWithError(origin, "google_not_configured");
@@ -69,6 +69,12 @@ export async function GET(request: Request) {
     const message = err instanceof Error ? err.message : "google_failed";
     if (message.includes("already exists")) {
       return redirectWithError(origin, "google_account_exists");
+    }
+    if (message === "invalid_client") {
+      return redirectWithError(origin, "google_invalid_client");
+    }
+    if (message === "redirect_uri_mismatch") {
+      return redirectWithError(origin, "google_redirect_mismatch");
     }
     return redirectWithError(origin, "google_failed");
   }

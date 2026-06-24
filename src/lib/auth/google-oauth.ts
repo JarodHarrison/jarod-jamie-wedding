@@ -1,7 +1,12 @@
 export type GoogleOAuthMode = "signin" | "signup";
 
+function readGoogleEnv(name: "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET") {
+  const value = process.env[name]?.trim().replace(/^"|"$/g, "");
+  return value || undefined;
+}
+
 export function isGoogleOAuthConfigured() {
-  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  return Boolean(readGoogleEnv("GOOGLE_CLIENT_ID") && readGoogleEnv("GOOGLE_CLIENT_SECRET"));
 }
 
 export function getGoogleRedirectUri(origin: string) {
@@ -9,7 +14,7 @@ export function getGoogleRedirectUri(origin: string) {
 }
 
 export function buildGoogleAuthUrl(origin: string, state: string, mode: GoogleOAuthMode) {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientId = readGoogleEnv("GOOGLE_CLIENT_ID");
   if (!clientId) throw new Error("GOOGLE_CLIENT_ID not configured");
 
   const params = new URLSearchParams({
@@ -26,9 +31,11 @@ export function buildGoogleAuthUrl(origin: string, state: string, mode: GoogleOA
 }
 
 export async function exchangeGoogleCode(origin: string, code: string) {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const clientId = readGoogleEnv("GOOGLE_CLIENT_ID");
+  const clientSecret = readGoogleEnv("GOOGLE_CLIENT_SECRET");
   if (!clientId || !clientSecret) throw new Error("Google OAuth not configured");
+
+  const redirectUri = getGoogleRedirectUri(origin);
 
   const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -37,14 +44,21 @@ export async function exchangeGoogleCode(origin: string, code: string) {
       code,
       client_id: clientId,
       client_secret: clientSecret,
-      redirect_uri: getGoogleRedirectUri(origin),
+      redirect_uri: redirectUri,
       grant_type: "authorization_code",
     }),
   });
 
-  const tokenData = (await tokenRes.json()) as { access_token?: string; error?: string };
+  const tokenData = (await tokenRes.json()) as {
+    access_token?: string;
+    error?: string;
+    error_description?: string;
+  };
+
   if (!tokenRes.ok || !tokenData.access_token) {
-    throw new Error(tokenData.error ?? "Failed to exchange Google authorization code.");
+    const detail = tokenData.error_description ?? tokenData.error ?? "token_exchange_failed";
+    console.error("[google-oauth/token]", tokenRes.status, detail, { redirectUri });
+    throw new Error(tokenData.error ?? detail);
   }
 
   const profileRes = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
