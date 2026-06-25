@@ -6,7 +6,8 @@ export type RegistrationEvent =
   | "rsvp"
   | "accommodation"
   | "transfer"
-  | "interests";
+  | "interests"
+  | "identity";
 
 const EVENT_TITLES: Record<RegistrationEvent, string> = {
   signup: "New guest account",
@@ -14,6 +15,7 @@ const EVENT_TITLES: Record<RegistrationEvent, string> = {
   accommodation: "Accommodation preferences submitted",
   transfer: "Shared transfer details submitted",
   interests: "Service interest registered",
+  identity: "Guest profile photo & details updated",
 };
 
 function line(label: string, value: string | number | boolean | null | undefined) {
@@ -78,6 +80,18 @@ function formatInterests(guest: SerializedGuestProfile) {
     .join("\n");
 }
 
+function formatIdentity(guest: SerializedGuestProfile) {
+  return [
+    formatGuestBlock(guest),
+    line("Guest of", guest.guestOfHost),
+    line("Relationship", guest.guestRelationship),
+    line("Relationship note", guest.guestRelationshipNote),
+    line("Profile photo", guest.hasProfilePhoto ? "Uploaded" : null),
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function notifyRegistration(event: RegistrationEvent, guest: SerializedGuestProfile) {
   const title = EVENT_TITLES[event];
   let body = formatGuestBlock(guest);
@@ -86,6 +100,7 @@ export function notifyRegistration(event: RegistrationEvent, guest: SerializedGu
   if (event === "accommodation") body = formatAccommodation(guest);
   if (event === "transfer") body = formatTransfer(guest);
   if (event === "interests") body = formatInterests(guest);
+  if (event === "identity") body = formatIdentity(guest);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://jarod-jamie-wedding-delta.vercel.app";
   const text = `${title}\n\n${body}\n\nView in admin: ${appUrl}`;
