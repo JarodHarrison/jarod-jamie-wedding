@@ -19,6 +19,7 @@ import { HomeHeaderActions } from "@/components/wedding/shared/home-header-actio
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { WeddingChecklist } from "@/components/wedding/shared/wedding-checklist";
 import { WeddingWeather } from "@/components/wedding/shared/wedding-weather";
+import { HomeWhereImStaying } from "@/components/wedding/shared/home-where-im-staying";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
@@ -284,6 +285,8 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat, onOpe
         {showChecklist && (
           <WeddingChecklist setActiveTab={setActiveTab} onOpenInstall={onOpenInstall} />
         )}
+
+        <HomeWhereImStaying setActiveTab={setActiveTab} />
 
         {showGuestWall && (
           <section

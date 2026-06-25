@@ -3,7 +3,7 @@ import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError, isValidGuestTier } from "@/lib/api-utils";
 import { sendGuestUpdateEmail } from "@/lib/guest-emails";
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { GuestTier } from "@/types/wedding";
 
 type BroadcastAudience =

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommodation-property-picker";
 import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
+import { BED_PREFERENCE_OPTIONS } from "@/lib/bed-preference";
 import { theme } from "@/lib/theme";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import type { AdminGuest } from "@/types/wedding";
@@ -150,6 +151,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
     checkOutDate: guest.checkOutDate ?? "",
     needsShuttle: guest.needsShuttle ?? false,
     accommodationNotes: guest.accommodationNotes ?? "",
+    bedPreference: guest.bedPreference ?? "",
   });
 
   const [transfer, setTransfer] = useState({
@@ -193,6 +195,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
       checkOutDate: guest.checkOutDate ?? "",
       needsShuttle: guest.needsShuttle ?? false,
       accommodationNotes: guest.accommodationNotes ?? "",
+      bedPreference: guest.bedPreference ?? "",
     });
     setTransfer({
       wantsSharedTransfer: guest.wantsSharedTransfer ?? false,
@@ -461,6 +464,35 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
       </CollapsibleSection>
 
       <CollapsibleSection title="Accommodation" submittedAt={guest.accommodationSubmittedAt}>
+        {guest.assignedRoomName && (
+          <div
+            className="mb-4 rounded-xl border bg-[#f7f4ee] p-3 text-sm text-[#2a2723]"
+            style={{ borderColor: theme.border }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">Assigned room</p>
+            <p className="mt-1 font-semibold">{guest.assignedRoomName}</p>
+            {guest.assignedRoomConfiguration && (
+              <p className="text-xs text-gray-600">{guest.assignedRoomConfiguration} bed</p>
+            )}
+            {guest.assignedRoomDetails && (
+              <p className="mt-2 whitespace-pre-line text-xs leading-relaxed text-gray-600">
+                {guest.assignedRoomDetails}
+              </p>
+            )}
+            {(guest.assignedRoomCheckIn || guest.assignedRoomCheckOut) && (
+              <p className="mt-2 text-xs text-gray-500">
+                {guest.assignedRoomCheckIn && `Check-in ${guest.assignedRoomCheckIn}`}
+                {guest.assignedRoomCheckIn && guest.assignedRoomCheckOut && " · "}
+                {guest.assignedRoomCheckOut && `Check-out ${guest.assignedRoomCheckOut}`}
+              </p>
+            )}
+            {guest.roomAllocationImportedAt && (
+              <p className="mt-2 text-[10px] text-gray-400">
+                Imported {new Date(guest.roomAllocationImportedAt).toLocaleString()}
+              </p>
+            )}
+          </div>
+        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -480,7 +512,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
                         accommodationName: SPICERS_CLOVELLY.name,
                         accommodationAddress: SPICERS_CLOVELLY.address,
                       }
-                    : {}),
+                    : { bedPreference: "" }),
                 }));
               }}
               className={inputClass}
@@ -505,6 +537,23 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
                 setAccommodation({ ...accommodation, accommodationAddress: value })
               }
             />
+            {accommodation.accommodationType === "ON_SITE" && (
+              <select
+                value={accommodation.bedPreference}
+                onChange={(e) =>
+                  setAccommodation({ ...accommodation, bedPreference: e.target.value })
+                }
+                className={inputClass}
+                style={fieldStyle}
+              >
+                <option value="">Bed preference (optional)</option>
+                {BED_PREFERENCE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            )}
             <div className="grid grid-cols-2 gap-2">
               <input
                 type="date"

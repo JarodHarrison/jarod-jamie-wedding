@@ -1,4 +1,5 @@
 import type { GuestProfileSection, SerializedGuestProfile } from "@/lib/guest-profile";
+import { bedPreferenceLabel } from "@/lib/bed-preference";
 
 export type ProfileTask = {
   id: string;
@@ -74,8 +75,9 @@ export function buildProfileStatusSummary(profile: SerializedGuestProfile): stri
   }
 
   if (profile.accommodationSubmittedAt) {
+    const bedNote = bedPreferenceLabel(profile.bedPreference);
     lines.push(
-      `- Accommodation: ${profile.accommodationType ?? "submitted"}${profile.accommodationName ? ` at ${profile.accommodationName}` : ""}${profile.needsShuttle ? " (needs shuttle)" : ""}`,
+      `- Accommodation: ${profile.accommodationType ?? "submitted"}${profile.accommodationName ? ` at ${profile.accommodationName}` : ""}${bedNote ? `, bed: ${bedNote}` : ""}${profile.needsShuttle ? " (needs shuttle)" : ""}`,
     );
   } else {
     lines.push("- Accommodation: not submitted yet");
@@ -140,6 +142,7 @@ export function mergeFormPayload(
       needsShuttle:
         typeof args.needsShuttle === "boolean" ? args.needsShuttle : (existing.needsShuttle ?? false),
       accommodationNotes: args.accommodationNotes ?? existing.accommodationNotes ?? "",
+      bedPreference: args.bedPreference ?? existing.bedPreference ?? "",
     };
   }
 

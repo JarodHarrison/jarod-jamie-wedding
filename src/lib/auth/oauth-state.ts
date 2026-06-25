@@ -11,9 +11,13 @@ function getSecret(): Uint8Array {
 }
 
 /** Self-contained signed state — works in installed PWAs where OAuth cookies are often lost. */
-export async function createOAuthState(mode: GoogleOAuthMode): Promise<string> {
+export async function createOAuthState(mode: GoogleOAuthMode, guestId?: string): Promise<string> {
   const nonce = crypto.randomBytes(16).toString("hex");
-  return new SignJWT({ mode, nonce })
+  const payload: Record<string, string> = { mode, nonce };
+  if (mode === "link" && guestId) {
+    payload.guestId = guestId;
+  }
+  return new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(`${MAX_AGE_SECONDS}s`)
@@ -26,9 +30,11 @@ export async function validateOAuthState(state: string | null) {
   try {
     const { payload } = await jwtVerify(state, getSecret());
     const mode = payload.mode;
-    if (mode !== "signin" && mode !== "signup") return null;
+    if (mode !== "signin" && mode !== "signup" && mode !== "link") return null;
     if (typeof payload.nonce !== "string" || !payload.nonce) return null;
-    return { nonce: payload.nonce, mode };
+    const guestId = typeof payload.guestId === "string" ? payload.guestId : undefined;
+    if (mode === "link" && !guestId) return null;
+    return { nonce: payload.nonce, mode, guestId };
   } catch {
     return null;
   }

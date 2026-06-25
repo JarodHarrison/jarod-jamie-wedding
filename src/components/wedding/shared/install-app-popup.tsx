@@ -10,6 +10,7 @@ import {
   type InstallGuideContent,
 } from "@/lib/pwa/install-guide";
 import { theme } from "@/lib/theme";
+import { GuestAccountTip } from "@/components/wedding/auth/guest-account-tip";
 
 export function InstallAppPopup() {
   const [open, setOpen] = useState(false);
@@ -76,6 +77,8 @@ export function InstallAppPopup() {
             <X size={18} />
           </button>
         </div>
+
+        <GuestAccountTip className="mb-4" />
 
         <p className="mb-4 text-sm leading-relaxed text-gray-600">{guide.subtitle}</p>
 

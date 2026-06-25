@@ -1,4 +1,4 @@
-export type GoogleOAuthMode = "signin" | "signup";
+export type GoogleOAuthMode = "signin" | "signup" | "link";
 
 function readGoogleEnv(name: "GOOGLE_CLIENT_ID" | "GOOGLE_CLIENT_SECRET") {
   const value = process.env[name]?.trim().replace(/^"|"$/g, "");
@@ -23,7 +23,7 @@ export function buildGoogleAuthUrl(origin: string, state: string, mode: GoogleOA
     response_type: "code",
     scope: "openid email profile",
     state,
-    prompt: mode === "signup" ? "consent select_account" : "select_account",
+    prompt: mode === "signup" || mode === "link" ? "consent select_account" : "select_account",
     access_type: "online",
   });
 

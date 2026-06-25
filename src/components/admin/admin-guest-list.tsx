@@ -6,6 +6,7 @@ import { GUEST_TIER_LABELS } from "@/lib/api-utils";
 import { theme } from "@/lib/theme";
 import { AdminGuestEditor } from "@/components/admin/admin-guest-editor";
 import { AdminGuestImport } from "@/components/admin/admin-guest-import";
+import { AdminRoomImport } from "@/components/admin/admin-room-import";
 import type { AdminGuest, GuestTier } from "@/types/wedding";
 
 const TIERS: GuestTier[] = ["PENTHOUSE", "ON_SITE", "OFF_SITE"];
@@ -124,6 +125,7 @@ export function AdminGuestList({
   return (
     <div>
       <AdminGuestImport onMessage={onMessage} onImported={onRefresh} />
+      <AdminRoomImport onMessage={onMessage} onImported={onRefresh} />
 
       <button
         type="button"

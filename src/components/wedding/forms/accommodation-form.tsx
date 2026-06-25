@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommodation-property-picker";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
+import {
+  BED_PREFERENCE_OPTIONS,
+  guestShowsBedPreference,
+  type BedPreference,
+} from "@/lib/bed-preference";
 import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
 import { theme } from "@/lib/theme";
 
@@ -19,6 +24,7 @@ export function AccommodationForm() {
   const [checkOutDate, setCheckOutDate] = useState("");
   const [needsShuttle, setNeedsShuttle] = useState(false);
   const [accommodationNotes, setAccommodationNotes] = useState("");
+  const [bedPreference, setBedPreference] = useState<BedPreference | "">("");
   const [submitting, setSubmitting] = useState(false);
   const [saved, setSaved] = useState(false);
   const [onSiteUnlocked, setOnSiteUnlocked] = useState(false);
@@ -32,6 +38,11 @@ export function AccommodationForm() {
     setCheckOutDate(profile.checkOutDate ?? "");
     setNeedsShuttle(profile.needsShuttle ?? false);
     setAccommodationNotes(profile.accommodationNotes ?? "");
+    setBedPreference(
+      profile.bedPreference === "KING" || profile.bedPreference === "TWIN"
+        ? profile.bedPreference
+        : "",
+    );
   }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,6 +59,7 @@ export function AccommodationForm() {
       checkOutDate,
       needsShuttle,
       accommodationNotes,
+      bedPreference: bedPreference || null,
     });
 
     setSubmitting(false);
@@ -63,6 +75,14 @@ export function AccommodationForm() {
     return <p className="text-sm text-gray-400">Loading your details...</p>;
   }
 
+  const showBedPreference = profile
+    ? guestShowsBedPreference({
+        accommodationType: accommodationType || profile.accommodationType,
+        tier: profile.tier,
+        assignedRoomName: profile.assignedRoomName,
+      })
+    : false;
+
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="relative">
@@ -74,6 +94,8 @@ export function AccommodationForm() {
             if (nextType === "ON_SITE") {
               setAccommodationName(SPICERS_CLOVELLY.name);
               setAccommodationAddress(SPICERS_CLOVELLY.address);
+            } else {
+              setBedPreference("");
             }
           }}
           className={`${inputClass} appearance-none`}
@@ -99,6 +121,45 @@ export function AccommodationForm() {
         onNameChange={setAccommodationName}
         onAddressChange={setAccommodationAddress}
       />
+      {showBedPreference && (
+        <div
+          className="space-y-3 rounded-xl border bg-white px-4 py-4"
+          style={{ borderColor: theme.border }}
+        >
+          <div>
+            <p className="text-sm font-medium text-[#2a2723]">Bed preference</p>
+            <p className="mt-1 text-xs leading-relaxed text-gray-500">
+              Let us know how you&apos;d like the room set up at Spicers. Not all rooms can be
+              configured both ways — we&apos;ll pass your preference to the estate.
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {BED_PREFERENCE_OPTIONS.map((option) => {
+              const selected = bedPreference === option.value;
+              return (
+                <label
+                  key={option.value}
+                  className={`cursor-pointer rounded-xl border px-4 py-3 transition-colors ${
+                    selected ? "border-[#c3a379] bg-[#f7f4ee]" : "bg-white"
+                  }`}
+                  style={{ borderColor: selected ? theme.gold : theme.border }}
+                >
+                  <input
+                    type="radio"
+                    name="bedPreference"
+                    value={option.value}
+                    checked={selected}
+                    onChange={() => setBedPreference(option.value)}
+                    className="sr-only"
+                  />
+                  <p className="text-sm font-semibold text-[#2a2723]">{option.label}</p>
+                  <p className="mt-0.5 text-xs text-gray-500">{option.description}</p>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <input
           type="date"

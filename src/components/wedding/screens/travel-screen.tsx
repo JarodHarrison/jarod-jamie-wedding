@@ -2,6 +2,8 @@
 
 import { ExternalLink, Phone, Plane, Bus } from "lucide-react";
 import { AccommodationForm } from "@/components/wedding/forms/accommodation-form";
+import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
+import { WhereImStayingCard } from "@/components/wedding/shared/where-im-staying-card";
 import { flightTransferAccordion } from "@/components/wedding/data/flight-transfers";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
 import { TravelAccordion } from "@/components/wedding/shared/travel-accordion";
@@ -43,10 +45,17 @@ type TravelScreenProps = {
 };
 
 export function TravelScreen({ setActiveTab }: TravelScreenProps) {
+  const { profile } = useGuestProfile();
+
   return (
     <div className="animate-fade-in animate-slide-right pb-10">
       <SubHeader title="Travel & Stay" subtitle="Logistics" onBack={() => setActiveTab("home")} />
       <div className="mt-8 px-6">
+        {profile?.assignedRoomName && (
+          <div className="mb-6">
+            <WhereImStayingCard profile={profile} compact />
+          </div>
+        )}
         <TravelAccordion
           defaultOpenId="accommodation"
           items={[

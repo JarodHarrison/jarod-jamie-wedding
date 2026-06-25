@@ -68,6 +68,14 @@ model Guest {
   accommodationNotes       String?
   accommodationSubmittedAt DateTime? @db.Timestamptz
 
+  assignedRoomName          String?
+  assignedRoomDetails       String?
+  assignedRoomCheckIn       String?
+  assignedRoomCheckOut      String?
+  assignedRoomConfiguration String?
+  roomAllocationImportedAt  DateTime? @db.Timestamptz
+  bedPreference             String?
+
   wantsSharedTransfer Boolean?
   arrivalAirport      String?
   arrivalDate         String?
@@ -105,6 +113,18 @@ model Guest {
   bingoProgress PhotoboothBingoProgress?
   guestStories GuestStory[]
   sharedPhotos GuestSharedPhoto[]
+  linkedLogins GuestLinkedLogin[]
+}
+
+model GuestLinkedLogin {
+  id        String   @id @default(cuid())
+  guestId   String
+  guest     Guest    @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  provider  String   @default("google")
+  email     String   @unique
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  @@index([guestId])
 }
 
 model InAppNotification {

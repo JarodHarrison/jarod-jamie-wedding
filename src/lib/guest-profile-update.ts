@@ -1,5 +1,6 @@
 import type { RsvpStatus } from "@prisma/client";
 import type { GuestProfileSection } from "@/lib/guest-profile";
+import { isBedPreference } from "@/lib/bed-preference";
 import { isGuestOfHost, isGuestRelationship } from "@/lib/guest-identity";
 
 export type ProfileUpdateResult =
@@ -44,6 +45,16 @@ export function buildGuestProfileSectionUpdate(
       return { ok: false, error: "Please select where the guest is staying.", status: 400 };
     }
 
+    const bedPreferenceRaw = trimOrNull(body.bedPreference);
+    let bedPreference: string | null = null;
+
+    if (accommodationType === "ON_SITE") {
+      if (bedPreferenceRaw && !isBedPreference(bedPreferenceRaw)) {
+        return { ok: false, error: "Please choose a valid bed preference.", status: 400 };
+      }
+      bedPreference = bedPreferenceRaw;
+    }
+
     return {
       ok: true,
       data: {
@@ -54,6 +65,7 @@ export function buildGuestProfileSectionUpdate(
         checkOutDate: trimOrNull(body.checkOutDate),
         needsShuttle: body.needsShuttle === true,
         accommodationNotes: trimOrNull(body.accommodationNotes),
+        bedPreference,
         accommodationSubmittedAt: now,
       },
     };

@@ -9,7 +9,7 @@ import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
 import { ProfilePhotoSection } from "@/components/wedding/profile/profile-photo-section";
 import { CompanionSection } from "@/components/wedding/profile/companion-section";
 import { RsvpProfileForm } from "@/components/wedding/profile/rsvp-profile-form";
-import { PasskeySettings } from "@/components/wedding/auth/social-auth";
+import { PasskeySettings, GoogleLinkSettings } from "@/components/wedding/auth/social-auth";
 import { ContentAccordion } from "@/components/wedding/shared/content-accordion";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
 import { ThemeToggle } from "@/components/wedding/shared/theme-toggle";
@@ -132,6 +132,7 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
                     </p>
                   )}
                   <PasskeySettings embedded onMessage={setPasskeyMessage} />
+                  <GoogleLinkSettings embedded onMessage={setPasskeyMessage} />
                   <ThemeToggle />
                   {annitaHidden && (
                     <button

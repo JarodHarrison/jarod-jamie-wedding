@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { buildPasswordFields } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
-import { findImportableGuestByName } from "@/lib/guest-claim";
+import { findClaimableGuestForSignup } from "@/lib/guest-claim";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { sendGuestWelcomeEmail } from "@/lib/guest-emails";
@@ -54,11 +54,11 @@ export async function POST(request: Request) {
         select: guestProfileSelect,
       });
     } else {
-      const importable = await findImportableGuestByName(name);
+      const claimable = await findClaimableGuestForSignup(name, email);
 
-      guest = importable
+      guest = claimable
         ? await prisma.guest.update({
-            where: { id: importable.id },
+            where: { id: claimable.id },
             data: {
               name,
               email,

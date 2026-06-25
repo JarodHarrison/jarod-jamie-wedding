@@ -41,7 +41,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# prisma generated client (rebuilt via postinstall / build)
+# prisma generated client (rebuilt via postinstall / db:generate)
 /src/generated
 
 .vercel

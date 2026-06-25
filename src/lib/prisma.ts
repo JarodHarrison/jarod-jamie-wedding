@@ -1,5 +1,5 @@
 import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient } from "@/generated/prisma/client";
+import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 
 const globalForPrisma = globalThis as unknown as {
@@ -37,10 +37,10 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-export type { Prisma } from "@/generated/prisma/client";
+export type { Prisma } from "@prisma/client";
 export {
   RsvpStatus,
   GuestTier,
   GuestStoryStatus,
   ShuttleStopStatusType,
-} from "@/generated/prisma/client";
+} from "@prisma/client";

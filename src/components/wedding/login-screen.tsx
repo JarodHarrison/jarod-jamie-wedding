@@ -11,6 +11,7 @@ import {
   signInWithPasskey,
   useAuthProviders,
 } from "@/components/wedding/auth/social-auth";
+import { GuestAccountTip } from "@/components/wedding/auth/guest-account-tip";
 import type { AdminUser, WeddingUser } from "@/types/wedding";
 
 type LoginScreenProps = {
@@ -150,6 +151,8 @@ export function LoginScreen({ onGuestLogin, onAdminLogin }: LoginScreenProps) {
             Jarod & Jamie&apos;s Wedding
           </p>
         </div>
+
+        {mode !== "forgot" && <GuestAccountTip className="mb-5" />}
 
         {mode !== "forgot" && (
           <div className="mb-6 flex rounded-full bg-[#e2d5c4]/30 p-1 shadow-inner">
@@ -342,9 +345,8 @@ export function LoginScreen({ onGuestLogin, onAdminLogin }: LoginScreenProps) {
         )}
 
         {mode === "signup" && (
-          <p className="mt-6 text-center text-[10px] leading-relaxed text-gray-400">
-            New accounts start with standard access. Jarod & Jamie may upgrade your permission for
-            on-site or penthouse events.
+          <p className="mt-4 text-center text-[10px] leading-relaxed text-gray-400">
+            Already have an account? Switch to Sign In above.
           </p>
         )}
       </div>

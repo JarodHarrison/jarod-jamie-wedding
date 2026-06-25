@@ -6,6 +6,7 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverExternalPackages: ["@prisma/client", "pg"],
   turbopack: {
     root: projectRoot,
   },

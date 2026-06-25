@@ -3,6 +3,7 @@ import { exchangeGoogleCode, isGoogleOAuthConfigured } from "@/lib/auth/google-o
 import { getGoogleOAuthOrigin } from "@/lib/auth/request-origin";
 import { validateOAuthState } from "@/lib/auth/oauth-state";
 import {
+  linkGoogleAccountToGuest,
   signInWithEmailAccountRedirect,
   signUpWithGoogleAccountRedirect,
 } from "@/lib/auth/social-login";
@@ -38,6 +39,11 @@ export async function GET(request: Request) {
   try {
     const profile = await exchangeGoogleCode(origin, code);
 
+    if (parsedState.mode === "link") {
+      await linkGoogleAccountToGuest(parsedState.guestId!, profile.email);
+      return NextResponse.redirect(new URL("/?auth=google_linked", origin));
+    }
+
     if (parsedState.mode === "signup") {
       const response = await signUpWithGoogleAccountRedirect(
         profile.email,
@@ -67,8 +73,17 @@ export async function GET(request: Request) {
   } catch (err) {
     console.error("[google/callback]", err);
     const message = err instanceof Error ? err.message : "google_failed";
-    if (message.includes("already exists")) {
+    if (message.includes("already exists") || message.includes("belongs to another")) {
       return redirectWithError(origin, "google_account_exists");
+    }
+    if (message.includes("linked to another")) {
+      return redirectWithError(origin, "google_link_taken");
+    }
+    if (message.includes("unclaimed invite")) {
+      return redirectWithError(origin, "google_link_unclaimed");
+    }
+    if (message.includes("already your primary")) {
+      return redirectWithError(origin, "google_link_same_email");
     }
     if (message === "invalid_client") {
       return redirectWithError(origin, "google_invalid_client");

@@ -94,8 +94,11 @@ export function WeddingApp() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const auth = params.get("auth");
-    if (auth === "google_signin" || auth === "google_signup") {
+    if (auth === "google_signin" || auth === "google_signup" || auth === "google_linked") {
       window.history.replaceState({}, "", window.location.pathname);
+      if (auth === "google_linked") {
+        setActiveTab("profile");
+      }
       void refreshSession().finally(() => setLoading(false));
       return;
     }
