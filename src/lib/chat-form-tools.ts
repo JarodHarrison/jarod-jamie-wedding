@@ -139,6 +139,7 @@ export async function executeGuestFormSave(
     accommodation: "accommodation details",
     transfer: "airport transfer details",
     interests: "service interests",
+    identity: "guest profile details",
   };
 
   return {
