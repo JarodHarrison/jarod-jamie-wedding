@@ -1,11 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 enum RsvpStatus {
@@ -75,10 +74,26 @@ model Guest {
   onSiteServiceInterest String?
   interestsSubmittedAt  DateTime? @db.Timestamptz
 
+  profilePhotoMime      String?
+  profilePhotoData      Bytes?
+  guestOfHost           String?
+  guestRelationship     String?
+  guestRelationshipNote String?
+  profileUpdatedAt      DateTime? @db.Timestamptz
+
+  sayiPartyName         String?
+  sayiLink              String?
+  sayiPlusOneAllowed    Boolean?
+  mailingAddress        String?
+  sayiImportedAt        DateTime? @db.Timestamptz
+  sayiCustomData        Json?
+
   goldCoastTrip GoldCoastTrip?
   passwordResetTokens GuestPasswordResetToken[]
   passkeyCredentials PasskeyCredential[]
   notifications InAppNotification[]
+  bingoProgress PhotoboothBingoProgress?
+  guestStories GuestStory[]
 }
 
 model InAppNotification {
@@ -87,11 +102,44 @@ model InAppNotification {
   guest     Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
   title     String
   body      String
+  imageUrl  String?
   readAt    DateTime? @db.Timestamptz
   createdAt DateTime  @default(now()) @db.Timestamptz
 
   @@index([guestId, createdAt(sort: Desc)])
   @@index([guestId, readAt])
+}
+
+model PhotoboothBingoProgress {
+  id           String    @id @default(cuid())
+  guestId      String    @unique
+  guest        Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  checkedItems String[]  @default([])
+  completedAt  DateTime? @db.Timestamptz
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+}
+
+enum GuestStoryStatus {
+  APPROVED
+  HIDDEN
+  PENDING
+}
+
+model GuestStory {
+  id          String           @id @default(cuid())
+  guestId     String
+  guest       Guest            @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  content     String
+  mood        String
+  isAnonymous Boolean          @default(false)
+  status      GuestStoryStatus @default(APPROVED)
+  reportCount Int              @default(0)
+  createdAt   DateTime         @default(now()) @db.Timestamptz
+
+  @@index([createdAt(sort: Desc)])
+  @@index([guestId])
+  @@index([status])
 }
 
 model GuestPasswordResetToken {

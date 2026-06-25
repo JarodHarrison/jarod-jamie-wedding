@@ -33,6 +33,17 @@ export const guestProfileSelect = {
   glowUpInterest: true,
   onSiteServiceInterest: true,
   interestsSubmittedAt: true,
+  profilePhotoMime: true,
+  guestOfHost: true,
+  guestRelationship: true,
+  guestRelationshipNote: true,
+  profileUpdatedAt: true,
+  mailingAddress: true,
+  sayiPartyName: true,
+  sayiLink: true,
+  sayiPlusOneAllowed: true,
+  sayiImportedAt: true,
+  sayiCustomData: true,
   createdAt: true,
 } satisfies Prisma.GuestSelect;
 
@@ -52,6 +63,13 @@ export function serializeGuestProfile(guest: GuestProfileRecord) {
     accommodationSubmittedAt: guest.accommodationSubmittedAt?.toISOString() ?? null,
     transferSubmittedAt: guest.transferSubmittedAt?.toISOString() ?? null,
     interestsSubmittedAt: guest.interestsSubmittedAt?.toISOString() ?? null,
+    profileUpdatedAt: guest.profileUpdatedAt?.toISOString() ?? null,
+    sayiImportedAt: guest.sayiImportedAt?.toISOString() ?? null,
+    sayiCustomData:
+      guest.sayiCustomData && typeof guest.sayiCustomData === "object" && !Array.isArray(guest.sayiCustomData)
+        ? (guest.sayiCustomData as Record<string, string>)
+        : null,
+    hasProfilePhoto: Boolean(guest.profilePhotoMime),
     createdAt: guest.createdAt.toISOString(),
   };
 }
@@ -67,8 +85,14 @@ export function serializeAdminGuest(guest: AdminGuestRecord) {
 
 export type SerializedAdminGuest = ReturnType<typeof serializeAdminGuest>;
 
-export type GuestProfileSection = "rsvp" | "accommodation" | "transfer" | "interests";
+export type GuestProfileSection = "rsvp" | "accommodation" | "transfer" | "interests" | "identity";
 
 export function isGuestProfileSection(value: string): value is GuestProfileSection {
-  return value === "rsvp" || value === "accommodation" || value === "transfer" || value === "interests";
+  return (
+    value === "rsvp" ||
+    value === "accommodation" ||
+    value === "transfer" ||
+    value === "interests" ||
+    value === "identity"
+  );
 }

@@ -13,15 +13,16 @@ export type AdminUser = {
   email: string;
 };
 
-export type MainTab = "home" | "itinerary" | "rsvp" | "guide" | "party";
+export type MainTab = "home" | "jarodjamie" | "itinerary" | "guide" | "party" | "profile";
 
 export type SubTab =
-  | "story"
+  | "rsvp"
   | "faq"
   | "wishingwell"
   | "travel"
   | "shuttle"
   | "photos"
+  | "bingo"
   | "attractions"
   | "fashion"
   | "glowup"
@@ -71,6 +72,18 @@ export type AdminGuest = {
   glowUpInterest: string | null;
   onSiteServiceInterest: string | null;
   interestsSubmittedAt: string | null;
+  profilePhotoMime: string | null;
+  guestOfHost: string | null;
+  guestRelationship: string | null;
+  guestRelationshipNote: string | null;
+  profileUpdatedAt: string | null;
+  mailingAddress: string | null;
+  sayiPartyName: string | null;
+  sayiLink: string | null;
+  sayiPlusOneAllowed: boolean | null;
+  sayiImportedAt: string | null;
+  sayiCustomData: Record<string, string> | null;
+  hasProfilePhoto: boolean;
   passwordPlaintext: string | null;
   isAdmin?: boolean;
 };

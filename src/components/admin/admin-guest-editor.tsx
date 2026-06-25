@@ -278,6 +278,53 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
         </div>
       </CollapsibleSection>
 
+      {(guest.sayiImportedAt || guest.sayiPartyName) && (
+        <CollapsibleSection title="Sayi.do import" submittedAt={guest.sayiImportedAt}>
+          <dl className="space-y-2 text-xs text-[#2a2723]">
+            {guest.sayiPartyName && (
+              <div>
+                <dt className="font-bold uppercase tracking-wider text-gray-400">Party</dt>
+                <dd>{guest.sayiPartyName}</dd>
+              </div>
+            )}
+            {guest.mailingAddress && (
+              <div>
+                <dt className="font-bold uppercase tracking-wider text-gray-400">Mailing address</dt>
+                <dd>{guest.mailingAddress}</dd>
+              </div>
+            )}
+            {guest.sayiPlusOneAllowed !== null && (
+              <div>
+                <dt className="font-bold uppercase tracking-wider text-gray-400">Plus one allowed</dt>
+                <dd>{guest.sayiPlusOneAllowed ? "Yes" : "No"}</dd>
+              </div>
+            )}
+            {guest.sayiLink && (
+              <div>
+                <dt className="font-bold uppercase tracking-wider text-gray-400">Sayi RSVP link</dt>
+                <dd>
+                  <a href={guest.sayiLink} target="_blank" rel="noreferrer" className="text-[#c3a379] underline">
+                    {guest.sayiLink}
+                  </a>
+                </dd>
+              </div>
+            )}
+            {guest.sayiCustomData && Object.keys(guest.sayiCustomData).length > 0 && (
+              <div>
+                <dt className="mb-1 font-bold uppercase tracking-wider text-gray-400">Extra Sayi fields</dt>
+                <dd className="space-y-1">
+                  {Object.entries(guest.sayiCustomData).map(([key, value]) => (
+                    <p key={key}>
+                      <span className="text-gray-500">{key}:</span> {value}
+                    </p>
+                  ))}
+                </dd>
+              </div>
+            )}
+          </dl>
+        </CollapsibleSection>
+      )}
+
       <CollapsibleSection title="RSVP" submittedAt={guest.rsvpSubmittedAt}>
         <form
           onSubmit={(e) => {

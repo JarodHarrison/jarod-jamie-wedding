@@ -5,6 +5,7 @@ import { useState } from "react";
 import { GUEST_TIER_LABELS } from "@/lib/api-utils";
 import { theme } from "@/lib/theme";
 import { AdminGuestEditor } from "@/components/admin/admin-guest-editor";
+import { AdminGuestImport } from "@/components/admin/admin-guest-import";
 import type { AdminGuest, GuestTier } from "@/types/wedding";
 
 const TIERS: GuestTier[] = ["PENTHOUSE", "ON_SITE", "OFF_SITE"];
@@ -122,6 +123,8 @@ export function AdminGuestList({
 
   return (
     <div>
+      <AdminGuestImport onMessage={onMessage} onImported={onRefresh} />
+
       <button
         type="button"
         onClick={() => setShowAddForm((open) => !open)}
@@ -247,6 +250,9 @@ export function AdminGuestList({
                       )}
                     </div>
                     <p className="text-xs text-gray-500">{guest.email}</p>
+                    {guest.sayiPartyName && (
+                      <p className="text-[10px] text-gray-400">Party: {guest.sayiPartyName}</p>
+                    )}
                     <p
                       className={`mt-1 text-[10px] font-bold uppercase tracking-wider ${rsvpColor(guest.rsvpStatus)}`}
                     >
