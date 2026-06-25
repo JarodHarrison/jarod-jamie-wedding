@@ -1,6 +1,7 @@
 import type { RsvpStatus } from "@prisma/client";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import { isBedPreference } from "@/lib/bed-preference";
+import { guestIsOnSiteForAccommodation } from "@/lib/accommodation-form-defaults";
 import { isGuestOfHost, isGuestRelationship } from "@/lib/guest-identity";
 
 export type ProfileUpdateResult =
@@ -15,7 +16,10 @@ function trimOrNull(value: unknown) {
 export function buildGuestProfileSectionUpdate(
   section: GuestProfileSection,
   body: Record<string, unknown>,
-  options?: { isAdmin?: boolean },
+  options?: {
+    isAdmin?: boolean;
+    existing?: Parameters<typeof guestIsOnSiteForAccommodation>[0];
+  },
 ): ProfileUpdateResult {
   const now = new Date();
   const isAdmin = options?.isAdmin ?? false;
@@ -55,6 +59,10 @@ export function buildGuestProfileSectionUpdate(
       bedPreference = bedPreferenceRaw;
     }
 
+    const onSiteGuest =
+      accommodationType === "ON_SITE" ||
+      (options?.existing ? guestIsOnSiteForAccommodation(options.existing) : false);
+
     return {
       ok: true,
       data: {
@@ -63,7 +71,7 @@ export function buildGuestProfileSectionUpdate(
         accommodationAddress: trimOrNull(body.accommodationAddress),
         checkInDate: trimOrNull(body.checkInDate),
         checkOutDate: trimOrNull(body.checkOutDate),
-        needsShuttle: body.needsShuttle === true,
+        needsShuttle: onSiteGuest ? false : body.needsShuttle === true,
         accommodationNotes: trimOrNull(body.accommodationNotes),
         bedPreference,
         accommodationSubmittedAt: now,

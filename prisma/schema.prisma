@@ -55,6 +55,7 @@ model Guest {
   companionPhotoMime String?
   companionPhotoData Bytes?
   partyRole        PartyRole?
+  isMc             Boolean   @default(false)
   dietaryNotes     String?
   songRequest      String?
   rsvpSubmittedAt  DateTime? @db.Timestamptz
@@ -111,6 +112,7 @@ model Guest {
   passkeyCredentials PasskeyCredential[]
   notifications InAppNotification[]
   bingoProgress PhotoboothBingoProgress?
+  bingoVerifications PhotoboothBingoProgress[] @relation("BingoVerifiedBy")
   guestStories GuestStory[]
   sharedPhotos GuestSharedPhoto[]
   linkedLogins GuestLinkedLogin[]
@@ -142,13 +144,19 @@ model InAppNotification {
 }
 
 model PhotoboothBingoProgress {
-  id           String    @id @default(cuid())
-  guestId      String    @unique
-  guest        Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
-  checkedItems String[]  @default([])
-  completedAt  DateTime? @db.Timestamptz
-  createdAt    DateTime  @default(now()) @db.Timestamptz
-  updatedAt    DateTime  @updatedAt @db.Timestamptz
+  id                String    @id @default(cuid())
+  guestId           String    @unique
+  guest             Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  checkedItems      String[]  @default([])
+  completedAt       DateTime? @db.Timestamptz
+  verifiedAt        DateTime? @db.Timestamptz
+  verifiedByGuestId String?
+  verifiedByGuest   Guest?    @relation("BingoVerifiedBy", fields: [verifiedByGuestId], references: [id], onDelete: SetNull)
+  createdAt         DateTime  @default(now()) @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @db.Timestamptz
+
+  @@index([completedAt])
+  @@index([verifiedAt])
 }
 
 enum GuestStoryStatus {

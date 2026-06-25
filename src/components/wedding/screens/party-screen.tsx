@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, MessageCircle, Phone } from "lucide-react";
 import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
+import { normalizeGuestName } from "@/lib/guest-name";
 import { theme } from "@/lib/theme";
 
 const PERSON_PLACEHOLDER = "/party/person-placeholder.svg";
@@ -14,6 +15,16 @@ type PartyMember = {
   phone?: string;
   imageSrc?: string;
 };
+
+const GROOM_NAME_KEYS: Record<string, string> = {
+  "jarod harrison": "jarod",
+  "jamie stocks": "jamie",
+};
+
+const grooms: PartyMember[] = [
+  { name: "Jarod Harrison", role: "Groom" },
+  { name: "Jamie Stocks", role: "Groom" },
+];
 
 const weddingParty: PartyMember[] = [
   { name: "Kirra ten-Hove Smith", role: "J-rod's Best Bitch", phone: "+61400123456" },
@@ -135,7 +146,64 @@ function FamilyAccordion({
   );
 }
 
+function GroomCard({ person }: { person: PartyMember }) {
+  return (
+    <div
+      className="flex flex-col items-center rounded-3xl border bg-white/80 p-5 text-center shadow-sm"
+      style={{ borderColor: theme.gold }}
+    >
+      <div
+        className="relative mb-3 h-24 w-24 overflow-hidden rounded-full border-2 shadow-md"
+        style={{ borderColor: theme.gold }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={person.imageSrc ?? PERSON_PLACEHOLDER}
+          alt={person.name}
+          className="h-full w-full object-cover"
+        />
+      </div>
+      <p className="font-serif text-xl text-[#2a2723]">{person.name}</p>
+      <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">{person.role}</p>
+    </div>
+  );
+}
+
 export function PartyScreen() {
+  const [photoByNameKey, setPhotoByNameKey] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/guests/wall");
+        if (!res.ok) return;
+        const data = await res.json();
+        const guests: { name: string; photoUrl: string }[] = data.guests ?? [];
+        const next: Record<string, string> = {};
+
+        for (const guest of guests) {
+          const groomKey = GROOM_NAME_KEYS[normalizeGuestName(guest.name)];
+          if (groomKey) next[groomKey] = guest.photoUrl;
+        }
+
+        setPhotoByNameKey(next);
+      } catch {
+        // non-blocking
+      }
+    })();
+  }, []);
+
+  const groomsWithPhotos = useMemo(
+    () =>
+      grooms.map((person) => {
+        const groomKey = GROOM_NAME_KEYS[normalizeGuestName(person.name)];
+        return groomKey && photoByNameKey[groomKey]
+          ? { ...person, imageSrc: photoByNameKey[groomKey] }
+          : person;
+      }),
+    [photoByNameKey],
+  );
+
   return (
     <div className="animate-fade-in animate-slide-up pb-10">
       <div className="wedding-screen-top sticky top-0 z-20 bg-[#f7f4ee]/90 px-8 pb-6 text-center backdrop-blur-md">
@@ -151,6 +219,20 @@ export function PartyScreen() {
       </div>
 
       <div className="mt-4 space-y-8 px-6">
+        <div>
+          <h3
+            className="mb-4 border-b pb-2 font-serif text-xl"
+            style={{ borderColor: theme.border, color: theme.gold }}
+          >
+            The Grooms
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            {groomsWithPhotos.map((person) => (
+              <GroomCard key={person.name} person={person} />
+            ))}
+          </div>
+        </div>
+
         <div>
           <h3
             className="mb-4 border-b pb-2 font-serif text-xl"

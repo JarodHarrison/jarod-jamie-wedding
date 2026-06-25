@@ -24,6 +24,8 @@ export type SubTab =
   | "shuttle"
   | "photos"
   | "bingo"
+  | "mc-verify"
+  | "venue-map"
   | "attractions"
   | "fashion"
   | "glowup"
@@ -58,6 +60,7 @@ export type AdminGuest = {
   } | null;
   hasCompanionPhoto: boolean;
   partyRole: "BEST_BITCH" | null;
+  isMc: boolean;
   dietaryNotes: string | null;
   songRequest: string | null;
   rsvpSubmittedAt: string | null;

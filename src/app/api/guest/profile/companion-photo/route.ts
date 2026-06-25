@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
 import { requireGuestSession } from "@/lib/auth/session";
+import { resolveUploadImageMime } from "@/lib/detect-image-mime";
 import { PROFILE_PHOTO_ACCEPT, PROFILE_PHOTO_MAX_BYTES } from "@/lib/guest-identity";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
+import {
+  isVisionBlockedPhoto,
+  moderateGuestPhoto,
+  PROFILE_PHOTO_VISION_REJECTION,
+} from "@/lib/google-vision-moderation";
 import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -59,19 +68,28 @@ export async function POST(request: Request) {
       return jsonError("Please choose a photo to upload.", 400);
     }
 
-    if (!ALLOWED_MIME.has(file.type)) {
-      return jsonError(`Use a photo file (${PROFILE_PHOTO_ACCEPT}).`, 400);
-    }
-
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.byteLength > PROFILE_PHOTO_MAX_BYTES) {
       return jsonError("Photo is too large — please use an image under 750KB.", 400);
     }
 
+    const mime = resolveUploadImageMime(file, buffer);
+    if (!mime || !ALLOWED_MIME.has(mime)) {
+      return jsonError(`Use a photo file (${PROFILE_PHOTO_ACCEPT}).`, 400);
+    }
+
+    const moderation = await moderateGuestPhoto(buffer);
+    if (isVisionBlockedPhoto(moderation)) {
+      return NextResponse.json({
+        rejected: true,
+        message: PROFILE_PHOTO_VISION_REJECTION,
+      });
+    }
+
     const guest = await prisma.guest.update({
       where: { id: session.id },
       data: {
-        companionPhotoMime: file.type,
+        companionPhotoMime: mime,
         companionPhotoData: buffer,
         profileUpdatedAt: new Date(),
       },

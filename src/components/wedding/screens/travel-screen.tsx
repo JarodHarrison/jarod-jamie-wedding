@@ -3,7 +3,10 @@
 import { ExternalLink, Phone, Plane, Bus } from "lucide-react";
 import { AccommodationForm } from "@/components/wedding/forms/accommodation-form";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
+import { useVenueMapAccess } from "@/components/wedding/hooks/use-venue-map-access";
+import { deriveAccommodationFormState, guestIsOnSiteForAccommodation } from "@/lib/accommodation-form-defaults";
 import { WhereImStayingCard } from "@/components/wedding/shared/where-im-staying-card";
+import { VenueMapViewer } from "@/components/wedding/shared/venue-map-viewer";
 import { flightTransferAccordion } from "@/components/wedding/data/flight-transfers";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
 import { TravelAccordion } from "@/components/wedding/shared/travel-accordion";
@@ -46,6 +49,9 @@ type TravelScreenProps = {
 
 export function TravelScreen({ setActiveTab }: TravelScreenProps) {
   const { profile } = useGuestProfile();
+  const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
+  const isOnSiteGuest = profile ? guestIsOnSiteForAccommodation(profile) : false;
+  const derivedStay = profile ? deriveAccommodationFormState(profile) : null;
 
   return (
     <div className="animate-fade-in animate-slide-right pb-10">
@@ -56,6 +62,21 @@ export function TravelScreen({ setActiveTab }: TravelScreenProps) {
             <WhereImStayingCard profile={profile} compact />
           </div>
         )}
+        {showVenueMap && (
+          <div className="mb-6">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Venue map</p>
+              <button
+                type="button"
+                onClick={() => setActiveTab("venue-map")}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379] underline"
+              >
+                Full screen
+              </button>
+            </div>
+            <VenueMapViewer compact />
+          </div>
+        )}
         <TravelAccordion
           defaultOpenId="accommodation"
           items={[
@@ -64,16 +85,37 @@ export function TravelScreen({ setActiveTab }: TravelScreenProps) {
               title: "Accommodation Preferences",
               content: (
                 <>
-                  <p className="mb-4 text-sm font-light leading-relaxed text-gray-600">
-                    Please take a moment to fill out your accommodation preferences below. Knowing
-                    where everyone is staying allows us to finalise our courtesy shuttle routes and
-                    designate convenient stops along the way.
-                  </p>
-                  <p className="mb-4 text-sm font-light leading-relaxed text-gray-600">
-                    Select <span className="font-medium text-[#2a2723]">On-site at Spicers Clovelly Estate</span> if
-                    you have a confirmed room — you&apos;ll unlock on-site events in the itinerary,
-                    including Friday&apos;s lakeside welcome.
-                  </p>
+                  {isOnSiteGuest ? (
+                    <p className="mb-4 text-sm font-light leading-relaxed text-gray-600">
+                      Your on-site stay at Spicers is pre-filled below from your room allocation.
+                      Confirm your bed preference and dates, then tap save.
+                    </p>
+                  ) : (
+                    <>
+                      <p className="mb-4 text-sm font-light leading-relaxed text-gray-600">
+                        Please take a moment to fill out your accommodation preferences below. Knowing
+                        where everyone is staying allows us to finalise our courtesy shuttle routes and
+                        designate convenient stops along the way.
+                      </p>
+                      <p className="mb-4 text-sm font-light leading-relaxed text-gray-600">
+                        Select{" "}
+                        <span className="font-medium text-[#2a2723]">
+                          On-site at Spicers Clovelly Estate
+                        </span>{" "}
+                        if you have a confirmed room — you&apos;ll unlock on-site events in the
+                        itinerary, including Friday&apos;s lakeside welcome.
+                      </p>
+                    </>
+                  )}
+                  {derivedStay?.hasRoomAllocation && derivedStay.allocatedRoomName && (
+                    <p className="mb-4 rounded-xl border bg-[#f7f4ee] px-4 py-3 text-sm text-gray-600" style={{ borderColor: theme.border }}>
+                      <span className="font-medium text-[#2a2723]">Room:</span>{" "}
+                      {derivedStay.allocatedRoomName}
+                      {derivedStay.checkInDate && derivedStay.checkOutDate
+                        ? ` · ${derivedStay.checkInDate} to ${derivedStay.checkOutDate}`
+                        : ""}
+                    </p>
+                  )}
                   <AccommodationForm />
                 </>
               ),

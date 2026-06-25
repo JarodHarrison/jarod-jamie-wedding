@@ -15,7 +15,7 @@ import { GuestAccountTip } from "@/components/wedding/auth/guest-account-tip";
 import type { AdminUser, WeddingUser } from "@/types/wedding";
 
 type LoginScreenProps = {
-  onGuestLogin: (user: WeddingUser, canAccessAdmin?: boolean) => void;
+  onGuestLogin: (user: WeddingUser, canAccessAdmin?: boolean, canVerifyBingo?: boolean) => void;
   onAdminLogin: (admin: AdminUser) => void;
 };
 
@@ -104,7 +104,7 @@ export function LoginScreen({ onGuestLogin, onAdminLogin }: LoginScreenProps) {
       }
 
       if (data.user) {
-        onGuestLogin(data.user, Boolean(data.canAccessAdmin));
+        onGuestLogin(data.user, Boolean(data.canAccessAdmin), Boolean(data.canVerifyBingo));
         return;
       }
 
@@ -258,21 +258,32 @@ export function LoginScreen({ onGuestLogin, onAdminLogin }: LoginScreenProps) {
           <button
             type="submit"
             disabled={loading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl py-4 text-xs font-bold uppercase tracking-widest shadow-md transition-transform active:scale-95 disabled:opacity-60"
+            className={`flex w-full items-center justify-center gap-2 rounded-xl py-4 font-bold shadow-md transition-transform active:scale-95 disabled:opacity-60 ${
+              mode === "signin" && !loading
+                ? "overflow-x-auto px-3 normal-case tracking-normal [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+                : "text-xs uppercase tracking-widest"
+            }`}
             style={{ backgroundColor: theme.btnDark, color: theme.gold }}
           >
-            {loading
-              ? mode === "signin"
-                ? "Signing in..."
-                : mode === "signup"
-                  ? "Creating account..."
-                  : "Sending..."
-              : mode === "signin"
-                ? "Access App"
-                : mode === "signup"
-                  ? "Create Account"
-                  : "Send Reset Link"}{" "}
-            <ChevronRight size={14} />
+            {loading ? (
+              mode === "signin" ? (
+                "Signing in..."
+              ) : mode === "signup" ? (
+                "Creating account..."
+              ) : (
+                "Sending..."
+              )
+            ) : mode === "signin" ? (
+              <span className="whitespace-nowrap text-[10px] sm:text-xs">
+                Don&apos;t you know who I think I am?{" "}
+                <span className="uppercase tracking-widest">Let me in</span>
+              </span>
+            ) : mode === "signup" ? (
+              "Create Account"
+            ) : (
+              "Send Reset Link"
+            )}
+            {!(mode === "signin" && !loading) && <ChevronRight size={14} />}
           </button>
         </form>
 

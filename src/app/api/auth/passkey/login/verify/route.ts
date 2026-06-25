@@ -21,7 +21,7 @@ export async function POST(request: Request) {
     const credential = await prisma.passkeyCredential.findUnique({
       where: { credentialId: body.id as string },
       include: {
-        guest: { select: { id: true, name: true, email: true, tier: true } },
+        guest: { select: { id: true, name: true, email: true, tier: true, isMc: true } },
         admin: { select: { id: true, name: true, email: true } },
       },
     });

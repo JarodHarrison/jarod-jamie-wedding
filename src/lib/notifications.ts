@@ -1,5 +1,6 @@
 import { isValidGuestTier } from "@/lib/api-utils";
 import { prisma } from "@/lib/prisma";
+import { ANNITA_NOTIFICATION_ICON } from "@/lib/notification-branding";
 import type { GuestTier } from "@/types/wedding";
 
 export type NotificationAudience =
@@ -39,12 +40,12 @@ export async function createInAppNotifications(
   guestIds: string[],
   title: string,
   body: string,
-  imageUrl?: string,
+  imageUrl: string = ANNITA_NOTIFICATION_ICON,
 ): Promise<number> {
   if (guestIds.length === 0) return 0;
 
   const result = await prisma.inAppNotification.createMany({
-    data: guestIds.map((guestId) => ({ guestId, title, body, imageUrl: imageUrl ?? null })),
+    data: guestIds.map((guestId) => ({ guestId, title, body, imageUrl })),
   });
 
   return result.count;

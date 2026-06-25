@@ -140,11 +140,15 @@ export function getNotificationRecipients(): string[] {
     .filter(Boolean);
 }
 
-export async function sendNotificationEmail(subject: string, text: string): Promise<boolean> {
+export async function sendNotificationEmail(
+  subject: string,
+  text: string,
+  html?: string,
+): Promise<boolean> {
   const recipients = getNotificationRecipients();
   if (recipients.length === 0) {
     console.warn("[email] NOTIFY_EMAIL is empty — skipping notification:", subject);
     return false;
   }
-  return sendEmail({ to: recipients, subject, text, from: "notifications" });
+  return sendEmail({ to: recipients, subject, text, html, from: "notifications" });
 }

@@ -1,10 +1,25 @@
-import { Bus, Camera, Map, Shirt, Sparkles } from "lucide-react";
+import { Bus, Camera, Map, MapPinned, Shirt, Sparkles } from "lucide-react";
 import type { AppTab } from "@/types/wedding";
 import { GuideCard, type GuideCardConfig } from "@/components/wedding/shared/guide-card";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
+import { useVenueMapAccess } from "@/components/wedding/hooks/use-venue-map-access";
 
 const guideCards: GuideCardConfig[] = [
+  {
+    id: "venue-map",
+    title: "Venue Map",
+    description:
+      "Homesteads, lawns, pool, and the walk to Lake View Deck — your illustrated Spicers map.",
+    actionLabel: "Open Map",
+    icon: MapPinned,
+    className:
+      "bg-gradient-to-br from-[#2a4a6b] via-[#3d6b8f] to-[#5a8fb0] text-white shadow-lg shadow-[#2a4a6b]/25",
+    titleClassName: "text-[#d4ebf7]",
+    descriptionClassName: "text-white/85",
+    actionClassName: "text-[#d4ebf7]",
+    iconClassName: "text-[#d4ebf7]",
+  },
   {
     id: "attractions",
     title: "Explore Montville",
@@ -70,8 +85,10 @@ const guideCards: GuideCardConfig[] = [
 
 export function GuideScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
   const { isFeatureVisible } = useWeddingPhase();
+  const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
 
   const visibleCards = guideCards.filter((card) => {
+    if (card.id === "venue-map") return showVenueMap;
     if (card.id === "shuttle") return isFeatureVisible("live-shuttle");
     if (["attractions", "fashion", "glowup", "onsite"].includes(card.id)) {
       return isFeatureVisible("pre-wedding-planning");

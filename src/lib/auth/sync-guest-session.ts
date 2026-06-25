@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import {
+  guestHasRoomAllocation,
+  tierForRoomAllocation,
+} from "@/lib/on-site-access";
+import {
   setSessionCookie,
   type GuestSession,
 } from "@/lib/auth/session";
@@ -9,17 +13,36 @@ export async function syncGuestSessionFromDb(
 ): Promise<GuestSession | null> {
   const guest = await prisma.guest.findUnique({
     where: { id: session.id },
-    select: { id: true, name: true, email: true, tier: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      tier: true,
+      assignedRoomName: true,
+    },
   });
 
   if (!guest) return null;
+
+  let tier = guest.tier;
+
+  if (guestHasRoomAllocation(guest.assignedRoomName)) {
+    const promotedTier = tierForRoomAllocation(guest.tier);
+    if (promotedTier) {
+      await prisma.guest.update({
+        where: { id: guest.id },
+        data: { tier: promotedTier },
+      });
+      tier = promotedTier;
+    }
+  }
 
   const fresh: GuestSession = {
     type: "guest",
     id: guest.id,
     name: guest.name,
     email: guest.email,
-    tier: guest.tier,
+    tier,
   };
 
   const changed =

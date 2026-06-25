@@ -13,6 +13,7 @@ import { requireGuestSession } from "@/lib/auth/session";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { applyPlusOneLink } from "@/lib/plus-one-link";
 import { prisma } from "@/lib/prisma";
+import { isVisionModerationEnabled } from "@/lib/google-vision-moderation";
 
 export async function GET() {
   try {
@@ -24,7 +25,10 @@ export async function GET() {
 
     if (!guest) return jsonError("Guest not found.", 404);
 
-    return NextResponse.json({ profile: serializeGuestProfile(guest) });
+    return NextResponse.json({
+      profile: serializeGuestProfile(guest),
+      visionModerationEnabled: isVisionModerationEnabled(),
+    });
   } catch {
     return jsonError("Unauthorized", 401);
   }
@@ -40,15 +44,17 @@ export async function PATCH(request: Request) {
       return jsonError("Invalid form section.", 400);
     }
 
-    const result = buildGuestProfileSectionUpdate(section, body);
-    if (!result.ok) return jsonError(result.error, result.status);
-
-    const existing = await prisma.guest.findUnique({
+    const existingGuest = await prisma.guest.findUnique({
       where: { id: session.id },
-      select: { tier: true },
+      select: guestProfileSelect,
     });
 
-    if (!existing) return jsonError("Guest not found.", 404);
+    if (!existingGuest) return jsonError("Guest not found.", 404);
+
+    const result = buildGuestProfileSectionUpdate(section, body, {
+      existing: existingGuest,
+    });
+    if (!result.ok) return jsonError(result.error, result.status);
 
     const updateData = { ...result.data };
 
@@ -86,7 +92,7 @@ export async function PATCH(request: Request) {
     if (section === "accommodation") {
       const nextTier = tierForClovellyAccommodation(
         updateData.accommodationType as string | undefined,
-        existing.tier,
+        existingGuest.tier,
       );
       if (nextTier) {
         updateData.tier = nextTier;

@@ -7,10 +7,34 @@ import { attractionToScheduleProps, goldCoastAttractions } from "@/lib/gold-coas
 import { LAKESIDE_MEET_GREET } from "@/lib/on-site-access";
 import { saveOfflineBundle } from "@/lib/offline-cache";
 import { theme } from "@/lib/theme";
+import type { AppTab } from "@/types/wedding";
+import { useVenueMapAccess } from "@/components/wedding/hooks/use-venue-map-access";
 
-function WeddingSchedule({ isOnSite }: { isOnSite: boolean }) {
+function WeddingSchedule({
+  isOnSite,
+  onOpenVenueMap,
+  showVenueMapLink,
+}: {
+  isOnSite: boolean;
+  onOpenVenueMap?: () => void;
+  showVenueMapLink?: boolean;
+}) {
   return (
     <div className="relative space-y-6 before:absolute before:inset-0 before:ml-6 before:h-full before:w-0.5 before:-translate-x-px before:bg-gradient-to-b before:from-[#e2d5c4]/0 before:via-[#e2d5c4] before:to-[#e2d5c4]/0">
+      {showVenueMapLink && onOpenVenueMap && (
+        <button
+          type="button"
+          onClick={onOpenVenueMap}
+          className="ml-12 flex w-[calc(100%-3rem)] items-center justify-between gap-3 rounded-2xl border bg-white/80 px-4 py-3 text-left shadow-sm active:scale-[0.99]"
+          style={{ borderColor: theme.border }}
+        >
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">Venue map</p>
+            <p className="text-sm text-[#2a2723]">Find homesteads, lawns & Lake View Deck</p>
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Open</span>
+        </button>
+      )}
       {isOnSite && (
         <ScheduleNode
           date={LAKESIDE_MEET_GREET.date}
@@ -21,12 +45,42 @@ function WeddingSchedule({ isOnSite }: { isOnSite: boolean }) {
           desc={LAKESIDE_MEET_GREET.desc}
           details={[...LAKESIDE_MEET_GREET.details]}
           tip={LAKESIDE_MEET_GREET.tip}
+          calendarEventId="lakeside-meet-greet"
         />
       )}
-      <ScheduleNode date="26.09" title="The Ceremony" time="3:00pm" attire="Colourful cocktail" loc="Spicers Clovelly Estate" desc="Honey, get ready to sashay! Strictly adults-only." />
-      <ScheduleNode date="26.09" title="Garden Party" time="4:30pm" loc="Upper Lawn" desc="Decadent canapés, divine drinks, face painter, and a glitter bar! ✨" />
-      <ScheduleNode date="26.09" title="Reception" time="6:00pm" loc="The Pavilion" desc="Celebrate with amazing food, drinks, and dance." />
-      <ScheduleNode date="27.09" title="Family Breakfast" time="9:00am" attire="Sunglasses probably required" loc="Spicers Clovelly Estate" />
+      <ScheduleNode
+        date="26.09"
+        title="The Ceremony"
+        time="3:00pm"
+        attire="Colourful cocktail"
+        loc="Spicers Clovelly Estate"
+        desc="Honey, get ready to sashay! Strictly adults-only."
+        calendarEventId="ceremony"
+      />
+      <ScheduleNode
+        date="26.09"
+        title="Garden Party"
+        time="4:30pm"
+        loc="Upper Lawn"
+        desc="Decadent canapés, divine drinks, face painter, and a glitter bar! ✨"
+        calendarEventId="garden-party"
+      />
+      <ScheduleNode
+        date="26.09"
+        title="Reception"
+        time="6:00pm"
+        loc="The Pavilion"
+        desc="Celebrate with amazing food, drinks, and dance."
+        calendarEventId="reception"
+      />
+      <ScheduleNode
+        date="27.09"
+        title="Family Breakfast"
+        time="9:00am"
+        attire="Sunglasses probably required"
+        loc="Spicers Clovelly Estate"
+        calendarEventId="family-breakfast"
+      />
     </div>
   );
 }
@@ -149,10 +203,13 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
 export function ItineraryScreen({
   isPenthouse,
   isOnSite,
+  setActiveTab,
 }: {
   isPenthouse: boolean;
   isOnSite: boolean;
+  setActiveTab?: (tab: AppTab) => void;
 }) {
+  const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
   const [view, setView] = useState<"wedding" | "goldcoast">("wedding");
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -209,7 +266,11 @@ export function ItineraryScreen({
       </div>
       <div className="mt-4 px-6">
         {view === "wedding" ? (
-          <WeddingSchedule isOnSite={isOnSite} />
+          <WeddingSchedule
+            isOnSite={isOnSite}
+            showVenueMapLink={showVenueMap}
+            onOpenVenueMap={setActiveTab ? () => setActiveTab("venue-map") : undefined}
+          />
         ) : (
           <GoldCoastSchedule isPenthouse={isPenthouse} />
         )}

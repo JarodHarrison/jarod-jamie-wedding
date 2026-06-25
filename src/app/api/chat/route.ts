@@ -10,6 +10,7 @@ import { matchInstantFaq } from "@/lib/chat-faq";
 import { matchLocalDiscoveryInstant } from "@/lib/chat-local-instant";
 import { wantsFormTools } from "@/lib/chat-intents";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
+import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
@@ -72,8 +73,12 @@ export async function POST(request: Request) {
 
     let guestId: string | undefined;
     let profile;
+    let guestTier = session.type === "guest" ? session.tier : "ADMIN";
 
     if (session.type === "guest") {
+      const fresh = await syncGuestSessionFromDb(session);
+      if (fresh) guestTier = fresh.tier;
+
       const guestContext = await loadGuestContext(session, messages);
       guestId = guestContext.guestId;
       profile = guestContext.profile;
@@ -83,7 +88,7 @@ export async function POST(request: Request) {
       session.type === "guest"
         ? {
             guestName: session.name,
-            guestTier: session.tier,
+            guestTier,
             guestId,
             profile,
           }

@@ -3,6 +3,11 @@ import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError } from "@/lib/api-utils";
 import { findGuestByNormalizedName } from "@/lib/guest-claim";
 import { normalizeGuestName } from "@/lib/guest-name";
+import {
+  bedPreferenceFromRoomConfiguration,
+  toDateInputValue,
+} from "@/lib/accommodation-form-defaults";
+import { tierForRoomAllocation } from "@/lib/on-site-access";
 import { prisma } from "@/lib/prisma";
 import {
   guestNameMatchesImport,
@@ -84,6 +89,10 @@ export async function POST(request: Request) {
           where: { id: guest.id },
           select: { tier: true },
         });
+        const promotedTier = tierForRoomAllocation(guestRecord?.tier ?? "OFF_SITE");
+        const importedBed = bedPreferenceFromRoomConfiguration(row.configuration);
+        const importedCheckIn = toDateInputValue(row.checkIn);
+        const importedCheckOut = toDateInputValue(row.checkOut);
 
         await prisma.guest.update({
           where: { id: guest.id },
@@ -95,9 +104,13 @@ export async function POST(request: Request) {
             assignedRoomConfiguration: row.configuration,
             roomAllocationImportedAt: importedAt,
             accommodationType: "ON_SITE",
-            accommodationName: "Spicers Clovelly Estate",
+            accommodationName: `Spicers Clovelly Estate — ${row.roomName}`,
             accommodationAddress: "68 Montville-Maleny Rd, Montville QLD 4560",
-            ...(guestRecord?.tier === "OFF_SITE" ? { tier: "ON_SITE" as const } : {}),
+            needsShuttle: false,
+            ...(importedCheckIn ? { checkInDate: importedCheckIn } : {}),
+            ...(importedCheckOut ? { checkOutDate: importedCheckOut } : {}),
+            ...(importedBed ? { bedPreference: importedBed } : {}),
+            ...(promotedTier ? { tier: promotedTier } : {}),
           },
         });
 

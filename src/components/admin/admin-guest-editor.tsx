@@ -354,6 +354,33 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               <option value="BEST_BITCH">Best Bitch (vendor access 5 days before)</option>
             </select>
           </div>
+          <div>
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              MC profile
+            </p>
+            <label className="flex items-center gap-2 text-xs text-[#2a2723]">
+              <input
+                type="checkbox"
+                checked={guest.isMc}
+                onChange={async (e) => {
+                  const isMc = e.target.checked;
+                  const res = await fetch(`/api/admin/guests/${guest.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ isMc }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    onError(data.error ?? "Failed to update MC profile.");
+                    return;
+                  }
+                  onUpdated({ ...guest, ...data.guest, isAdmin: guest.isAdmin });
+                }}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              Wedding MC (can verify Photobooth Bingo winners)
+            </label>
+          </div>
         </div>
       </CollapsibleSection>
 

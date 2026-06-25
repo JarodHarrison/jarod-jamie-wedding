@@ -2,8 +2,22 @@ import type { GuestTier } from "@/types/wedding";
 
 export const CLOVELLY_ACCOMMODATION_TYPE = "ON_SITE";
 
-export function hasOnSiteAppAccess(tier: GuestTier | undefined | null): boolean {
-  return tier === "ON_SITE" || tier === "PENTHOUSE";
+export function guestHasRoomAllocation(assignedRoomName: string | null | undefined): boolean {
+  return Boolean(assignedRoomName?.trim());
+}
+
+export function tierForRoomAllocation(currentTier: GuestTier): GuestTier | undefined {
+  if (currentTier === "PENTHOUSE" || currentTier === "ON_SITE") return undefined;
+  return "ON_SITE";
+}
+
+export function hasOnSiteAppAccess(
+  tier: GuestTier | undefined | null,
+  options?: { assignedRoomName?: string | null },
+): boolean {
+  if (tier === "ON_SITE" || tier === "PENTHOUSE") return true;
+  if (guestHasRoomAllocation(options?.assignedRoomName)) return true;
+  return false;
 }
 
 export function tierForClovellyAccommodation(

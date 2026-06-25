@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight, Clock, ExternalLink, MapPin } from "lucide-react";
+import { AddToCalendarButton } from "@/components/wedding/shared/add-to-calendar-button";
 import { theme } from "@/lib/theme";
 import type { ScheduleBooking } from "@/types/wedding";
 
@@ -21,6 +22,7 @@ export type ScheduleNodeProps = {
   tip?: string;
   booking?: ScheduleBooking;
   extraLinks?: ScheduleExtraLink[];
+  calendarEventId?: string;
   defaultOpen?: boolean;
 };
 
@@ -35,10 +37,13 @@ export function ScheduleNode({
   tip,
   booking,
   extraLinks,
+  calendarEventId,
   defaultOpen = false,
 }: ScheduleNodeProps) {
   const [open, setOpen] = useState(defaultOpen);
-  const hasBody = Boolean(desc || details?.length || tip || loc || attire || booking || extraLinks?.length);
+  const hasBody = Boolean(
+    desc || details?.length || tip || loc || attire || booking || extraLinks?.length || calendarEventId,
+  );
 
   return (
     <div className="relative pr-2 pl-12">
@@ -155,6 +160,8 @@ export function ScheduleNode({
                 {link.label} <ExternalLink size={12} />
               </a>
             ))}
+
+            {calendarEventId && <AddToCalendarButton eventId={calendarEventId} compact />}
           </div>
         )}
       </div>

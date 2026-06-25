@@ -22,7 +22,7 @@ type ProfileScreenProps = {
 };
 
 export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
-  const { profile, loading, error, setError, setProfile } = useGuestProfile();
+  const { profile, loading, error, setError, setProfile, visionModerationEnabled } = useGuestProfile();
   const { hidden: annitaHidden, showAnnita } = useAnnitaFabPrefs();
   const [passkeyMessage, setPasskeyMessage] = useState("");
 
@@ -57,12 +57,14 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
           profile={profile}
           onProfileChange={setProfile}
           onError={setError}
+          visionModerationEnabled={visionModerationEnabled}
         />
 
         <CompanionSection
           profile={profile}
           onProfileChange={setProfile}
           onError={setError}
+          visionModerationEnabled={visionModerationEnabled}
         />
 
         {onLogout && (

@@ -15,6 +15,8 @@ import { HomeScreen } from "@/components/wedding/screens/home-screen";
 import { ItineraryScreen } from "@/components/wedding/screens/itinerary-screen";
 import { PhotosScreen } from "@/components/wedding/screens/photos-screen";
 import { PhotoboothBingoScreen } from "@/components/wedding/screens/photobooth-bingo-screen";
+import { McBingoVerifyScreen } from "@/components/wedding/screens/mc-bingo-verify-screen";
+import { VenueMapScreen } from "@/components/wedding/screens/venue-map-screen";
 import { ProfileScreen } from "@/components/wedding/screens/profile-screen";
 import { PartyScreen } from "@/components/wedding/screens/party-screen";
 import { RSVPScreen } from "@/components/wedding/screens/rsvp-screen";
@@ -26,6 +28,7 @@ import { SparkleOverlay } from "@/components/wedding/shared/sparkle-overlay";
 import { InstallAppPopup } from "@/components/wedding/shared/install-app-popup";
 import { OfflineBanner } from "@/components/wedding/shared/offline-banner";
 import { requestInstallGuide } from "@/lib/pwa/install-guide";
+import { ensureNotificationServiceWorker } from "@/lib/os-notifications";
 import { resetAnnitaFabHiddenForNewSession } from "@/lib/annita-fab-prefs";
 import { theme } from "@/lib/theme";
 import type { AdminUser, AppTab, GuestTier, MainTab, WeddingUser } from "@/types/wedding";
@@ -62,12 +65,19 @@ export function WeddingApp() {
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [canAccessAdmin, setCanAccessAdmin] = useState(false);
   const [canViewVendors, setCanViewVendors] = useState(false);
+  const [canVerifyBingo, setCanVerifyBingo] = useState(false);
+  const [hasOnSiteAccess, setHasOnSiteAccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     resetAnnitaFabHiddenForNewSession();
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    void ensureNotificationServiceWorker();
+  }, [user]);
 
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0, left: 0 });
@@ -83,11 +93,15 @@ export function WeddingApp() {
       else setAdmin(null);
       setCanAccessAdmin(Boolean(data.canAccessAdmin));
       setCanViewVendors(Boolean(data.canViewVendors));
+      setCanVerifyBingo(Boolean(data.canVerifyBingo));
+      setHasOnSiteAccess(Boolean(data.hasOnSiteAccess));
     } catch {
       setUser(null);
       setAdmin(null);
       setCanAccessAdmin(false);
       setCanViewVendors(false);
+      setCanVerifyBingo(false);
+      setHasOnSiteAccess(false);
     }
   }, []);
 
@@ -142,6 +156,7 @@ export function WeddingApp() {
     const onTierUpdated = (event: Event) => {
       const tier = (event as CustomEvent<GuestTier>).detail;
       setUser((current) => (current ? { ...current, tier } : current));
+      setHasOnSiteAccess(hasOnSiteAppAccess(tier));
     };
     window.addEventListener("wedding:guest-tier", onTierUpdated);
     return () => window.removeEventListener("wedding:guest-tier", onTierUpdated);
@@ -152,11 +167,13 @@ export function WeddingApp() {
     admin?: AdminUser | null;
     canAccessAdmin?: boolean;
     canViewVendors?: boolean;
+    canVerifyBingo?: boolean;
   }) => {
     setUser(data.user ?? null);
     setAdmin(data.admin ?? null);
     setCanAccessAdmin(Boolean(data.canAccessAdmin));
     setCanViewVendors(Boolean(data.canViewVendors));
+    setCanVerifyBingo(Boolean(data.canVerifyBingo));
     setActiveTab("home");
   };
 
@@ -166,6 +183,7 @@ export function WeddingApp() {
     setAdmin(null);
     setCanAccessAdmin(false);
     setCanViewVendors(false);
+    setCanVerifyBingo(false);
     setActiveTab("home");
   }, []);
 
@@ -183,11 +201,11 @@ export function WeddingApp() {
     return (
       <PhoneFrame>
         <LoginScreen
-          onGuestLogin={(loggedInUser, canAccessAdmin) => {
-            applySession({ user: loggedInUser, admin: null, canAccessAdmin });
+          onGuestLogin={(loggedInUser, canAccessAdmin, canVerifyBingo) => {
+            applySession({ user: loggedInUser, admin: null, canAccessAdmin, canVerifyBingo });
           }}
           onAdminLogin={(loggedInAdmin) => {
-            applySession({ user: null, admin: loggedInAdmin, canAccessAdmin: true });
+            applySession({ user: null, admin: loggedInAdmin, canAccessAdmin: true, canVerifyBingo: true });
           }}
         />
       </PhoneFrame>
@@ -196,7 +214,7 @@ export function WeddingApp() {
 
   const displayName = user?.name ?? admin!.name;
   const isPenthouse = user?.tier === "PENTHOUSE" || canAccessAdmin;
-  const isOnSite = hasOnSiteAppAccess(user?.tier) || canAccessAdmin;
+  const isOnSite = hasOnSiteAccess || canAccessAdmin;
   const showAdminNav = canAccessAdmin;
   const navItems = [
     ...guestNav,
@@ -222,10 +240,17 @@ export function WeddingApp() {
             userName={displayName}
             onOpenChat={() => setChatOpen(true)}
             onOpenInstall={requestInstallGuide}
+            canVerifyBingo={canVerifyBingo}
           />
         );
       case "itinerary":
-        return <ItineraryScreen isPenthouse={isPenthouse} isOnSite={isOnSite} />;
+        return (
+          <ItineraryScreen
+            isPenthouse={isPenthouse}
+            isOnSite={isOnSite}
+            setActiveTab={setActiveTab}
+          />
+        );
       case "rsvp":
         return <RSVPScreen />;
       case "guide":
@@ -255,6 +280,10 @@ export function WeddingApp() {
         return <PhotosScreen setActiveTab={setActiveTab} />;
       case "bingo":
         return <PhotoboothBingoScreen setActiveTab={setActiveTab} />;
+      case "mc-verify":
+        return <McBingoVerifyScreen setActiveTab={setActiveTab} />;
+      case "venue-map":
+        return <VenueMapScreen setActiveTab={setActiveTab} isAdmin={canAccessAdmin} />;
       case "attractions":
         return <AttractionsScreen setActiveTab={setActiveTab} />;
       case "fashion":
@@ -270,6 +299,7 @@ export function WeddingApp() {
             userName={displayName}
             onOpenChat={() => setChatOpen(true)}
             onOpenInstall={requestInstallGuide}
+            canVerifyBingo={canVerifyBingo}
           />
         );
     }

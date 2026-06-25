@@ -4,6 +4,11 @@ import { requireGuestSession } from "@/lib/auth/session";
 import { resolveUploadImageMime } from "@/lib/detect-image-mime";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { PROFILE_PHOTO_ACCEPT, PROFILE_PHOTO_MAX_BYTES } from "@/lib/guest-identity";
+import {
+  isVisionBlockedPhoto,
+  moderateGuestPhoto,
+  PROFILE_PHOTO_VISION_REJECTION,
+} from "@/lib/google-vision-moderation";
 import { binaryPhotoResponse } from "@/lib/photo-response";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { prisma } from "@/lib/prisma";
@@ -63,6 +68,14 @@ export async function POST(request: Request) {
     const mime = resolveUploadImageMime(file, buffer);
     if (!mime || !ALLOWED_MIME.has(mime)) {
       return jsonError(`Use a photo file (${PROFILE_PHOTO_ACCEPT}).`, 400);
+    }
+
+    const moderation = await moderateGuestPhoto(buffer);
+    if (isVisionBlockedPhoto(moderation)) {
+      return NextResponse.json({
+        rejected: true,
+        message: PROFILE_PHOTO_VISION_REJECTION,
+      });
     }
 
     const guest = await prisma.guest.update({

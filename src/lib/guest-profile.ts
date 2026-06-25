@@ -21,6 +21,7 @@ export const guestProfileSelect = {
   },
   companionPhotoMime: true,
   partyRole: true,
+  isMc: true,
   dietaryNotes: true,
   songRequest: true,
   rsvpSubmittedAt: true,

@@ -19,9 +19,15 @@ type ProfilePhotoSectionProps = {
   profile: GuestProfile;
   onProfileChange: (profile: GuestProfile) => void;
   onError: (message: string) => void;
+  visionModerationEnabled?: boolean;
 };
 
-export function ProfilePhotoSection({ profile, onProfileChange, onError }: ProfilePhotoSectionProps) {
+export function ProfilePhotoSection({
+  profile,
+  onProfileChange,
+  onError,
+  visionModerationEnabled = false,
+}: ProfilePhotoSectionProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [savingIdentity, setSavingIdentity] = useState(false);
@@ -66,6 +72,11 @@ export function ProfilePhotoSection({ profile, onProfileChange, onError }: Profi
         credentials: "include",
       });
       const data = await res.json();
+
+      if (data.rejected) {
+        onError(data.message ?? "That photo can't be used for your profile.");
+        return;
+      }
 
       if (!res.ok) {
         onError(data.error ?? "Failed to upload photo.");
@@ -167,6 +178,7 @@ export function ProfilePhotoSection({ profile, onProfileChange, onError }: Profi
           <p className="truncate text-sm text-gray-500">{profile.email}</p>
           <p className="mt-2 text-xs text-gray-500">
             Add a photo so Jarod & Jamie know who&apos;s who — especially for the guest wall.
+            {visionModerationEnabled ? " Only clearly unsafe images are blocked." : ""}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button

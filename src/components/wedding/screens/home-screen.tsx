@@ -1,10 +1,12 @@
 import {
   Camera,
   ChevronRight,
+  Crown,
   Gift,
   Heart,
   Info,
   MapPin,
+  MapPinned,
   MessageCircle,
   Plane,
   Users,
@@ -21,6 +23,7 @@ import { WeddingChecklist } from "@/components/wedding/shared/wedding-checklist"
 import { WeddingWeather } from "@/components/wedding/shared/wedding-weather";
 import { HomeWhereImStaying } from "@/components/wedding/shared/home-where-im-staying";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
+import { useVenueMapAccess } from "@/components/wedding/hooks/use-venue-map-access";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 
@@ -30,6 +33,7 @@ type HomeScreenProps = {
   userName: string;
   onOpenChat?: () => void;
   onOpenInstall?: () => void;
+  canVerifyBingo?: boolean;
 };
 
 function buildHomeCards(onOpenChat?: () => void, showBingoPromo = false): Array<GuideCardConfig & { action: () => void }> {
@@ -139,8 +143,16 @@ function buildHomeCards(onOpenChat?: () => void, showBingoPromo = false): Array<
 
 const PLANNING_CARD_IDS = new Set(["travel", "wishingwell"]);
 
-export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat, onOpenInstall }: HomeScreenProps) {
+export function HomeScreen({
+  setActiveTab,
+  onLogout,
+  userName,
+  onOpenChat,
+  onOpenInstall,
+  canVerifyBingo = false,
+}: HomeScreenProps) {
   const { phase, isFeatureVisible } = useWeddingPhase();
+  const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
   const showBingo = isFeatureVisible("photobooth-bingo");
 
   const homeCards = buildHomeCards(onOpenChat, showBingo)
@@ -287,6 +299,42 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat, onOpe
         )}
 
         <HomeWhereImStaying setActiveTab={setActiveTab} />
+
+        {showVenueMap && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("venue-map")}
+            className="flex w-full items-center justify-between gap-4 rounded-3xl border bg-gradient-to-r from-[#2a4a6b] to-[#5a8fb0] p-5 text-left shadow-lg"
+            style={{ borderColor: theme.border }}
+          >
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#d4ebf7]">Venue map</p>
+              <p className="mt-1 font-serif text-xl text-white">Spicers Clovelly Estate</p>
+              <p className="mt-1 text-xs text-white/75">
+                Homesteads, lawns, pool & the walk to Lake View Deck.
+              </p>
+            </div>
+            <MapPinned size={28} className="shrink-0 text-[#d4ebf7]" />
+          </button>
+        )}
+
+        {canVerifyBingo && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("mc-verify")}
+            className="flex w-full items-center justify-between gap-4 rounded-3xl border bg-gradient-to-r from-[#2a2723] to-[#4a3d6b] p-5 text-left shadow-lg"
+            style={{ borderColor: theme.border }}
+          >
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">MC tools</p>
+              <p className="mt-1 font-serif text-xl text-white">Verify Bingo Winners</p>
+              <p className="mt-1 text-xs text-white/75">
+                Guests will bring their phone after completing Photobooth Bingo.
+              </p>
+            </div>
+            <Crown size={28} className="shrink-0 text-[#c3a379]" />
+          </button>
+        )}
 
         {showGuestWall && (
           <section

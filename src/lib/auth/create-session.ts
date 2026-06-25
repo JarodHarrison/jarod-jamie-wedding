@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
+import { guestIsMcOrAdmin } from "@/lib/auth/mc-access";
 import { isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import {
   applySessionCookie,
@@ -13,6 +14,7 @@ type GuestAccount = {
   name: string;
   email: string;
   tier: GuestTier;
+  isMc?: boolean;
 };
 
 type AdminAccount = {
@@ -71,6 +73,7 @@ export async function createGuestSessionResponse(guest: GuestAccount, hasAdminRe
   const canAccessAdmin =
     !isGuestOnlyEmail(guest.email) &&
     (hasAdminRecord || (await guestHasAdminAccess(guest.email)));
+  const canVerifyBingo = await guestIsMcOrAdmin(guest.email, guest.isMc ?? false);
 
   return NextResponse.json({
     user: {
@@ -80,6 +83,7 @@ export async function createGuestSessionResponse(guest: GuestAccount, hasAdminRe
       tier: guest.tier,
     },
     canAccessAdmin,
+    canVerifyBingo,
   });
 }
 
@@ -89,5 +93,6 @@ export async function createAdminSessionResponse(admin: AdminAccount) {
   return NextResponse.json({
     admin: { id: admin.id, name: admin.name, email: admin.email },
     canAccessAdmin: true,
+    canVerifyBingo: true,
   });
 }

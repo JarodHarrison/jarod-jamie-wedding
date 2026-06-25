@@ -22,6 +22,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       email?: string;
       tier?: "PENTHOUSE" | "ON_SITE" | "OFF_SITE";
       partyRole?: "BEST_BITCH" | null;
+      isMc?: boolean;
       passwordHash?: string;
       passwordPlaintext?: string | null;
     } = {};
@@ -45,6 +46,10 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (body.partyRole !== undefined) {
       data.partyRole = body.partyRole === "BEST_BITCH" ? "BEST_BITCH" : null;
+    }
+
+    if (body.isMc !== undefined) {
+      data.isMc = Boolean(body.isMc);
     }
 
     let newPassword: string | undefined;

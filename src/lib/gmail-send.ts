@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { getGmailAccessToken } from "@/lib/gmail-oauth";
+import { encodeMimeHeaderValue } from "@/lib/email-templates";
 
 function encodeRawEmail(raw: string): string {
   return Buffer.from(raw)
@@ -26,9 +27,10 @@ function buildMimeMessage({
     return [
       `From: ${from}`,
       `To: ${to}`,
-      `Subject: ${subject}`,
+      `Subject: ${encodeMimeHeaderValue(subject)}`,
       "MIME-Version: 1.0",
       "Content-Type: text/plain; charset=UTF-8",
+      "Content-Transfer-Encoding: 8bit",
       "",
       text,
     ].join("\r\n");
@@ -38,16 +40,18 @@ function buildMimeMessage({
   return [
     `From: ${from}`,
     `To: ${to}`,
-    `Subject: ${subject}`,
+    `Subject: ${encodeMimeHeaderValue(subject)}`,
     "MIME-Version: 1.0",
     `Content-Type: multipart/alternative; boundary="${boundary}"`,
     "",
     `--${boundary}`,
     "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
     "",
     text,
     `--${boundary}`,
     "Content-Type: text/html; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
     "",
     html,
     `--${boundary}--`,

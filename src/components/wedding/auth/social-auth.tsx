@@ -213,7 +213,7 @@ export function GoogleLinkSettings({ onMessage, embedded = false }: GoogleLinkSe
 }
 
 type UsePasskeyLoginOptions = {
-  onGuestLogin: (user: WeddingUser, canAccessAdmin?: boolean) => void;
+  onGuestLogin: (user: WeddingUser, canAccessAdmin?: boolean, canVerifyBingo?: boolean) => void;
   onAdminLogin: (admin: AdminUser) => void;
   onError: (message: string) => void;
   setLoading: (loading: boolean) => void;
@@ -256,7 +256,7 @@ export async function signInWithPasskey({
 
     if (data.user) {
       markPasskeyDeviceReady();
-      onGuestLogin(data.user, Boolean(data.canAccessAdmin));
+      onGuestLogin(data.user, Boolean(data.canAccessAdmin), Boolean(data.canVerifyBingo));
       return;
     }
 

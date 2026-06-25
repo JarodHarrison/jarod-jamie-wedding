@@ -20,9 +20,15 @@ type CompanionSectionProps = {
   profile: GuestProfile;
   onProfileChange: (profile: GuestProfile) => void;
   onError: (message: string) => void;
+  visionModerationEnabled?: boolean;
 };
 
-export function CompanionSection({ profile, onProfileChange, onError }: CompanionSectionProps) {
+export function CompanionSection({
+  profile,
+  onProfileChange,
+  onError,
+  visionModerationEnabled = false,
+}: CompanionSectionProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchGuest[]>([]);
@@ -112,6 +118,10 @@ export function CompanionSection({ profile, onProfileChange, onError }: Companio
         body: formData,
       });
       const data = await res.json();
+      if (data.rejected) {
+        onError(data.message ?? "That photo can't be used for your profile.");
+        return;
+      }
       if (!res.ok) {
         onError(data.error ?? "Failed to upload photo.");
         return;
@@ -286,6 +296,7 @@ export function CompanionSection({ profile, onProfileChange, onError }: Companio
             {linkedGuest && !partnerHasOwnProfile
               ? `${linkedGuest.name} hasn't uploaded a photo yet — you can add one for the guest wall.`
               : "Add a photo of your plus-one for the guest wall until they sign up."}
+            {visionModerationEnabled ? " Only clearly unsafe images are blocked." : ""}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <button

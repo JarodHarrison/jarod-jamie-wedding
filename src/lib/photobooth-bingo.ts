@@ -29,6 +29,7 @@ export const PHOTOBOOTH_BINGO_MAX_SCORE = PHOTOBOOTH_BINGO_ITEMS.reduce(
 );
 
 export const ANNITA_BINGO_IMAGE = "/annita-bingo.png";
+export const ANNITA_NOTIFICATION_ICON = "/annita-help.png";
 
 export function isValidBingoItemId(id: string): boolean {
   return PHOTOBOOTH_BINGO_ITEM_IDS.includes(id);

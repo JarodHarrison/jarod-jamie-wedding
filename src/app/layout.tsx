@@ -15,6 +15,13 @@ export const metadata: Metadata = {
     title: APP_TITLE,
     statusBarStyle: "default",
   },
+  icons: {
+    icon: [
+      { url: "/icon", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export const viewport: Viewport = {

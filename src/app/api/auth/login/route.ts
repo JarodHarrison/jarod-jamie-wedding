@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
+import { guestIsMcOrAdmin } from "@/lib/auth/mc-access";
 import { isAdminPreferredEmail, isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import { verifyPassword } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
@@ -11,6 +12,7 @@ const guestLoginSelect = {
   name: true,
   email: true,
   tier: true,
+  isMc: true,
   passwordHash: true,
 } as const;
 
@@ -60,6 +62,7 @@ export async function POST(request: Request) {
           tier: guest.tier,
         },
         canAccessAdmin: false,
+        canVerifyBingo: await guestIsMcOrAdmin(guest.email, guest.isMc),
       });
     }
 
@@ -74,6 +77,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         admin: { id: admin.id, name: admin.name, email: admin.email },
         canAccessAdmin: true,
+        canVerifyBingo: true,
       });
     }
 
@@ -88,6 +92,7 @@ export async function POST(request: Request) {
       });
 
       const canAccessAdmin = admin ? true : await guestHasAdminAccess(guest.email);
+      const canVerifyBingo = await guestIsMcOrAdmin(guest.email, guest.isMc);
 
       return NextResponse.json({
         user: {
@@ -97,6 +102,7 @@ export async function POST(request: Request) {
           tier: guest.tier,
         },
         canAccessAdmin,
+        canVerifyBingo,
       });
     }
 
@@ -111,6 +117,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         admin: { id: admin.id, name: admin.name, email: admin.email },
         canAccessAdmin: true,
+        canVerifyBingo: true,
       });
     }
 

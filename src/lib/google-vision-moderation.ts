@@ -161,6 +161,13 @@ export async function moderateGuestPhoto(buffer: Buffer): Promise<VisionModerati
   };
 }
 
+export function isVisionBlockedPhoto(moderation: VisionModerationOutcome) {
+  return moderation.enabled && moderation.decision === "block";
+}
+
+export const PROFILE_PHOTO_VISION_REJECTION =
+  "That photo can't be used for your profile. Please choose a different image.";
+
 export function formatVisionFlags(safeSearch: VisionSafeSearchResult) {
   return {
     ...safeSearch,

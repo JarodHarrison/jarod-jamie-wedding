@@ -16,6 +16,7 @@ const guestSelect = {
   name: true,
   email: true,
   tier: true,
+  isMc: true,
 } as const;
 
 const adminSelect = {

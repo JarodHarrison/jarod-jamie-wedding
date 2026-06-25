@@ -2,6 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { Bell, X } from "lucide-react";
+import {
+  notificationAvatarUrl,
+  notificationHeroImageUrl,
+} from "@/lib/notification-branding";
+import {
+  ensureNotificationServiceWorker,
+  requestOsNotificationPermission,
+  showOsNotification,
+} from "@/lib/os-notifications";
 import { theme } from "@/lib/theme";
 
 export type AppNotification = {
@@ -24,6 +33,10 @@ export function NotificationBell({ className }: NotificationBellProps) {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<AppNotification | null>(null);
 
+  useEffect(() => {
+    void ensureNotificationServiceWorker();
+  }, []);
+
   const loadNotifications = useCallback(async () => {
     try {
       const res = await fetch("/api/notifications");
@@ -38,6 +51,16 @@ export function NotificationBell({ className }: NotificationBellProps) {
         if (brandNew && !open) {
           setToast(brandNew);
           window.setTimeout(() => setToast(null), 5000);
+          void requestOsNotificationPermission().then((permission) => {
+            if (permission === "granted") {
+              void showOsNotification({
+                title: brandNew.title,
+                body: brandNew.body,
+                tag: brandNew.id,
+                imageUrl: brandNew.imageUrl,
+              });
+            }
+          });
         }
         return next;
       });
@@ -87,6 +110,8 @@ export function NotificationBell({ className }: NotificationBellProps) {
     });
   };
 
+  const toastAvatar = toast ? notificationAvatarUrl(toast) : null;
+
   return (
     <>
       <button
@@ -111,15 +136,23 @@ export function NotificationBell({ className }: NotificationBellProps) {
           className="fixed left-4 right-4 top-20 z-50 mx-auto max-w-sm animate-fade-in overflow-hidden rounded-2xl border bg-white shadow-xl"
           style={{ borderColor: theme.border }}
         >
-          {toast.imageUrl && (
-            <img src={toast.imageUrl} alt="" className="h-36 w-full object-cover object-top" />
-          )}
-          <div className="p-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
-              {toast.title === "Bingo!" ? "Bingo!" : "New update"}
-            </p>
-            <p className="mt-1 font-medium text-[#2a2723]">{toast.title}</p>
-            <p className="mt-1 text-sm text-gray-600">{toast.body}</p>
+          <div className="flex items-start gap-3 p-4">
+            {toastAvatar && (
+              <div
+                className="h-12 w-12 shrink-0 overflow-hidden rounded-full border-2"
+                style={{ borderColor: theme.gold }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={toastAvatar} alt="" className="h-full w-full object-cover object-top" />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+                {toast.title === "Bingo!" ? "Bingo!" : "New update"}
+              </p>
+              <p className="mt-1 font-medium text-[#2a2723]">{toast.title}</p>
+              <p className="mt-1 text-sm text-gray-600">{toast.body}</p>
+            </div>
           </div>
         </div>
       )}
@@ -162,39 +195,59 @@ export function NotificationBell({ className }: NotificationBellProps) {
                 <p className="py-8 text-center text-sm text-gray-400">No notifications yet.</p>
               ) : (
                 <div className="space-y-3">
-                  {notifications.map((notification) => (
-                    <button
-                      key={notification.id}
-                      type="button"
-                      onClick={() => {
-                        if (!notification.readAt) void markRead(notification.id);
-                      }}
-                      className={`w-full overflow-hidden rounded-2xl border text-left transition-colors ${
-                        notification.readAt ? "bg-white/60" : "bg-white shadow-sm"
-                      }`}
-                      style={{ borderColor: theme.border }}
-                    >
-                      {notification.imageUrl && (
-                        <img
-                          src={notification.imageUrl}
-                          alt=""
-                          className="h-32 w-full object-cover object-top"
-                        />
-                      )}
-                      <div className="p-4">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="font-medium text-[#2a2723]">{notification.title}</p>
-                          {!notification.readAt && (
-                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#c3a379]" />
+                  {notifications.map((notification) => {
+                    const avatarUrl = notificationAvatarUrl(notification);
+                    const heroUrl = notificationHeroImageUrl(notification);
+
+                    return (
+                      <button
+                        key={notification.id}
+                        type="button"
+                        onClick={() => {
+                          if (!notification.readAt) void markRead(notification.id);
+                        }}
+                        className={`w-full overflow-hidden rounded-2xl border text-left transition-colors ${
+                          notification.readAt ? "bg-white/60" : "bg-white shadow-sm"
+                        }`}
+                        style={{ borderColor: theme.border }}
+                      >
+                        {heroUrl ? (
+                          <img
+                            src={heroUrl}
+                            alt=""
+                            className="h-32 w-full object-cover object-top"
+                          />
+                        ) : null}
+                        <div className={`p-4 ${heroUrl ? "" : "flex items-start gap-3"}`}>
+                          {!heroUrl && avatarUrl && (
+                            <div
+                              className="h-11 w-11 shrink-0 overflow-hidden rounded-full border-2"
+                              style={{ borderColor: theme.gold }}
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={avatarUrl}
+                                alt=""
+                                className="h-full w-full object-cover object-top"
+                              />
+                            </div>
                           )}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <p className="font-medium text-[#2a2723]">{notification.title}</p>
+                              {!notification.readAt && (
+                                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#c3a379]" />
+                              )}
+                            </div>
+                            <p className="mt-1 text-sm text-gray-600">{notification.body}</p>
+                            <p className="mt-2 text-[10px] uppercase tracking-wider text-gray-400">
+                              {formatWhen(notification.createdAt)}
+                            </p>
+                          </div>
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">{notification.body}</p>
-                        <p className="mt-2 text-[10px] uppercase tracking-wider text-gray-400">
-                          {formatWhen(notification.createdAt)}
-                        </p>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

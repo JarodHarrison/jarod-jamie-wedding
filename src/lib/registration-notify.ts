@@ -1,5 +1,6 @@
 import type { SerializedGuestProfile } from "@/lib/guest-profile";
 import { sendNotificationEmail } from "@/lib/email";
+import { adminGuestEventEmailHtml } from "@/lib/email-templates";
 
 export type RegistrationEvent =
   | "signup"
@@ -147,7 +148,10 @@ export function notifyRegistration(event: RegistrationEvent, guest: SerializedGu
   if (event === "companion") body = formatCompanion(guest);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://jarodandjamiewedding.com";
-  const text = `${title}\n\n${body}\n\nView guest list in admin: ${appUrl}`;
+  const detailLines = body.split("\n").filter(Boolean);
+  const subject = `[Wedding] ${title}: ${guest.name}`;
+  const text = `${detailLines.join("\n")}\n\nView guest list in admin:\n${appUrl}`;
+  const html = adminGuestEventEmailHtml(title, detailLines, appUrl);
 
-  void sendNotificationEmail(`[Wedding] ${title} — ${guest.name}`, text);
+  void sendNotificationEmail(subject, text, html);
 }

@@ -5,6 +5,7 @@ import type { GuestProfile } from "@/types/wedding";
 
 export function useGuestProfile() {
   const [profile, setProfile] = useState<GuestProfile | null>(null);
+  const [visionModerationEnabled, setVisionModerationEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -23,6 +24,7 @@ export function useGuestProfile() {
         return;
       }
       setProfile(data.profile);
+      setVisionModerationEnabled(Boolean(data.visionModerationEnabled));
     } finally {
       setLoading(false);
     }
@@ -53,5 +55,14 @@ export function useGuestProfile() {
     return { ok: true as const, tierUpdated: Boolean(data.tierUpdated) };
   };
 
-  return { profile, loading, error, saveSection, reload: loadProfile, setProfile, setError };
+  return {
+    profile,
+    visionModerationEnabled,
+    loading,
+    error,
+    saveSection,
+    reload: loadProfile,
+    setProfile,
+    setError,
+  };
 }
