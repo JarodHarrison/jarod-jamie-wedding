@@ -172,7 +172,7 @@ export function AdminGuestList({
           </select>
           <input
             type="text"
-            placeholder="Password (auto if blank)"
+            placeholder="Password (optional — blank until they sign up)"
             value={newGuest.password}
             onChange={(e) => setNewGuest({ ...newGuest, password: e.target.value })}
             className="w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#c3a379]"

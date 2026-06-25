@@ -1,19 +1,8 @@
-import type { LucideIcon } from "lucide-react";
-import { Bus, Camera, ChevronRight, Map, Shirt, Sparkles } from "lucide-react";
+import { Bus, Camera, Map, Shirt, Sparkles } from "lucide-react";
 import type { AppTab } from "@/types/wedding";
-
-type GuideCardConfig = {
-  id: AppTab;
-  title: string;
-  description: string;
-  actionLabel: string;
-  icon: LucideIcon;
-  className: string;
-  titleClassName: string;
-  descriptionClassName: string;
-  actionClassName: string;
-  iconClassName: string;
-};
+import { GuideCard, type GuideCardConfig } from "@/components/wedding/shared/guide-card";
+import { RainbowText } from "@/components/wedding/shared/rainbow-text";
+import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
 
 const guideCards: GuideCardConfig[] = [
   {
@@ -79,56 +68,40 @@ const guideCards: GuideCardConfig[] = [
   },
 ];
 
-function GuideCard({
-  card,
-  onSelect,
-}: {
-  card: GuideCardConfig;
-  onSelect: (tab: AppTab) => void;
-}) {
-  const Icon = card.icon;
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={() => onSelect(card.id)}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") onSelect(card.id);
-      }}
-      className={`group relative cursor-pointer overflow-hidden rounded-3xl p-6 transition-transform active:scale-95 ${card.className}`}
-    >
-      <div
-        className={`pointer-events-none absolute right-3 top-3 opacity-[0.22] ${card.iconClassName}`}
-        aria-hidden="true"
-      >
-        <Icon size={64} strokeWidth={2} />
-      </div>
-      <h3 className={`relative mb-1 font-serif text-2xl ${card.titleClassName}`}>{card.title}</h3>
-      <p className={`relative mb-4 max-w-[80%] text-sm ${card.descriptionClassName}`}>
-        {card.description}
-      </p>
-      <span
-        className={`relative flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest ${card.actionClassName}`}
-      >
-        {card.actionLabel} <ChevronRight size={12} />
-      </span>
-    </div>
-  );
-}
-
 export function GuideScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
+  const { isFeatureVisible } = useWeddingPhase();
+
+  const visibleCards = guideCards.filter((card) => {
+    if (card.id === "shuttle") return isFeatureVisible("live-shuttle");
+    if (["attractions", "fashion", "glowup", "onsite"].includes(card.id)) {
+      return isFeatureVisible("pre-wedding-planning");
+    }
+    return true;
+  });
+
   return (
     <div className="animate-fade-in animate-slide-up pb-10">
       <div className="wedding-screen-top px-8 pb-6 text-center">
-        <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">Concierge</h2>
-        <h1 className="font-serif text-3xl text-[#2a2723]">Planning Guide</h1>
+        <RainbowText
+          as="h2"
+          className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500"
+        >
+          Concierge
+        </RainbowText>
+        <RainbowText as="h1" className="font-serif text-3xl text-[var(--wedding-text-dark)]">
+          Planning Guide
+        </RainbowText>
       </div>
 
       <div className="mb-8 space-y-4 px-6">
-        {guideCards.map((card) => (
-          <GuideCard key={card.id} card={card} onSelect={setActiveTab} />
+        {visibleCards.map((card) => (
+          <GuideCard key={card.id} card={card} onSelect={() => setActiveTab(card.id as AppTab)} />
         ))}
+        {visibleCards.length === 0 && (
+          <p className="rounded-2xl border bg-white/80 px-5 py-8 text-center text-sm text-gray-500">
+            Planning guides return closer to the wedding — check back during wedding week.
+          </p>
+        )}
       </div>
     </div>
   );

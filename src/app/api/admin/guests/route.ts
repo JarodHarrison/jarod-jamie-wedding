@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import {
   buildPasswordFields,
-  generateTemporaryPassword,
-  MIN_PASSWORD_LENGTH,
+  createUnclaimedPasswordFields,
 } from "@/lib/auth/password";
 import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError, normalizeEmail, isValidGuestTier } from "@/lib/api-utils";
@@ -42,8 +41,7 @@ export async function POST(request: Request) {
     const name = (body.name ?? "").trim();
     const email = normalizeEmail(body.email ?? "");
     const tier = body.tier ?? "OFF_SITE";
-    const password = body.password?.trim() || generateTemporaryPassword();
-
+    const passwordInput = body.password?.trim();
     if (!name || !email) {
       return jsonError("Name and email are required.", 400);
     }
@@ -56,7 +54,9 @@ export async function POST(request: Request) {
       return jsonError("A guest with this email already exists.", 409);
     }
 
-    const passwordFields = await buildPasswordFields(password);
+    const passwordFields = passwordInput
+      ? await buildPasswordFields(passwordInput)
+      : await createUnclaimedPasswordFields();
 
     const guest = await prisma.guest.create({
       data: {
@@ -69,12 +69,14 @@ export async function POST(request: Request) {
       select: adminGuestSelect,
     });
 
-    void sendGuestInviteEmail({ name, email, password });
+    if (passwordInput) {
+      void sendGuestInviteEmail({ name, email, password: passwordInput });
+    }
 
     return NextResponse.json(
       {
         guest: serializeAdminGuest(guest),
-        temporaryPassword: password,
+        temporaryPassword: passwordInput || undefined,
       },
       { status: 201 },
     );

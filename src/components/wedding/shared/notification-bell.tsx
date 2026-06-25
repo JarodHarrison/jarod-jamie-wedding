@@ -8,6 +8,7 @@ export type AppNotification = {
   id: string;
   title: string;
   body: string;
+  imageUrl: string | null;
   readAt: string | null;
   createdAt: string;
 };
@@ -107,12 +108,19 @@ export function NotificationBell({ className }: NotificationBellProps) {
 
       {toast && (
         <div
-          className="fixed left-4 right-4 top-20 z-50 mx-auto max-w-sm animate-fade-in rounded-2xl border bg-white p-4 shadow-xl"
+          className="fixed left-4 right-4 top-20 z-50 mx-auto max-w-sm animate-fade-in overflow-hidden rounded-2xl border bg-white shadow-xl"
           style={{ borderColor: theme.border }}
         >
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">New update</p>
-          <p className="mt-1 font-medium text-[#2a2723]">{toast.title}</p>
-          <p className="mt-1 text-sm text-gray-600">{toast.body}</p>
+          {toast.imageUrl && (
+            <img src={toast.imageUrl} alt="" className="h-36 w-full object-cover object-top" />
+          )}
+          <div className="p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+              {toast.title === "Bingo!" ? "Bingo!" : "New update"}
+            </p>
+            <p className="mt-1 font-medium text-[#2a2723]">{toast.title}</p>
+            <p className="mt-1 text-sm text-gray-600">{toast.body}</p>
+          </div>
         </div>
       )}
 
@@ -161,21 +169,30 @@ export function NotificationBell({ className }: NotificationBellProps) {
                       onClick={() => {
                         if (!notification.readAt) void markRead(notification.id);
                       }}
-                      className={`w-full rounded-2xl border p-4 text-left transition-colors ${
+                      className={`w-full overflow-hidden rounded-2xl border text-left transition-colors ${
                         notification.readAt ? "bg-white/60" : "bg-white shadow-sm"
                       }`}
                       style={{ borderColor: theme.border }}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <p className="font-medium text-[#2a2723]">{notification.title}</p>
-                        {!notification.readAt && (
-                          <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#c3a379]" />
-                        )}
+                      {notification.imageUrl && (
+                        <img
+                          src={notification.imageUrl}
+                          alt=""
+                          className="h-32 w-full object-cover object-top"
+                        />
+                      )}
+                      <div className="p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <p className="font-medium text-[#2a2723]">{notification.title}</p>
+                          {!notification.readAt && (
+                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-[#c3a379]" />
+                          )}
+                        </div>
+                        <p className="mt-1 text-sm text-gray-600">{notification.body}</p>
+                        <p className="mt-2 text-[10px] uppercase tracking-wider text-gray-400">
+                          {formatWhen(notification.createdAt)}
+                        </p>
                       </div>
-                      <p className="mt-1 text-sm text-gray-600">{notification.body}</p>
-                      <p className="mt-2 text-[10px] uppercase tracking-wider text-gray-400">
-                        {formatWhen(notification.createdAt)}
-                      </p>
                     </button>
                   ))}
                 </div>

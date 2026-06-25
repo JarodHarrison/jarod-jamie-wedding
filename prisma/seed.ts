@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/auth/password";
-import { SHUTTLE_STOPS } from "../src/lib/shuttle/stops";
 
-const prisma = new PrismaClient();
+import { SHUTTLE_STOPS } from "../src/lib/shuttle/stops";
 
 const ADMINS = [
   {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import { theme } from "@/lib/theme";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import type { AdminGuest } from "@/types/wedding";
@@ -91,8 +91,45 @@ function SaveButton({
   );
 }
 
+function PasswordField({
+  value,
+  onChange,
+  placeholder,
+  autoComplete = "new-password",
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  autoComplete?: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="relative">
+      <input
+        type={visible ? "text" : "password"}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className={`${inputClass} pr-10`}
+        style={{ borderColor: theme.border }}
+        autoComplete={autoComplete}
+      />
+      <button
+        type="button"
+        onClick={() => setVisible((open) => !open)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-400 hover:text-[#2a2723]"
+        aria-label={visible ? "Hide password" : "Show password"}
+      >
+        {visible ? <EyeOff size={16} /> : <Eye size={16} />}
+      </button>
+    </div>
+  );
+}
+
 export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditorProps) {
   const [password, setPassword] = useState("");
+  const [showStoredPassword, setShowStoredPassword] = useState(false);
   const [passwordState, setPasswordState] = useState<SectionState>(defaultSectionState);
 
   const [rsvp, setRsvp] = useState({
@@ -138,6 +175,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
 
   useEffect(() => {
     setPassword("");
+    setShowStoredPassword(false);
     setRsvp({
       attending: guest.rsvpStatus === "PENDING" ? "" : guest.rsvpStatus,
       phone: guest.phone ?? "",
@@ -236,23 +274,32 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               Current password
             </p>
             {guest.passwordPlaintext ? (
-              <p className="rounded-lg border bg-white px-3 py-2 font-mono text-sm text-[#2a2723]" style={fieldStyle}>
-                {guest.passwordPlaintext}
-              </p>
+              <div className="relative">
+                <p
+                  className="rounded-lg border bg-white px-3 py-2 pr-10 font-mono text-sm text-[#2a2723]"
+                  style={fieldStyle}
+                >
+                  {showStoredPassword ? guest.passwordPlaintext : "••••••••••••"}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowStoredPassword((open) => !open)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-400 hover:text-[#2a2723]"
+                  aria-label={showStoredPassword ? "Hide password" : "Show password"}
+                >
+                  {showStoredPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             ) : (
               <p className="text-xs italic text-gray-500">
-                Not recorded — set or generate a password below to store it here for admin reference.
+                Not signed up yet — password will appear here after they create an account in the app.
               </p>
             )}
           </div>
-          <input
-            type="text"
-            placeholder="New password (min 8 characters)"
+          <PasswordField
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-            style={fieldStyle}
-            autoComplete="new-password"
+            onChange={setPassword}
+            placeholder="New password (min 8 characters)"
           />
           <div className="grid grid-cols-2 gap-2">
             <button

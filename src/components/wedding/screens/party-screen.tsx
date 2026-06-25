@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { ChevronDown, MessageCircle, Phone } from "lucide-react";
+import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
+import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { theme } from "@/lib/theme";
 
 const PERSON_PLACEHOLDER = "/party/person-placeholder.svg";
@@ -136,12 +138,19 @@ function FamilyAccordion({
 export function PartyScreen() {
   return (
     <div className="animate-fade-in animate-slide-up pb-10">
-      <div className="wedding-screen-top px-8 pb-6 text-center">
-        <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">VIPs</h2>
-        <h1 className="font-serif text-3xl text-[#2a2723]">Wedding Party & Family</h1>
+      <div className="wedding-screen-top sticky top-0 z-20 bg-[#f7f4ee]/90 px-8 pb-6 text-center backdrop-blur-md">
+        <RainbowText
+          as="h2"
+          className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500"
+        >
+          VIPs
+        </RainbowText>
+        <RainbowText as="h1" className="font-serif text-3xl text-[var(--wedding-text-dark)]">
+          Wedding Party & Family
+        </RainbowText>
       </div>
 
-      <div className="space-y-8 px-6">
+      <div className="mt-4 space-y-8 px-6">
         <div>
           <h3
             className="mb-4 border-b pb-2 font-serif text-xl"
@@ -207,6 +216,19 @@ export function PartyScreen() {
             />
           ))}
         </div>
+
+        <section
+          className="rounded-3xl border bg-white/80 p-5 shadow-sm"
+          style={{ borderColor: theme.border }}
+        >
+          <h3 className="mb-1 font-serif text-xl" style={{ color: theme.gold }}>
+            Who&apos;s coming
+          </h3>
+          <p className="mb-4 text-sm text-gray-500">
+            Guests who&apos;ve RSVP&apos;d and added a profile photo.
+          </p>
+          <GuestPhotoWall />
+        </section>
       </div>
     </div>
   );

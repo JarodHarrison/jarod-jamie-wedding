@@ -17,9 +17,10 @@ type AuthProviders = {
 
 type PasskeySettingsProps = {
   onMessage?: (message: string) => void;
+  embedded?: boolean;
 };
 
-export function PasskeySettings({ onMessage }: PasskeySettingsProps) {
+export function PasskeySettings({ onMessage, embedded = false }: PasskeySettingsProps) {
   const [loading, setLoading] = useState(false);
   const [passkeyCount, setPasskeyCount] = useState(0);
   const [showReminder, setShowReminder] = useState(true);
@@ -83,14 +84,19 @@ export function PasskeySettings({ onMessage }: PasskeySettingsProps) {
   if (!showReminder) return null;
 
   return (
-    <section
-      className="mb-6 rounded-2xl border bg-white p-4 shadow-sm"
-      style={{ borderColor: theme.border }}
-    >
-      <div className="mb-2 flex items-center gap-2">
-        <Fingerprint size={16} className="text-[#c3a379]" />
-        <h2 className="font-serif text-lg text-[#2a2723]">Passkey Sign-In</h2>
-      </div>
+    <section className={embedded ? "" : "mb-6 rounded-2xl border bg-white p-4 shadow-sm"} style={embedded ? undefined : { borderColor: theme.border }}>
+      {!embedded && (
+        <div className="mb-2 flex items-center gap-2">
+          <Fingerprint size={16} className="text-[#c3a379]" />
+          <h2 className="font-serif text-lg text-[#2a2723]">Passkey Sign-In</h2>
+        </div>
+      )}
+      {embedded && (
+        <div className="mb-2 flex items-center gap-2">
+          <Fingerprint size={16} style={{ color: theme.gold }} />
+          <h3 className="text-sm font-bold text-[var(--wedding-text-dark)]">Passkey sign-in</h3>
+        </div>
+      )}
       <p className="mb-3 text-xs text-gray-500">
         Use Face ID, fingerprint, or your device PIN for faster sign-in next time.
         {passkeyCount > 0 ? ` ${passkeyCount} passkey${passkeyCount === 1 ? "" : "s"} saved.` : ""}

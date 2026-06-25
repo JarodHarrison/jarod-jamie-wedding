@@ -35,12 +35,8 @@ export const SHUTTLE_STOPS = [
 
 export const VENUE_STOP_SLUG = "spicers";
 
-export function isShuttleFeatureVisible(): boolean {
-  if (process.env.SHUTTLE_FORCE_VISIBLE === "true") return true;
-  if (process.env.SHUTTLE_FORCE_VISIBLE === "false") return false;
+import { isShuttleLiveWindow } from "@/lib/wedding-event";
 
-  const now = new Date();
-  const start = new Date("2026-09-25T00:00:00+10:00");
-  const end = new Date("2026-09-27T23:59:59+10:00");
-  return now >= start && now <= end;
+export function isShuttleFeatureVisible(now = new Date()): boolean {
+  return isShuttleLiveWindow(now);
 }

@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Bus, LogOut, Mail, Users } from "lucide-react";
+import { ArrowLeft, Bus, Heart, LogOut, Mail, Users } from "lucide-react";
 import { AdminBroadcastEmail } from "@/components/admin/admin-broadcast-email";
 import { AdminBroadcastPush } from "@/components/admin/admin-broadcast-push";
+import { AdminGmailConnect } from "@/components/admin/admin-gmail-connect";
 import { AdminGuestList } from "@/components/admin/admin-guest-list";
+import { AdminGuestStories } from "@/components/admin/admin-guest-stories";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { theme } from "@/lib/theme";
 import type { AdminGuest } from "@/types/wedding";
@@ -15,7 +17,13 @@ type AdminDashboardProps = {
   onUnauthorized?: () => void;
 };
 
-type AdminView = "hub" | "guests" | "shuttle" | "updates";
+type AdminView = "hub" | "guests" | "shuttle" | "updates" | "stories";
+
+type CommandStats = {
+  guests: { total: number; rsvpAccepted: number; rsvpPending: number; profilePhotos: number };
+  stories: { total: number; hidden: number; reported: number };
+  bingo: { playing: number; completed: number };
+};
 
 export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDashboardProps) {
   const [guests, setGuests] = useState<AdminGuest[]>([]);
@@ -24,7 +32,10 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
   const [view, setView] = useState<AdminView>("hub");
   const [filter, setFilter] = useState<"all" | "pending-rsvp" | "submitted">("all");
   const [driverLink, setDriverLink] = useState<string | null>(null);
+  const [commandStats, setCommandStats] = useState<CommandStats | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const onUnauthorizedRef = useRef(onUnauthorized);
+  onUnauthorizedRef.current = onUnauthorized;
 
   useEffect(() => {
     contentRef.current?.scrollTo({ top: 0, left: 0 });
@@ -36,7 +47,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
       const res = await fetch("/api/admin/guests");
       const data = await res.json();
       if (res.status === 401) {
-        onUnauthorized?.();
+        onUnauthorizedRef.current?.();
         return;
       }
       if (!res.ok) {
@@ -49,11 +60,22 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
     } finally {
       setLoading(false);
     }
-  }, [onUnauthorized]);
+  }, []);
 
   useEffect(() => {
     loadGuests();
   }, [loadGuests]);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch("/api/admin/stats");
+        if (res.ok) setCommandStats(await res.json());
+      } catch {
+        // non-blocking
+      }
+    })();
+  }, [guests.length]);
 
   const stats = {
     total: guests.length,
@@ -80,6 +102,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
     guests: "Guest List",
     shuttle: "Shuttle Driver",
     updates: "Guest Updates",
+    stories: "Story Moderation",
   };
 
   return (
@@ -116,6 +139,12 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
         {view === "hub" && (
           <p className="mt-1 text-xs text-gray-500">
             {stats.total} guests · {stats.rsvpIn} attending · {stats.pending} pending RSVP
+            {commandStats && (
+              <>
+                {" "}
+                · {commandStats.bingo.completed} bingo wins · {commandStats.stories.reported} reported stories
+              </>
+            )}
           </p>
         )}
       </header>
@@ -152,6 +181,28 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
               ))}
             </section>
 
+            {commandStats && (
+              <section className="mb-8 grid grid-cols-2 gap-2">
+                {[
+                  { label: "Photos", value: commandStats.guests.profilePhotos },
+                  { label: "Bingo playing", value: commandStats.bingo.playing },
+                  { label: "Bingo done", value: commandStats.bingo.completed },
+                  { label: "Stories", value: commandStats.stories.total },
+                ].map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-xl border bg-[#f7f4ee] p-3 text-center"
+                    style={{ borderColor: theme.border }}
+                  >
+                    <p className="text-lg font-bold text-[#2a2723]">{stat.value}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                      {stat.label}
+                    </p>
+                  </div>
+                ))}
+              </section>
+            )}
+
             <div className="space-y-4">
               <AdminSectionCard
                 title="Guest List"
@@ -175,6 +226,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
                 icon={Mail}
                 variant="gold"
                 onClick={() => setView("updates")}
+              />
+              <AdminSectionCard
+                title="Story Wall"
+                description="Moderate guest stories — hide, approve, or delete reported content."
+                actionLabel="Moderate Stories"
+                icon={Heart}
+                onClick={() => setView("stories")}
               />
             </div>
           </>
@@ -216,10 +274,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
         {view === "updates" && (
           <div className="space-y-6">
+            <AdminGmailConnect />
             <AdminBroadcastPush guestCount={guests.length} onMessage={setMessage} />
             <AdminBroadcastEmail guestCount={guests.length} onMessage={setMessage} />
           </div>
         )}
+
+        {view === "stories" && <AdminGuestStories onMessage={setMessage} />}
       </div>
     </div>
   );

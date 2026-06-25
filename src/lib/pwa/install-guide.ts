@@ -1,5 +1,6 @@
 import { APP_TITLE } from "@/lib/jj-branding";
 
+export const INSTALL_GUIDE_OPEN_EVENT = "wedding:open-install-guide";
 export const INSTALL_GUIDE_STORAGE_KEY = "wedding-install-guide-dismissed";
 
 export type InstallGuideVariant =
@@ -53,6 +54,11 @@ export function isAppInstalled(): boolean {
 export function hasSeenInstallGuide(): boolean {
   if (typeof window === "undefined") return true;
   return localStorage.getItem(INSTALL_GUIDE_STORAGE_KEY) === "1";
+}
+
+export function requestInstallGuide(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent(INSTALL_GUIDE_OPEN_EVENT));
 }
 
 export function markInstallGuideSeen(): void {

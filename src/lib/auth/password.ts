@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/constants";
 
 export { MIN_PASSWORD_LENGTH };
@@ -30,5 +31,13 @@ export async function buildPasswordFields(password: string) {
   return {
     passwordHash: await hashPassword(trimmed),
     passwordPlaintext: trimmed,
+  };
+}
+
+/** Random hash with no stored plaintext — guest must sign up to claim the account. */
+export async function createUnclaimedPasswordFields() {
+  return {
+    passwordHash: await hashPassword(randomBytes(32).toString("hex")),
+    passwordPlaintext: null as string | null,
   };
 }

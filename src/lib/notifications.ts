@@ -39,11 +39,12 @@ export async function createInAppNotifications(
   guestIds: string[],
   title: string,
   body: string,
+  imageUrl?: string,
 ): Promise<number> {
   if (guestIds.length === 0) return 0;
 
   const result = await prisma.inAppNotification.createMany({
-    data: guestIds.map((guestId) => ({ guestId, title, body })),
+    data: guestIds.map((guestId) => ({ guestId, title, body, imageUrl: imageUrl ?? null })),
   });
 
   return result.count;

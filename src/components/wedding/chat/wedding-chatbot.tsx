@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { Send, Mic, Volume2, VolumeX, X, ChevronUp } from "lucide-react";
 import { ChatMessageContent } from "@/components/wedding/chat/chat-message-content";
+import { AnnitaDraggableFab } from "@/components/wedding/chat/annita-draggable-fab";
+import { useAnnitaFabPrefs } from "@/components/wedding/hooks/use-annita-fab-prefs";
 import {
   ANNITA,
   ANNITA_DISGUSTED_LOADING_MESSAGES,
@@ -237,6 +239,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const [inputFocused, setInputFocused] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [folded, setFolded] = useState(false);
+  const { hidden: annitaHidden } = useAnnitaFabPrefs();
 
   const compactHeader = inputFocused || keyboardOpen;
   const chatStarted = messages.some((message) => message.role === "user");
@@ -539,18 +542,13 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
   return (
     <>
-      {!open && !folded && (
-        <button
-          type="button"
-          onClick={handleOpen}
-          className="absolute bottom-[calc(4.25rem+env(safe-area-inset-bottom,0px))] right-4 z-40 touch-manipulation transition-transform active:scale-95 sm:bottom-20"
-          aria-label={`Open ${ANNITA.name}`}
-        >
+      {!open && !folded && !annitaHidden && (
+        <AnnitaDraggableFab onOpen={handleOpen}>
           <AnnitaAvatar size={75} variant="fab" className="shadow-xl ring-4 ring-pink-200" />
-        </button>
+        </AnnitaDraggableFab>
       )}
 
-      {!open && folded && (
+      {!open && folded && !annitaHidden && (
         <button
           type="button"
           onClick={handleOpen}

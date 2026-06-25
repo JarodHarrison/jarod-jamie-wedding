@@ -33,11 +33,11 @@ export function sanitizeChatReply(text: string): string {
 export function localDiscoveryFallbackReply(): string {
   return `Honey, Montville and Maleny are absolutely eating — here's where I'd send you first:
 
+• **Montville Artisan Village** — Main Street boutiques and famous Montville fudge (~5 min)
+• **Nutworks** — chocolate making and macadamia tastings in Yandina (~35 min)
 • **The Long Apron** — right at Spicers (on-site fine dining; très chic)
-• **The Tamarind** — hatted Pan-Asian in Maleny (~20 min)
 • **Flame Hill Vineyard** — lunch with vineyard views (~8 min)
 • **Brouhaha Brewery** — craft beer and great food in Maleny (~15 min)
-• **Mapleton Public House** — elevated pub fare with valley views (~12 min)
 
 Ubers are scarce in the hinterland, so book transport before dinner, darling. For the full curated list, hit **Guide → Explore Montville** in the app.`;
 }

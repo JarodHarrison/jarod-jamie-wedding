@@ -14,6 +14,7 @@ export async function GET() {
         id: true,
         title: true,
         body: true,
+        imageUrl: true,
         readAt: true,
         createdAt: true,
       },

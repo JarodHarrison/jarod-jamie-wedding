@@ -6,6 +6,7 @@ import {
   redirectWithGuestSession,
 } from "@/lib/auth/create-session";
 import { hashPassword } from "@/lib/auth/password";
+import { findImportableGuestByName } from "@/lib/guest-claim";
 import { prisma } from "@/lib/prisma";
 import crypto from "node:crypto";
 
@@ -67,16 +68,29 @@ export async function signUpWithGoogleAccount(email: string, name: string) {
 
   const randomPassword = crypto.randomBytes(32).toString("base64url");
   const passwordHash = await hashPassword(randomPassword);
+  const displayName = name.trim() || normalized.split("@")[0] || "Guest";
+  const importable = await findImportableGuestByName(displayName);
 
-  const guest = await prisma.guest.create({
-    data: {
-      name: name.trim() || normalized.split("@")[0] || "Guest",
-      email: normalized,
-      passwordHash,
-      tier: "OFF_SITE",
-    },
-    select: guestSelect,
-  });
+  const guest = importable
+    ? await prisma.guest.update({
+        where: { id: importable.id },
+        data: {
+          name: displayName,
+          email: normalized,
+          passwordHash,
+          passwordPlaintext: null,
+        },
+        select: guestSelect,
+      })
+    : await prisma.guest.create({
+        data: {
+          name: displayName,
+          email: normalized,
+          passwordHash,
+          tier: "OFF_SITE",
+        },
+        select: guestSelect,
+      });
 
   return createGuestSessionResponse(guest);
 }
@@ -90,16 +104,29 @@ export async function signUpWithGoogleAccountRedirect(email: string, name: strin
 
   const randomPassword = crypto.randomBytes(32).toString("base64url");
   const passwordHash = await hashPassword(randomPassword);
+  const displayName = name.trim() || normalized.split("@")[0] || "Guest";
+  const importable = await findImportableGuestByName(displayName);
 
-  const guest = await prisma.guest.create({
-    data: {
-      name: name.trim() || normalized.split("@")[0] || "Guest",
-      email: normalized,
-      passwordHash,
-      tier: "OFF_SITE",
-    },
-    select: guestSelect,
-  });
+  const guest = importable
+    ? await prisma.guest.update({
+        where: { id: importable.id },
+        data: {
+          name: displayName,
+          email: normalized,
+          passwordHash,
+          passwordPlaintext: null,
+        },
+        select: guestSelect,
+      })
+    : await prisma.guest.create({
+        data: {
+          name: displayName,
+          email: normalized,
+          passwordHash,
+          tier: "OFF_SITE",
+        },
+        select: guestSelect,
+      });
 
   return redirectWithGuestSession(guest, redirectUrl);
 }

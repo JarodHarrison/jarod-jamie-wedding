@@ -4,7 +4,67 @@
   --background: #f7f4ee;
   --foreground: #2a2723;
   --wedding-gold: #c3a379;
+  --wedding-btn-dark: #2a2723;
+  --wedding-text-dark: #2a2723;
+  --wedding-bg: #f7f4ee;
   --wedding-border: #e2d5c4;
+  --wedding-card-bg: rgba(255, 255, 255, 0.6);
+  --wedding-rainbow-gradient: linear-gradient(
+    135deg,
+    #f43f5e,
+    #f59e0b,
+    #84cc16,
+    #06b6d4,
+    #8b5cf6,
+    #ec4899
+  );
+}
+
+[data-theme="rainbow"] {
+  --background: #f9f7fc;
+  --foreground: #1a0f2e;
+  --wedding-gold: #9d174d;
+  --wedding-btn-dark: #4c1d95;
+  --wedding-text-dark: #1a0f2e;
+  --wedding-bg: #f9f7fc;
+  --wedding-border: #ddd6fe;
+  --wedding-card-bg: rgba(255, 255, 255, 0.94);
+  --wedding-muted: #5b4a6f;
+  --wedding-muted-soft: #6f5f82;
+}
+
+[data-theme="rainbow"] body,
+[data-theme="rainbow"] .wedding-app-shell {
+  /* Soft neutral wash — keeps pride letter colours readable */
+  background: linear-gradient(
+    165deg,
+    #fdfbff 0%,
+    #f8f6fc 45%,
+    #f6f8fd 100%
+  );
+}
+
+/* Muted copy — darker than default grays on pastel backgrounds */
+[data-theme="rainbow"] .text-gray-400 {
+  color: var(--wedding-muted-soft) !important;
+}
+
+[data-theme="rainbow"] .text-gray-500 {
+  color: var(--wedding-muted) !important;
+}
+
+[data-theme="rainbow"] .text-gray-600 {
+  color: #4a3d5c !important;
+}
+
+[data-theme="rainbow"] .bg-white\/50,
+[data-theme="rainbow"] .bg-white\/80 {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+}
+
+[data-theme="rainbow"] .border.bg-white\/80,
+[data-theme="rainbow"] .rounded-3xl.border {
+  box-shadow: 0 1px 3px rgba(76, 29, 149, 0.06);
 }
 
 @theme inline {
@@ -123,5 +183,84 @@ body {
 
   .wedding-top-offset {
     top: 3.5rem;
+  }
+}
+
+/* Rainbow theme accents */
+.rainbow-jj-title {
+  transition: color 0.3s ease;
+}
+
+[data-theme="rainbow"] .rainbow-jj-title {
+  background: var(--wedding-rainbow-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.95));
+}
+
+.wedding-nav-active {
+  background-color: var(--wedding-gold);
+  color: white;
+}
+
+[data-theme="rainbow"] .wedding-nav-active {
+  background: var(--wedding-rainbow-gradient);
+  color: white;
+}
+
+.rainbow-theme-toggle-on {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 246, 252, 0.98));
+  box-shadow: 0 0 24px rgba(236, 72, 153, 0.12);
+}
+
+.rainbow-icon-chip {
+  background: var(--wedding-rainbow-gradient);
+  color: white;
+}
+
+.rainbow-toggle-track {
+  background: var(--wedding-rainbow-gradient);
+}
+
+.sparkle-field {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 48;
+  overflow: hidden;
+}
+
+/* Sparkle overlay */
+@keyframes sparkle-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4) rotate(0deg);
+  }
+
+  50% {
+    opacity: 0.95;
+    transform: scale(1) rotate(180deg);
+  }
+}
+
+.sparkle-dot {
+  position: absolute;
+  border-radius: 50%;
+  animation: sparkle-twinkle ease-in-out infinite;
+}
+
+[data-theme="rainbow"] .sparkle-dot {
+  opacity: 0.45;
+}
+
+[data-theme="rainbow"] .sparkle-field {
+  mix-blend-mode: multiply;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkle-field {
+    display: none;
   }
 }

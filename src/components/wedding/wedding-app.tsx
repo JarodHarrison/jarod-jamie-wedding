@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BookOpen, Calendar, Home, MapPin, Shield, Users } from "lucide-react";
+import { Calendar, Heart, Home, MapPin, UserCircle, Users, Shield } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { LoginScreen } from "@/components/wedding/login-screen";
 import { PhoneFrame } from "@/components/wedding/phone-frame";
@@ -14,29 +14,46 @@ import { GuideScreen } from "@/components/wedding/screens/guide-screen";
 import { HomeScreen } from "@/components/wedding/screens/home-screen";
 import { ItineraryScreen } from "@/components/wedding/screens/itinerary-screen";
 import { PhotosScreen } from "@/components/wedding/screens/photos-screen";
+import { PhotoboothBingoScreen } from "@/components/wedding/screens/photobooth-bingo-screen";
+import { ProfileScreen } from "@/components/wedding/screens/profile-screen";
 import { PartyScreen } from "@/components/wedding/screens/party-screen";
 import { RSVPScreen } from "@/components/wedding/screens/rsvp-screen";
-import { StoryScreen } from "@/components/wedding/screens/story-screen";
+import { JarodJamieScreen } from "@/components/wedding/screens/jarod-jamie-screen";
 import { TravelScreen } from "@/components/wedding/screens/travel-screen";
 import { WeddingChatbot } from "@/components/wedding/chat/wedding-chatbot";
+import { SparkleOverlay } from "@/components/wedding/shared/sparkle-overlay";
+import { InstallAppPopup } from "@/components/wedding/shared/install-app-popup";
+import { OfflineBanner } from "@/components/wedding/shared/offline-banner";
+import { requestInstallGuide } from "@/lib/pwa/install-guide";
 import { theme } from "@/lib/theme";
 import type { AdminUser, AppTab, GuestTier, MainTab, WeddingUser } from "@/types/wedding";
 import { hasOnSiteAppAccess } from "@/lib/on-site-access";
+import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
+import type { WeddingFeature } from "@/lib/wedding-event";
 
 const guestNav: { id: MainTab; label: string; icon: typeof Home }[] = [
   { id: "home", label: "Home", icon: Home },
+  { id: "jarodjamie", label: "Stories", icon: Heart },
   { id: "itinerary", label: "Itinerary", icon: Calendar },
-  { id: "rsvp", label: "RSVP", icon: BookOpen },
   { id: "guide", label: "Guide", icon: MapPin },
   { id: "party", label: "Party", icon: Users },
+  { id: "profile", label: "Profile", icon: UserCircle },
 ];
 
 const adminNavItem = { id: "admin" as const, label: "Admin", icon: Shield };
 
 const SESSION_REFRESH_MS = 30_000;
 
+const PHASE_GATED_TABS: Partial<Record<AppTab, WeddingFeature>> = {
+  bingo: "photobooth-bingo",
+  shuttle: "live-shuttle",
+};
+
+const PLANNING_TABS: AppTab[] = ["attractions", "fashion", "glowup", "onsite"];
+
 export function WeddingApp() {
   const [activeTab, setActiveTab] = useState<AppTab>("home");
+  const { isFeatureVisible } = useWeddingPhase();
   const [chatOpen, setChatOpen] = useState(false);
   const [user, setUser] = useState<WeddingUser | null>(null);
   const [admin, setAdmin] = useState<AdminUser | null>(null);
@@ -98,6 +115,17 @@ export function WeddingApp() {
   }, [activeTab, loading, user, admin, refreshSession]);
 
   useEffect(() => {
+    const feature = PHASE_GATED_TABS[activeTab];
+    if (feature && !isFeatureVisible(feature)) {
+      setActiveTab("home");
+      return;
+    }
+    if (PLANNING_TABS.includes(activeTab) && !isFeatureVisible("pre-wedding-planning")) {
+      setActiveTab("guide");
+    }
+  }, [activeTab, isFeatureVisible]);
+
+  useEffect(() => {
     const onTierUpdated = (event: Event) => {
       const tier = (event as CustomEvent<GuestTier>).detail;
       setUser((current) => (current ? { ...current, tier } : current));
@@ -117,13 +145,13 @@ export function WeddingApp() {
     setActiveTab("home");
   };
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" });
     setUser(null);
     setAdmin(null);
     setCanAccessAdmin(false);
     setActiveTab("home");
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -173,6 +201,7 @@ export function WeddingApp() {
             onLogout={handleLogout}
             userName={displayName}
             onOpenChat={() => setChatOpen(true)}
+            onOpenInstall={requestInstallGuide}
           />
         );
       case "itinerary":
@@ -181,10 +210,17 @@ export function WeddingApp() {
         return <RSVPScreen />;
       case "guide":
         return <GuideScreen setActiveTab={setActiveTab} />;
+      case "profile":
+        return (
+          <ProfileScreen
+            setActiveTab={setActiveTab}
+            onLogout={handleLogout}
+          />
+        );
       case "party":
         return <PartyScreen />;
-      case "story":
-        return <StoryScreen setActiveTab={setActiveTab} />;
+      case "jarodjamie":
+        return <JarodJamieScreen setActiveTab={setActiveTab} />;
       case "faq":
         return <FAQScreen setActiveTab={setActiveTab} />;
       case "wishingwell":
@@ -195,6 +231,8 @@ export function WeddingApp() {
         return <GuestShuttleScreen setActiveTab={setActiveTab} />;
       case "photos":
         return <PhotosScreen setActiveTab={setActiveTab} />;
+      case "bingo":
+        return <PhotoboothBingoScreen setActiveTab={setActiveTab} />;
       case "attractions":
         return <AttractionsScreen setActiveTab={setActiveTab} />;
       case "fashion":
@@ -209,6 +247,7 @@ export function WeddingApp() {
             setActiveTab={setActiveTab}
             userName={displayName}
             onOpenChat={() => setChatOpen(true)}
+            onOpenInstall={requestInstallGuide}
           />
         );
     }
@@ -216,12 +255,17 @@ export function WeddingApp() {
 
   return (
     <PhoneFrame>
-      <div className="relative flex min-h-0 flex-1 flex-col">
+      <SparkleOverlay />
+      <OfflineBanner />
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">{renderScreen()}</main>
         <WeddingChatbot open={chatOpen} onOpenChange={setChatOpen} />
+        <InstallAppPopup />
         {!chatOpen && (
           <nav
-            className={`wedding-bottom-nav z-50 grid w-full shrink-0 items-end border-t bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-0.5 pt-1 ${navItems.length > 5 ? "grid-cols-6" : "grid-cols-5"}`}
+            className={`wedding-bottom-nav z-50 grid w-full shrink-0 items-end border-t bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.06)] px-0.5 pt-1 ${
+              navItems.length > 6 ? "grid-cols-7" : navItems.length > 5 ? "grid-cols-6" : "grid-cols-5"
+            }`}
             style={{ borderColor: theme.border }}
           >
             {navItems.map(({ id, label, icon }) => (

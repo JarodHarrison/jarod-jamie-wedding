@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { Prisma } from "@prisma/client";
-import { buildPasswordFields, generateTemporaryPassword } from "@/lib/auth/password";
+import { buildPasswordFields, createUnclaimedPasswordFields } from "@/lib/auth/password";
 import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError } from "@/lib/api-utils";
 import { sendGuestInviteEmail } from "@/lib/guest-emails";
@@ -50,7 +50,10 @@ function buildGuestProfileFields(row: GuestSpreadsheetRow) {
   };
 }
 
-function buildGuestData(row: GuestSpreadsheetRow, passwordFields: { passwordHash: string; passwordPlaintext: string }) {
+function buildGuestData(
+  row: GuestSpreadsheetRow,
+  passwordFields: { passwordHash: string; passwordPlaintext: string | null },
+) {
   const data: Prisma.GuestCreateInput = {
     name: row.name,
     email: row.email,
@@ -181,18 +184,22 @@ export async function POST(request: Request) {
           continue;
         }
 
-        const password = row.password || generateTemporaryPassword();
-        const passwordFields = await buildPasswordFields(password);
+        const passwordFields = row.password
+          ? await buildPasswordFields(row.password)
+          : await createUnclaimedPasswordFields();
 
         await prisma.guest.create({
           data: buildGuestData(row, passwordFields),
         });
 
         result.created += 1;
-        result.passwords.push({ name: row.name, email: row.email, password });
 
-        if (sendInvites && !row.emailGenerated) {
-          void sendGuestInviteEmail({ name: row.name, email: row.email, password });
+        if (row.password) {
+          result.passwords.push({ name: row.name, email: row.email, password: row.password });
+        }
+
+        if (sendInvites && !row.emailGenerated && row.password) {
+          void sendGuestInviteEmail({ name: row.name, email: row.email, password: row.password });
           result.invited += 1;
         }
       } catch (error) {

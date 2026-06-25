@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { APP_TITLE } from "@/lib/jj-branding";
 import { fontVariables } from "@/lib/fonts";
+import { WEDDING_THEME_STORAGE_KEY } from "@/lib/theme";
 import { OrientationGuard } from "@/components/wedding/shared/orientation-guard";
 import "./globals.css";
 
@@ -29,7 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fontVariables} h-full antialiased`}>
+    <html lang="en" className={`${fontVariables} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <Script id="wedding-theme-init" strategy="beforeInteractive">
+          {`(function(){try{var t=localStorage.getItem("${WEDDING_THEME_STORAGE_KEY}");if(t==="rainbow")document.documentElement.dataset.theme="rainbow";}catch(e){}})();`}
+        </Script>
+      </head>
       <body className="flex min-h-dvh flex-col overflow-x-hidden font-sans max-sm:overflow-hidden">
         <OrientationGuard />
         {children}

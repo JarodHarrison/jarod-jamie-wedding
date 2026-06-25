@@ -1,5 +1,6 @@
 import type { RsvpStatus } from "@prisma/client";
 import type { GuestProfileSection } from "@/lib/guest-profile";
+import { isGuestOfHost, isGuestRelationship } from "@/lib/guest-identity";
 
 export type ProfileUpdateResult =
   | { ok: true; data: Record<string, unknown> }
@@ -107,6 +108,29 @@ export function buildGuestProfileSectionUpdate(
     }
 
     return { ok: true, data };
+  }
+
+  if (section === "identity") {
+    const guestOfHost = trimOrNull(body.guestOfHost);
+    const guestRelationship = trimOrNull(body.guestRelationship);
+    const guestRelationshipNote = trimOrNull(body.guestRelationshipNote);
+
+    if (guestOfHost && !isGuestOfHost(guestOfHost)) {
+      return { ok: false, error: "Please choose who you are a guest of.", status: 400 };
+    }
+    if (guestRelationship && !isGuestRelationship(guestRelationship)) {
+      return { ok: false, error: "Please choose a valid relationship.", status: 400 };
+    }
+
+    return {
+      ok: true,
+      data: {
+        guestOfHost,
+        guestRelationship,
+        guestRelationshipNote,
+        profileUpdatedAt: now,
+      },
+    };
   }
 
   return { ok: false, error: "Invalid form section.", status: 400 };

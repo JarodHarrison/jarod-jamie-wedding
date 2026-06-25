@@ -6,6 +6,8 @@ import {
   generateChatReply,
   type ChatMessage,
 } from "@/lib/chat";
+import { matchInstantFaq } from "@/lib/chat-faq";
+import { matchLocalDiscoveryInstant } from "@/lib/chat-local-instant";
 import { wantsFormTools } from "@/lib/chat-intents";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { getSession } from "@/lib/auth/session";
@@ -56,11 +58,12 @@ async function loadGuestContext(
 }
 
 export async function POST(request: Request) {
+  let messages: ChatMessage[] = [];
   try {
     const [session, body] = await Promise.all([getSession(), request.json()]);
     if (!session) return jsonError("Unauthorized", 401);
 
-    const messages = sanitizeMessages(body.messages);
+    messages = sanitizeMessages(body.messages);
     const stream = body.stream === true;
 
     if (messages.length === 0 || messages[messages.length - 1]?.role !== "user") {
@@ -106,6 +109,14 @@ export async function POST(request: Request) {
       profile: updatedProfile ?? profile,
     });
   } catch (error) {
+    const instant = messages.length > 0 ? matchInstantFaq(messages) : null;
+    if (instant) {
+      return NextResponse.json({ reply: instant, sources: [] });
+    }
+    const localInstant = messages.length > 0 ? matchLocalDiscoveryInstant(messages) : null;
+    if (localInstant) {
+      return NextResponse.json({ reply: localInstant, sources: [] });
+    }
     if (error instanceof Error && error.message === "CHAT_NOT_CONFIGURED") {
       return jsonError(
         "Annita Help isn't ready for her close-up yet — please add GOOGLE_API_KEY to your environment.",

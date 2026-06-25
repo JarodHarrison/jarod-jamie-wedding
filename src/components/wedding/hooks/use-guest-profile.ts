@@ -53,5 +53,5 @@ export function useGuestProfile() {
     return { ok: true as const, tierUpdated: Boolean(data.tierUpdated) };
   };
 
-  return { profile, loading, error, saveSection, reload: loadProfile, setError };
+  return { profile, loading, error, saveSection, reload: loadProfile, setProfile, setError };
 }

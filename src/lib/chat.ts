@@ -7,6 +7,7 @@ import {
 } from "@/lib/chat-intents";
 import { isLocalDiscoveryQuestion, wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
 import { matchInstantFaq } from "@/lib/chat-faq";
+import { matchLocalDiscoveryInstant } from "@/lib/chat-local-instant";
 import { GUEST_FORM_TOOL, executeGuestFormSave } from "@/lib/chat-form-tools";
 import {
   isMetaLeakReply,
@@ -165,6 +166,12 @@ function tryInstantFaq(messages: ChatMessage[]): string | null {
   if (wantsLocalDiscoverySearch(messages)) return null;
   if (userExplicitlyWantsFormHelp(messages)) return null;
   return matchInstantFaq(messages);
+}
+
+function tryInstantReply(messages: ChatMessage[]): string | null {
+  const faq = tryInstantFaq(messages);
+  if (faq) return faq;
+  return matchLocalDiscoveryInstant(messages);
 }
 
 function extractStreamDelta(assembled: string, chunk: string): string {
@@ -657,13 +664,24 @@ export async function generateChatReply(
   messages: ChatMessage[],
   context: ChatContext,
 ): Promise<ChatReply> {
-  const instant = tryInstantFaq(messages);
+  const instant = tryInstantReply(messages);
   if (instant) {
     return { reply: instant, sources: [] };
   }
 
   const config = resolveChatConfig(messages, context);
-  return runToolLoop(config);
+
+  try {
+    return await runToolLoop(config);
+  } catch (error) {
+    if (isLocalDiscoveryQuestion(messages)) {
+      return {
+        reply: matchLocalDiscoveryInstant(messages) ?? localDiscoveryFallbackReply(),
+        sources: [],
+      };
+    }
+    throw error;
+  }
 }
 
 export function createChatReplyStream(
@@ -684,7 +702,7 @@ export function createChatReplyStream(
       try {
         send(controller, { type: "started" });
 
-        const instant = tryInstantFaq(messages);
+        const instant = tryInstantReply(messages);
         if (instant) {
           send(controller, { type: "done", reply: instant, sources: [] });
           controller.close();
@@ -720,6 +738,15 @@ export function createChatReplyStream(
 
         const reply = finalizeStreamedReply(rawReply, config.useWebSearch);
         if (!reply) {
+          if (isLocalDiscoveryQuestion(messages)) {
+            send(controller, {
+              type: "done",
+              reply: matchLocalDiscoveryInstant(messages) ?? localDiscoveryFallbackReply(),
+              sources: [],
+            });
+            controller.close();
+            return;
+          }
           throw new GeminiChatError("Empty response from AI.");
         }
 
@@ -730,6 +757,15 @@ export function createChatReplyStream(
         });
         controller.close();
       } catch (error) {
+        if (isLocalDiscoveryQuestion(messages)) {
+          send(controller, {
+            type: "done",
+            reply: matchLocalDiscoveryInstant(messages) ?? localDiscoveryFallbackReply(),
+            sources: [],
+          });
+          controller.close();
+          return;
+        }
         send(controller, { type: "error", message: formatChatError(error) });
         controller.close();
       }

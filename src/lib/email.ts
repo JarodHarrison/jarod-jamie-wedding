@@ -1,7 +1,9 @@
 import nodemailer from "nodemailer";
 import type SMTPTransport from "nodemailer/lib/smtp-transport";
+import { isGmailOAuthConfigured } from "@/lib/gmail-oauth";
+import { sendViaGmailApi } from "@/lib/gmail-send";
 
-const DEFAULT_NOTIFY_EMAIL = "j-rodandjamie@outlook.com";
+const DEFAULT_NOTIFY_EMAIL = "theboys@jarodandjamiewedding.com";
 const WEDDING_NAME = "Jarod & Jamie Wedding";
 const DOMAIN = "jarodandjamiewedding.com";
 
@@ -72,6 +74,12 @@ export function textToHtml(text: string): string {
     .join("");
 }
 
+export function getEmailTransportMode(): "gmail" | "smtp" | "none" {
+  if (isGmailOAuthConfigured()) return "gmail";
+  if (getSmtpOptions()) return "smtp";
+  return "none";
+}
+
 export async function sendEmail({
   to,
   subject,
@@ -79,17 +87,33 @@ export async function sendEmail({
   html,
   from = "notifications",
 }: SendEmailOptions): Promise<boolean> {
+  const recipients = Array.isArray(to) ? to : [to];
+  const fromAddress = getSenderAddress(from);
+
+  if (isGmailOAuthConfigured()) {
+    const ok = await sendViaGmailApi({
+      from: fromAddress,
+      to: recipients,
+      subject,
+      text,
+      html,
+    });
+    if (ok) return true;
+    console.warn("[email] Gmail API send failed, trying SMTP fallback if configured");
+  }
+
   const mailer = getTransporter();
   if (!mailer) {
-    console.warn("[email] SMTP_USER/SMTP_PASS not set — email skipped:", subject);
+    console.warn(
+      "[email] No mail transport configured — connect Gmail (GMAIL_REFRESH_TOKEN) or set SMTP_USER/SMTP_PASS:",
+      subject,
+    );
     return false;
   }
 
-  const recipients = Array.isArray(to) ? to : [to];
-
   try {
     await mailer.sendMail({
-      from: getSenderAddress(from),
+      from: fromAddress,
       to: recipients.join(", "),
       subject,
       text,

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Smartphone, X } from "lucide-react";
 import {
   getInstallGuideContent,
+  INSTALL_GUIDE_OPEN_EVENT,
   markInstallGuideSeen,
   shouldShowInstallGuide,
   type InstallGuideContent,
@@ -20,6 +21,15 @@ export function InstallAppPopup() {
     setGuide(getInstallGuideContent());
     const timer = window.setTimeout(() => setOpen(true), 600);
     return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const openGuide = () => {
+      setGuide(getInstallGuideContent());
+      setOpen(true);
+    };
+    window.addEventListener(INSTALL_GUIDE_OPEN_EVENT, openGuide);
+    return () => window.removeEventListener(INSTALL_GUIDE_OPEN_EVENT, openGuide);
   }, []);
 
   const dismiss = () => {

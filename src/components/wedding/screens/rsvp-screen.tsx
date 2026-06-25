@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
+import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { theme } from "@/lib/theme";
 
 const inputClass =
@@ -56,16 +57,30 @@ export function RSVPScreen() {
   return (
     <div className="animate-fade-in wedding-screen-top px-8 pb-10">
       <div className="mb-10 text-center">
-        <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">
+        <RainbowText
+          as="h2"
+          className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500"
+        >
           You&apos;re Invited
-        </h2>
-        <h1 className="mb-4 font-serif text-4xl text-[#2a2723]">RSVP</h1>
+        </RainbowText>
+        <RainbowText as="h1" className="mb-4 font-serif text-4xl text-[var(--wedding-text-dark)]">
+          RSVP
+        </RainbowText>
         <p
           className="rounded-xl border bg-white/50 p-3 text-sm font-light text-gray-600"
           style={{ borderColor: theme.border }}
         >
           We are accepting late RSVPs as we still have some space left!
         </p>
+        {profile?.sayiImportedAt && profile.rsvpStatus !== "PENDING" && (
+          <p
+            className="mt-3 rounded-xl border border-sky-200 bg-sky-50/80 p-3 text-sm text-sky-900"
+          >
+            We&apos;ve carried over your RSVP from our Sayi.do invite
+            {profile.sayiPartyName ? ` (${profile.sayiPartyName})` : ""}. You can review or update
+            everything below.
+          </p>
+        )}
       </div>
 
       <form className="space-y-4" onSubmit={handleSubmit}>

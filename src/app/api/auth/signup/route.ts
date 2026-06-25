@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildPasswordFields } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
+import { findImportableGuestByName } from "@/lib/guest-claim";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { sendGuestWelcomeEmail } from "@/lib/guest-emails";
@@ -32,24 +33,51 @@ export async function POST(request: Request) {
 
     const existing = await prisma.guest.findUnique({
       where: { email },
-      select: { id: true },
+      select: { id: true, passwordPlaintext: true },
     });
-    if (existing) {
+    if (existing?.passwordPlaintext) {
       return jsonError("An account with this email already exists. Please sign in.", 409);
     }
 
     const passwordFields = await buildPasswordFields(password);
 
-    const guest = await prisma.guest.create({
-      data: {
-        name,
-        email,
-        passwordHash: passwordFields.passwordHash,
-        passwordPlaintext: passwordFields.passwordPlaintext,
-        tier: "OFF_SITE",
-      },
-      select: guestProfileSelect,
-    });
+    let guest;
+
+    if (existing && !existing.passwordPlaintext) {
+      guest = await prisma.guest.update({
+        where: { id: existing.id },
+        data: {
+          name,
+          passwordHash: passwordFields.passwordHash,
+          passwordPlaintext: passwordFields.passwordPlaintext,
+        },
+        select: guestProfileSelect,
+      });
+    } else {
+      const importable = await findImportableGuestByName(name);
+
+      guest = importable
+        ? await prisma.guest.update({
+            where: { id: importable.id },
+            data: {
+              name,
+              email,
+              passwordHash: passwordFields.passwordHash,
+              passwordPlaintext: passwordFields.passwordPlaintext,
+            },
+            select: guestProfileSelect,
+          })
+        : await prisma.guest.create({
+            data: {
+              name,
+              email,
+              passwordHash: passwordFields.passwordHash,
+              passwordPlaintext: passwordFields.passwordPlaintext,
+              tier: "OFF_SITE",
+            },
+            select: guestProfileSelect,
+          });
+    }
 
     await setSessionCookie({
       type: "guest",

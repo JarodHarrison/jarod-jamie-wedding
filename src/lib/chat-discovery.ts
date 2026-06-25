@@ -5,8 +5,10 @@ const LOCAL_DISCOVERY_PATTERNS = [
   /\b(restaurant|café|cafe|coffee|brunch|breakfast|lunch|dinner|eat|eating|food|drink|drinks|bar|pub|brewery|winery|dining|takeaway|take away)\b/i,
   /\b(attraction|things to do|visit|see|explore|activity|activities|hike|hiking|walk|waterfall|gallery|shop|shopping|market)\b/i,
   /\b(nearby|near me|around montville|around maleny|in montville|in maleny|hinterland|local spot|local place)\b/i,
-  /\bwhere (can|should|to|do i) (i )?(eat|drink|go|visit)\b/i,
-  /\b(recommend|suggestion|suggest).*(restaurant|food|eat|drink|place|spot)\b/i,
+  /\bwhere (can|should|to|do i) (i )?(eat|drink|go|visit|get|find|buy)\b/i,
+  /\b(where (can|should|do) i (get|find|buy)|looking for|where to (get|find|buy))\b/i,
+  /\b(chocolate|artisanal|fudge|bakery|patisserie|confectionery|sweets?|treats?|hamper|gourmet)\b/i,
+  /\b(recommend|suggestion|suggest).*(restaurant|food|eat|drink|place|spot|chocolate|shop)\b/i,
   /\b(what|any).*(open|good).*(restaurant|café|cafe|pub|bar)\b/i,
 ];
 

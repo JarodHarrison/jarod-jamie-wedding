@@ -2,8 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ScheduleNode } from "@/components/wedding/shared/schedule-node";
+import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { attractionToScheduleProps, goldCoastAttractions } from "@/lib/gold-coast-attractions";
 import { LAKESIDE_MEET_GREET } from "@/lib/on-site-access";
+import { saveOfflineBundle } from "@/lib/offline-cache";
 import { theme } from "@/lib/theme";
 
 function WeddingSchedule({ isOnSite }: { isOnSite: boolean }) {
@@ -159,6 +161,19 @@ export function ItineraryScreen({
     main?.scrollTo({ top: 0, left: 0 });
   }, [view]);
 
+  useEffect(() => {
+    saveOfflineBundle({
+      itineraryHtml:
+        "Fri Meet & Greet 6pm (on-site). Sat Ceremony 3pm, Garden Party 4:30pm, Reception 6pm at Spicers Clovelly. Sun Breakfast 9am.",
+      faqSnippets: [
+        "Ceremony 3:00pm — colourful cocktail attire, adults-only",
+        "Reception 6:00pm — The Pavilion",
+        "Courtesy shuttle for Montville-area guests",
+        "Hashtag #J-rodandJamo",
+      ],
+    });
+  }, []);
+
   const switchView = (next: "wedding" | "goldcoast") => {
     setView(next);
   };
@@ -166,8 +181,15 @@ export function ItineraryScreen({
   return (
     <div ref={topRef} className="animate-fade-in pb-10">
       <div className="wedding-screen-top sticky top-0 z-20 bg-[#f7f4ee]/90 px-8 pb-6 text-center backdrop-blur-md">
-        <h2 className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500">The Details</h2>
-        <h1 className="font-serif text-3xl text-[#2a2723]">Schedule & Events</h1>
+        <RainbowText
+          as="h2"
+          className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500"
+        >
+          The Details
+        </RainbowText>
+        <RainbowText as="h1" className="font-serif text-3xl text-[var(--wedding-text-dark)]">
+          Schedule & Events
+        </RainbowText>
         <div className="mt-6 flex rounded-full bg-[#e2d5c4]/30 p-1 shadow-inner">
           <button
             type="button"

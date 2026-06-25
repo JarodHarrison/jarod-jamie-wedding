@@ -110,6 +110,31 @@ const INSTANT_FAQ: FaqEntry[] = [
     reply:
       "Wishing well: **pocketwell.com.au/events/jarod-and-jamie** — your presence is the present, but we won't say no to a little envelope love, honey.",
   },
+  {
+    patterns: [/\b(bingo|photobooth bingo)\b/i],
+    reply:
+      "Photobooth Bingo lives under **Photos → Photobooth Bingo** in the app. Tick off booth shots as you nail them — first to finish triggers a celebration for everyone. Check the leaderboard while you play!",
+  },
+  {
+    patterns: [/\b(story wall|guest stor|share a stor|jarod.?&.?jamie stor)\b/i],
+    reply:
+      "Share your J&J memory on the **Stories** tab — funny, heartfelt, or chaotic. It flashes on the wall for everyone (or post anonymously). Up to 3 stories per guest.",
+  },
+  {
+    patterns: [/\b(profile photo|guest wall|who.?s coming)\b/i],
+    reply:
+      "Upload your photo in the **Profile** tab — it'll show on the guest wall so everyone can see who's coming. RSVP accepted guests only, babe.",
+  },
+  {
+    patterns: [/\b(install|add to home|home screen)\b.*\b(app|phone)\b/i, /\bhow (do|can) i install\b/i],
+    reply:
+      "Install the wedding app to your home screen for offline itinerary access. On iPhone: Safari → Share → Add to Home Screen. On Android: Chrome → Install app. Profile → App preferences also has tips, darling.",
+  },
+  {
+    patterns: [/\b(emergency|urgent|help).*(day|wedding)\b/i, /\bwho (do|can) i call\b/i],
+    reply:
+      "On wedding day, check the **Home** tab for emergency contacts. For logistics (shuttle, dress code, times), I'm your girl — just ask!",
+  },
 ];
 
 export function matchInstantFaq(messages: ChatMessage[]): string | null {

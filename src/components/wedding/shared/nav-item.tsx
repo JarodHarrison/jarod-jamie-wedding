@@ -27,12 +27,12 @@ export function NavItem({
       className={`flex min-h-[40px] min-w-0 flex-1 touch-manipulation flex-col items-center justify-center gap-px transition-opacity duration-200 ${isActive ? "opacity-100" : "opacity-55"}`}
     >
       <div
-        className={`rounded-xl transition-colors ${compact ? "p-1.5" : "p-2"} ${isActive ? "bg-[#c3a379] text-white shadow-md" : "text-[#2a2723]"}`}
+        className={`rounded-xl transition-colors ${compact ? "p-1.5" : "p-2"} ${isActive ? "wedding-nav-active shadow-md" : "text-[var(--wedding-text-dark)]"}`}
       >
         <Icon size={compact ? 17 : 20} strokeWidth={isActive ? 2.25 : 2} />
       </div>
       <span
-        className={`max-w-full truncate px-0.5 text-[7px] font-bold uppercase leading-tight tracking-wide sm:text-[8px] sm:tracking-widest ${isActive ? "text-[#c3a379]" : "text-gray-400"}`}
+        className={`max-w-full truncate px-0.5 text-[7px] font-bold uppercase leading-tight tracking-wide sm:text-[8px] sm:tracking-widest ${isActive ? "text-[var(--wedding-gold)]" : "text-gray-400"}`}
       >
         {label}
       </span>
