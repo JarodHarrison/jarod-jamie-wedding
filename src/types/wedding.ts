@@ -13,7 +13,7 @@ export type AdminUser = {
   email: string;
 };
 
-export type MainTab = "home" | "jarodjamie" | "itinerary" | "guide" | "party" | "profile";
+export type MainTab = "home" | "jarodjamie" | "itinerary" | "guide" | "party" | "profile" | "rsvp";
 
 export type SubTab =
   | "story"
