@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { Check, ChevronRight, Circle } from "lucide-react";
 import { shouldShowInstallGuide } from "@/lib/pwa/install-guide";
-import { isWeddingFeatureVisible } from "@/lib/wedding-event";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 
@@ -27,14 +26,12 @@ export function WeddingChecklist({ setActiveTab, onOpenInstall }: WeddingCheckli
   useEffect(() => {
     void (async () => {
       try {
-        const [profileRes, bingoRes, storiesRes] = await Promise.all([
+        const [profileRes, storiesRes] = await Promise.all([
           fetch("/api/guest/profile"),
-          fetch("/api/bingo"),
           fetch("/api/guest-stories"),
         ]);
 
         const profile = profileRes.ok ? (await profileRes.json()).profile : null;
-        const bingo = bingoRes.ok ? await bingoRes.json() : null;
         const stories = storiesRes.ok ? (await storiesRes.json()).stories : [];
         const myStories = Array.isArray(stories) ? stories.filter((s: { isMine?: boolean }) => s.isMine) : [];
 
@@ -62,17 +59,6 @@ export function WeddingChecklist({ setActiveTab, onOpenInstall }: WeddingCheckli
             done: myStories.length > 0,
             tab: "jarodjamie",
           },
-          ...(isWeddingFeatureVisible("photobooth-bingo")
-            ? [
-                {
-                  id: "bingo",
-                  label: "Photobooth bingo",
-                  detail: bingo?.completed ? "Card cleared!" : "Start ticking off booth shots",
-                  done: Boolean(bingo?.checkedItems?.length > 0),
-                  tab: "bingo" as AppTab,
-                },
-              ]
-            : []),
           {
             id: "install",
             label: "Install the app",
