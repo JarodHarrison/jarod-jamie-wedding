@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError, isValidGuestTier } from "@/lib/api-utils";
 import { sendGuestUpdateEmail } from "@/lib/guest-emails";
-import { prisma } from "@/lib/prisma";
+import { prisma, type Prisma } from "@/lib/prisma";
 import type { GuestTier } from "@/types/wedding";
 
 type BroadcastAudience =
@@ -38,7 +38,11 @@ export async function POST(request: Request) {
       return jsonError("Invalid audience.", 400);
     }
 
-    const guests = await prisma.guest.findMany({
+    type BroadcastGuest = Prisma.GuestGetPayload<{
+      select: { name: true; email: true; rsvpStatus: true; tier: true };
+    }>;
+
+    const guests: BroadcastGuest[] = await prisma.guest.findMany({
       select: { name: true, email: true, rsvpStatus: true, tier: true },
       orderBy: { name: "asc" },
     });
