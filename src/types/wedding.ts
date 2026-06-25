@@ -69,6 +69,13 @@ export type AdminGuest = {
   needsShuttle: boolean | null;
   accommodationNotes: string | null;
   accommodationSubmittedAt: string | null;
+  assignedRoomName: string | null;
+  assignedRoomDetails: string | null;
+  assignedRoomCheckIn: string | null;
+  assignedRoomCheckOut: string | null;
+  assignedRoomConfiguration: string | null;
+  roomAllocationImportedAt: string | null;
+  bedPreference: string | null;
   wantsSharedTransfer: boolean | null;
   arrivalAirport: string | null;
   arrivalDate: string | null;
