@@ -4,7 +4,7 @@ import { isGmailOAuthConfigured } from "@/lib/gmail-oauth";
 import { sendViaGmailApi } from "@/lib/gmail-send";
 
 const DEFAULT_NOTIFY_EMAIL = "J-rodandJamie@outlook.com";
-const WEDDING_NAME = "Jarod & Jamie Wedding";
+const WEDDING_NAME = "J-rod & Jamo";
 const DOMAIN = "jarodandjamiewedding.com";
 
 /** notifications@ — admin alerts when guests register or update forms */
@@ -55,7 +55,13 @@ export function getSenderAddress(sender: EmailSender): string {
     | "EMAIL_FROM_NOTIFICATIONS"
     | "EMAIL_FROM_UPDATES"
     | "EMAIL_FROM_NOREPLY";
-  return process.env[envKey] ?? DEFAULT_SENDERS[sender];
+  const configured = process.env[envKey] ?? DEFAULT_SENDERS[sender];
+  const email =
+    configured.match(/<([^>]+)>/)?.[1] ??
+    configured.match(/(\S+@\S+)/)?.[1] ??
+    DEFAULT_SENDERS[sender].match(/<([^>]+)>/)?.[1];
+
+  return `${WEDDING_NAME} <${email}>`;
 }
 
 /** @deprecated Use getSenderAddress with a specific EmailSender */
