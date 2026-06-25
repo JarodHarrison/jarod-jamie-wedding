@@ -16,6 +16,7 @@ export type AdminUser = {
 export type MainTab = "home" | "jarodjamie" | "itinerary" | "guide" | "party" | "profile";
 
 export type SubTab =
+  | "story"
   | "rsvp"
   | "faq"
   | "wishingwell"
