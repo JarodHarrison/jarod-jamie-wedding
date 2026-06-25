@@ -1,9 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import { getSession, type AdminSession, type GuestSession } from "@/lib/auth/session";
 
 export type AdminAccessSession = AdminSession | GuestSession;
 
 export async function guestHasAdminAccess(email: string): Promise<boolean> {
+  if (isGuestOnlyEmail(email)) return false;
+
   const admin = await prisma.admin.findUnique({
     where: { email },
     select: { id: true },

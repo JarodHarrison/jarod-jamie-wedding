@@ -1,5 +1,6 @@
 import { prisma } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/auth/password";
+import { JAROD_GUEST_EMAIL } from "../src/lib/auth/account-roles";
 
 import { SHUTTLE_STOPS } from "../src/lib/shuttle/stops";
 
@@ -32,6 +33,19 @@ async function main() {
   await prisma.admin.deleteMany({
     where: {
       email: { in: ["jarod@jarodandjamie.wedding", "jamie@jarodandjamie.wedding"] },
+    },
+  });
+
+  await prisma.guest.upsert({
+    where: { email: JAROD_GUEST_EMAIL },
+    update: { passwordHash: guestPasswordHash, passwordPlaintext: demoGuestPassword },
+    create: {
+      name: "Jarod Harrison",
+      email: JAROD_GUEST_EMAIL,
+      tier: "PENTHOUSE",
+      rsvpStatus: "ACCEPTED",
+      passwordHash: guestPasswordHash,
+      passwordPlaintext: demoGuestPassword,
     },
   });
 

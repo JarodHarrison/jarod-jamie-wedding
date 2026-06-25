@@ -5,6 +5,7 @@ import {
   redirectWithAdminSession,
   redirectWithGuestSession,
 } from "@/lib/auth/create-session";
+import { isAdminPreferredEmail, isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import { hashPassword } from "@/lib/auth/password";
 import { findImportableGuestByName } from "@/lib/guest-claim";
 import { prisma } from "@/lib/prisma";
@@ -30,6 +31,15 @@ export async function signInWithEmailAccount(email: string) {
     prisma.admin.findUnique({ where: { email: normalized }, select: adminSelect }),
   ]);
 
+  if (isGuestOnlyEmail(normalized)) {
+    if (!guest) return null;
+    return createGuestSessionResponse(guest);
+  }
+
+  if (isAdminPreferredEmail(normalized) && admin) {
+    return createAdminSessionResponse(admin);
+  }
+
   if (guest) {
     return createGuestSessionResponse(guest, Boolean(admin));
   }
@@ -47,6 +57,15 @@ export async function signInWithEmailAccountRedirect(email: string, redirectUrl:
     prisma.guest.findUnique({ where: { email: normalized }, select: guestSelect }),
     prisma.admin.findUnique({ where: { email: normalized }, select: adminSelect }),
   ]);
+
+  if (isGuestOnlyEmail(normalized)) {
+    if (!guest) return null;
+    return redirectWithGuestSession(guest, redirectUrl);
+  }
+
+  if (isAdminPreferredEmail(normalized) && admin) {
+    return redirectWithAdminSession(admin, redirectUrl);
+  }
 
   if (guest) {
     return redirectWithGuestSession(guest, redirectUrl);

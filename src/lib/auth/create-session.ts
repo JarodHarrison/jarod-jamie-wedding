@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
+import { isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import {
   applySessionCookie,
   createSessionCookieValue,
@@ -67,7 +68,9 @@ export async function redirectWithAdminSession(admin: AdminAccount, redirectUrl:
 export async function createGuestSessionResponse(guest: GuestAccount, hasAdminRecord = false) {
   await setGuestSessionCookie(guest);
 
-  const canAccessAdmin = hasAdminRecord || (await guestHasAdminAccess(guest.email));
+  const canAccessAdmin =
+    !isGuestOnlyEmail(guest.email) &&
+    (hasAdminRecord || (await guestHasAdminAccess(guest.email)));
 
   return NextResponse.json({
     user: {

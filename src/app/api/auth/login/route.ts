@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
+import { isAdminPreferredEmail, isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import { verifyPassword } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
@@ -37,6 +38,44 @@ export async function POST(request: Request) {
 
     const guestValid = guest ? await verifyPassword(password, guest.passwordHash) : false;
     const adminValid = admin ? await verifyPassword(password, admin.passwordHash) : false;
+
+    if (isGuestOnlyEmail(email)) {
+      if (!guest || !guestValid) {
+        return jsonError("Invalid email or password.", 401);
+      }
+
+      await setSessionCookie({
+        type: "guest",
+        id: guest.id,
+        name: guest.name,
+        email: guest.email,
+        tier: guest.tier,
+      });
+
+      return NextResponse.json({
+        user: {
+          id: guest.id,
+          name: guest.name,
+          email: guest.email,
+          tier: guest.tier,
+        },
+        canAccessAdmin: false,
+      });
+    }
+
+    if (isAdminPreferredEmail(email) && admin && adminValid) {
+      await setSessionCookie({
+        type: "admin",
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+      });
+
+      return NextResponse.json({
+        admin: { id: admin.id, name: admin.name, email: admin.email },
+        canAccessAdmin: true,
+      });
+    }
 
     // Prefer a guest session when both exist so RSVP/forms keep working.
     if (guest && guestValid) {
