@@ -1,27 +1,10 @@
 import {
-  adventureAttractions,
-  doAttractions,
-  eatAttractions,
-  oddityAttractions,
-  type Attraction,
-} from "@/components/wedding/data/attractions";
+  buildHinterlandPlacesKnowledge,
+  LOCAL_DISCOVERY_AREA,
+} from "@/lib/hinterland-places";
 
-function formatAttraction(a: Attraction): string {
-  return `- **${a.title}** (${a.category}, ~${a.distance} from venue): ${a.desc}${a.websiteUrl ? ` — ${a.websiteUrl}` : ""}`;
-}
+export { LOCAL_DISCOVERY_AREA };
 
 export function buildLocalGuideKnowledge(): string {
-  const sections = [
-    { heading: "Eat & Drink (curated)", items: eatAttractions },
-    { heading: "Things to Do (curated)", items: doAttractions },
-    { heading: "Adventure (curated)", items: adventureAttractions },
-    { heading: "Oddities & Hidden Gems (curated)", items: oddityAttractions },
-  ];
-
-  return sections
-    .map((s) => `### ${s.heading}\n${s.items.map(formatAttraction).join("\n")}`)
-    .join("\n\n");
+  return buildHinterlandPlacesKnowledge();
 }
-
-export const LOCAL_DISCOVERY_AREA =
-  "Montville, Maleny, Mapleton, Palmwoods, and the Sunshine Coast hinterland (within ~45 minutes of Spicers Clovelly Estate)";

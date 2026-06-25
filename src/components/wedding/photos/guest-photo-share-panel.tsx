@@ -4,13 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { Camera, Loader2, Upload } from "lucide-react";
 import { SHARED_PHOTO_ACCEPT } from "@/lib/kiosk";
+import { normalizePhotoForUpload } from "@/lib/normalize-upload-image";
 import { theme } from "@/lib/theme";
 
-export function GuestPhotoSharePanel() {
+type GuestPhotoSharePanelProps = {
+  onUploaded?: () => void;
+};
+
+export function GuestPhotoSharePanel({ onUploaded }: GuestPhotoSharePanelProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [caption, setCaption] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
   const [qrDataUrl, setQrDataUrl] = useState("");
   const [recent, setRecent] = useState<
     {
@@ -30,7 +36,7 @@ export function GuestPhotoSharePanel() {
 
   useEffect(() => {
     void QRCode.toDataURL(shareUrl, { margin: 1, width: 180 }).then(setQrDataUrl);
-    void fetch("/api/guest/photos/share")
+    void fetch("/api/guest/photos/share", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         setRecent(data.photos ?? []);
@@ -42,34 +48,55 @@ export function GuestPhotoSharePanel() {
   const upload = async (file: File) => {
     setUploading(true);
     setMessage("");
+    setError("");
+
     try {
+      const prepared = await normalizePhotoForUpload(file, {
+        maxDimension: 2400,
+        maxBytes: 3_500_000,
+      });
+
       const formData = new FormData();
-      formData.append("photo", file);
+      formData.append("photo", prepared);
       if (caption.trim()) formData.append("caption", caption.trim());
 
-      const res = await fetch("/api/guest/photos/share", { method: "POST", body: formData });
+      const res = await fetch("/api/guest/photos/share", {
+        method: "POST",
+        body: formData,
+        credentials: "include",
+      });
       const data = await res.json();
+
       if (data.rejected) {
-        setMessage(data.message ?? "That photo can't be added to the wall.");
-        return;
-      }
-      if (!res.ok) {
-        setMessage(data.error ?? "Upload failed.");
+        setError(data.message ?? "That photo can't be added to the wall.");
         return;
       }
 
+      if (!res.ok) {
+        setError(data.error ?? "Upload failed. Try again or pick a smaller photo.");
+        return;
+      }
+
+      const cacheBust = Date.now();
       setCaption("");
-      setMessage("Photo shared — it should appear on the live wall shortly.");
+      setMessage("Photo shared — it's on the live wall now.");
       setRecent((current) => [
         {
           id: data.photo.id,
-          imageUrl: data.photo.imageUrl,
+          imageUrl: `${data.photo.imageUrl}?v=${cacheBust}`,
           caption: data.photo.caption,
           savedToDrive: false,
           status: data.photo.status,
         },
         ...current,
       ]);
+      onUploaded?.();
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Upload failed. Check your connection and try again.",
+      );
     } finally {
       setUploading(false);
     }
@@ -129,6 +156,7 @@ export function GuestPhotoSharePanel() {
         }}
       />
 
+      {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
       {message && <p className="mt-3 text-xs text-emerald-700">{message}</p>}
 
       {recent.length > 0 && (

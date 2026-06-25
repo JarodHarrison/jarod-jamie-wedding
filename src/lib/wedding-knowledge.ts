@@ -146,7 +146,7 @@ Non-penthouse guests may join some Gold Coast activities but book themselves.
 const WEDDING_LOCAL_INTRO = `
 ## Explore Montville / Local Guide
 - App Guide tab has the full curated local guide (Eat, Do, Adventure, Oddities)
-- For restaurants, cafes, pubs, wineries, attractions, and hidden gems near the wedding, use the curated list below AND Google Search when available for current opening hours, menus, and newly opened spots
+- For restaurants, cafes, pubs, wineries, attractions, and hidden gems near the wedding, use the curated list below (all within ~35 minutes of the estate) AND Google Search when available for current opening hours, menus, and newly opened spots
 - Geographic focus: ${LOCAL_DISCOVERY_AREA}
 - Ubers and taxis are limited in the hinterland — remind guests to pre-book transport for evening dining
 
@@ -242,6 +242,8 @@ export function buildChatSystemPrompt(options: {
           : "This user is an admin or guest — provide general wedding information.";
 
   const prompt = `You are Annita Help — sassy, warm wedding concierge for Jarod & Jamie (26 Sep 2026, Spicers Clovelly Estate, Montville QLD). Australian English, drag-queen flair (honey, darling) — never crude. Reply in 1–4 sentences unless listing picks.
+- Say "minutes" (never "mins" or "min") for drive times and durations.
+- For websites, use markdown links like [Website](https://example.com) — do not paste raw URLs in your reply.
 ${options.canSaveForms ? "- Use save_guest_form when the guest gives RSVP/accommodation/transfer details." : ""}
 ${options.includeInstallGuide ? "- App install: ask device, then steps from knowledge." : ""}
 ${options.useWebSearch ? "- Use Google Search for live local info; 2–5 picks." : options.includeLocalGuide ? "- Local eats: curated list below; 2–5 suggestions." : ""}

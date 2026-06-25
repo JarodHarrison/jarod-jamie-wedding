@@ -7,6 +7,7 @@ import {
   GUEST_RELATIONSHIP_OPTIONS,
   PROFILE_PHOTO_ACCEPT,
 } from "@/lib/guest-identity";
+import { normalizePhotoForUpload } from "@/lib/normalize-upload-image";
 import { theme } from "@/lib/theme";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import type { GuestProfile } from "@/types/wedding";
@@ -51,12 +52,18 @@ export function ProfilePhotoSection({ profile, onProfileChange, onError }: Profi
     setIdentitySaved(false);
 
     try {
+      const prepared = await normalizePhotoForUpload(file, {
+        maxDimension: 1200,
+        maxBytes: 700_000,
+      });
+
       const formData = new FormData();
-      formData.append("photo", file);
+      formData.append("photo", prepared);
 
       const res = await fetch("/api/guest/profile/photo", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
       const data = await res.json();
 
@@ -67,8 +74,8 @@ export function ProfilePhotoSection({ profile, onProfileChange, onError }: Profi
 
       onProfileChange(data.profile);
       setShowIdentityForm(true);
-    } catch {
-      onError("Failed to upload photo.");
+    } catch (error) {
+      onError(error instanceof Error ? error.message : "Failed to upload photo.");
     } finally {
       setUploading(false);
     }

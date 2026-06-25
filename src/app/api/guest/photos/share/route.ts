@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
 import { requireGuestSession } from "@/lib/auth/session";
+import { resolveUploadImageMime } from "@/lib/detect-image-mime";
 import { uploadGuestPhotoToDrive } from "@/lib/google-drive";
 import {
   formatVisionFlags,
@@ -10,13 +11,8 @@ import {
 import { SHARED_PHOTO_ACCEPT, SHARED_PHOTO_MAX_BYTES } from "@/lib/kiosk";
 import { prisma } from "@/lib/prisma";
 
-const ALLOWED_MIME = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-]);
+export const runtime = "nodejs";
+export const maxDuration = 30;
 
 export async function GET() {
   try {
@@ -60,13 +56,14 @@ export async function POST(request: Request) {
       return jsonError("Please choose a photo to upload.", 400);
     }
 
-    if (!ALLOWED_MIME.has(file.type)) {
-      return jsonError(`Use a photo file (${SHARED_PHOTO_ACCEPT}).`, 400);
-    }
-
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.byteLength > SHARED_PHOTO_MAX_BYTES) {
-      return jsonError("Photo is too large — please use an image under 8MB.", 400);
+      return jsonError("Photo is too large — please use an image under 4MB.", 400);
+    }
+
+    const mime = resolveUploadImageMime(file, buffer);
+    if (!mime) {
+      return jsonError(`Use a photo file (${SHARED_PHOTO_ACCEPT}).`, 400);
     }
 
     const guest = await prisma.guest.findUnique({
@@ -81,7 +78,7 @@ export async function POST(request: Request) {
     const photo = await prisma.guestSharedPhoto.create({
       data: {
         guestId: session.id,
-        mime: file.type,
+        mime,
         photoData: buffer,
         caption,
         status: moderation.status,
@@ -97,13 +94,13 @@ export async function POST(request: Request) {
       });
     }
 
-    const extension = file.type.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+    const extension = mime.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
     const safeName = guest.name.replace(/[^\w.-]+/g, "_").slice(0, 40);
     const fileName = `${safeName}-${photo.id.slice(-6)}.${extension}`;
 
     void uploadGuestPhotoToDrive({
       fileName,
-      mime: file.type,
+      mime,
       buffer,
       guestName: guest.name,
       guestEmail: guest.email,

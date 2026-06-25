@@ -4,7 +4,7 @@ export const KIOSK_SLIDE_SECONDS = 14;
 export const KIOSK_SESSION_HOURS = 12;
 export const KIOSK_FEED_POLL_MS = 20_000;
 
-export const SHARED_PHOTO_MAX_BYTES = 8_000_000;
+export const SHARED_PHOTO_MAX_BYTES = 4_000_000;
 export const SHARED_PHOTO_ACCEPT = "image/jpeg,image/png,image/webp,image/heic,image/heif";
 
 export function generateKioskDisplayCode() {

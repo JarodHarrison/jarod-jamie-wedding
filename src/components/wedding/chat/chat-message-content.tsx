@@ -17,7 +17,7 @@ export function ChatMessageContent({
 
   return (
     <div
-      className={`[&_em]:italic [&_strong]:font-semibold [&_strong]:text-[#2a2723] ${className}`}
+      className={`[&_a]:font-medium [&_a]:text-pink-600 [&_a]:underline [&_a]:decoration-pink-300 [&_a]:underline-offset-2 [&_em]:italic [&_strong]:font-semibold [&_strong]:text-[#2a2723] ${className}`}
       dangerouslySetInnerHTML={{ __html: formatChatMarkdown(content) }}
     />
   );

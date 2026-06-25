@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
+import { binaryPhotoResponse } from "@/lib/photo-response";
 import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -23,10 +26,9 @@ export async function GET(_request: Request, context: RouteContext) {
     return new NextResponse(null, { status: 404 });
   }
 
-  return new NextResponse(Buffer.from(photo.photoData), {
-    headers: {
-      "Content-Type": photo.mime,
-      "Cache-Control": photo.status === "APPROVED" ? "public, max-age=3600" : "private, no-store",
-    },
-  });
+  return binaryPhotoResponse(
+    photo.photoData,
+    photo.mime,
+    photo.status === "APPROVED" ? "public, max-age=3600" : "private, no-store",
+  );
 }

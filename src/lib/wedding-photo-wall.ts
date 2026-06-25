@@ -26,7 +26,7 @@ export async function fetchWeddingWallPhotos(options?: { uploadsOnlyApproved?: b
   const uploadItems: WallPhoto[] = uploads.map((photo) => ({
     id: `upload-${photo.id}`,
     source: "upload",
-    mediaUrl: `/api/guest/photos/share/${photo.id}`,
+    mediaUrl: `/api/guest/photos/share/${photo.id}?v=${photo.createdAt.getTime()}`,
     permalink: null,
     mediaType: photo.mime.startsWith("image/") ? "IMAGE" : "IMAGE",
     caption: photo.caption,

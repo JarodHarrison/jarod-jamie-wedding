@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
 import { requireGuestSession } from "@/lib/auth/session";
+import { resolveUploadImageMime } from "@/lib/detect-image-mime";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { PROFILE_PHOTO_ACCEPT, PROFILE_PHOTO_MAX_BYTES } from "@/lib/guest-identity";
+import { binaryPhotoResponse } from "@/lib/photo-response";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+export const maxDuration = 30;
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
 
@@ -22,12 +27,7 @@ export async function GET(request: Request) {
       if (!target?.profilePhotoData || !target.profilePhotoMime || target.rsvpStatus !== "ACCEPTED") {
         return new NextResponse(null, { status: 404 });
       }
-      return new NextResponse(Buffer.from(target.profilePhotoData), {
-        headers: {
-          "Content-Type": target.profilePhotoMime,
-          "Cache-Control": "public, max-age=86400",
-        },
-      });
+      return binaryPhotoResponse(target.profilePhotoData, target.profilePhotoMime, "public, max-age=86400");
     }
 
     const guest = await prisma.guest.findUnique({
@@ -39,12 +39,7 @@ export async function GET(request: Request) {
       return new NextResponse(null, { status: 404 });
     }
 
-    return new NextResponse(Buffer.from(guest.profilePhotoData), {
-      headers: {
-        "Content-Type": guest.profilePhotoMime,
-        "Cache-Control": "private, max-age=3600",
-      },
-    });
+    return binaryPhotoResponse(guest.profilePhotoData, guest.profilePhotoMime, "private, max-age=3600");
   } catch {
     return jsonError("Unauthorized", 401);
   }
@@ -60,19 +55,20 @@ export async function POST(request: Request) {
       return jsonError("Please choose a photo to upload.", 400);
     }
 
-    if (!ALLOWED_MIME.has(file.type)) {
-      return jsonError(`Use a photo file (${PROFILE_PHOTO_ACCEPT}).`, 400);
-    }
-
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.byteLength > PROFILE_PHOTO_MAX_BYTES) {
       return jsonError("Photo is too large — please use an image under 750KB.", 400);
     }
 
+    const mime = resolveUploadImageMime(file, buffer);
+    if (!mime || !ALLOWED_MIME.has(mime)) {
+      return jsonError(`Use a photo file (${PROFILE_PHOTO_ACCEPT}).`, 400);
+    }
+
     const guest = await prisma.guest.update({
       where: { id: session.id },
       data: {
-        profilePhotoMime: file.type,
+        profilePhotoMime: mime,
         profilePhotoData: buffer,
         profileUpdatedAt: new Date(),
       },

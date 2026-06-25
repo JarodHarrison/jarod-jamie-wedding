@@ -31,7 +31,7 @@ export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
 
   const loadPhotos = () => {
     setLoading(true);
-    fetch("/api/photos")
+    fetch("/api/photos", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         setPhotos(data.photos ?? []);
@@ -49,7 +49,7 @@ export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
       <SubHeader title="Photos" subtitle="Memories & booth" onBack={() => setActiveTab("home")} />
 
       <div className="mt-6 space-y-4 px-6">
-        <GuestPhotoSharePanel />
+        <GuestPhotoSharePanel onUploaded={loadPhotos} />
 
         {showBingo && (
         <GuideCard
