@@ -20,6 +20,10 @@ export async function GET() {
         guestOfHost: true,
         guestRelationship: true,
         profilePhotoMime: true,
+        plusOneName: true,
+        plusOneGuest: {
+          select: { name: true },
+        },
       },
     });
 
@@ -29,6 +33,7 @@ export async function GET() {
         name: guest.name,
         guestOfHost: guest.guestOfHost,
         guestRelationship: guest.guestRelationship,
+        plusOneName: guest.plusOneGuest?.name ?? guest.plusOneName,
         photoUrl: `/api/guest/profile/photo?guestId=${guest.id}`,
       })),
       total: guests.length,

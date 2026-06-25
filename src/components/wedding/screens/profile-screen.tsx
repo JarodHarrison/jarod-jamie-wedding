@@ -7,6 +7,7 @@ import { InterestForm } from "@/components/wedding/forms/interest-form";
 import { useAnnitaFabPrefs } from "@/components/wedding/hooks/use-annita-fab-prefs";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
 import { ProfilePhotoSection } from "@/components/wedding/profile/profile-photo-section";
+import { CompanionSection } from "@/components/wedding/profile/companion-section";
 import { RsvpProfileForm } from "@/components/wedding/profile/rsvp-profile-form";
 import { PasskeySettings } from "@/components/wedding/auth/social-auth";
 import { ContentAccordion } from "@/components/wedding/shared/content-accordion";
@@ -53,6 +54,12 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
         )}
 
         <ProfilePhotoSection
+          profile={profile}
+          onProfileChange={setProfile}
+          onError={setError}
+        />
+
+        <CompanionSection
           profile={profile}
           onProfileChange={setProfile}
           onError={setError}

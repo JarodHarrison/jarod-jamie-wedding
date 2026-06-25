@@ -8,6 +8,19 @@ export const guestProfileSelect = {
   rsvpStatus: true,
   phone: true,
   plusOneName: true,
+  plusOneGuestId: true,
+  plusOneGuest: {
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      profilePhotoMime: true,
+      profileUpdatedAt: true,
+      createdAt: true,
+    },
+  },
+  companionPhotoMime: true,
+  partyRole: true,
   dietaryNotes: true,
   songRequest: true,
   rsvpSubmittedAt: true,
@@ -70,6 +83,18 @@ export function serializeGuestProfile(guest: GuestProfileRecord) {
         ? (guest.sayiCustomData as Record<string, string>)
         : null,
     hasProfilePhoto: Boolean(guest.profilePhotoMime),
+    hasCompanionPhoto: Boolean(guest.companionPhotoMime),
+    plusOneGuest: guest.plusOneGuest
+      ? {
+          id: guest.plusOneGuest.id,
+          name: guest.plusOneGuest.name,
+          email: guest.plusOneGuest.email,
+          hasProfilePhoto: Boolean(guest.plusOneGuest.profilePhotoMime),
+          photoUrl: guest.plusOneGuest.profilePhotoMime
+            ? `/api/guest/profile/photo?guestId=${guest.plusOneGuest.id}`
+            : null,
+        }
+      : null,
     createdAt: guest.createdAt.toISOString(),
   };
 }
@@ -85,7 +110,13 @@ export function serializeAdminGuest(guest: AdminGuestRecord) {
 
 export type SerializedAdminGuest = ReturnType<typeof serializeAdminGuest>;
 
-export type GuestProfileSection = "rsvp" | "accommodation" | "transfer" | "interests" | "identity";
+export type GuestProfileSection =
+  | "rsvp"
+  | "accommodation"
+  | "transfer"
+  | "interests"
+  | "identity"
+  | "companion";
 
 export function isGuestProfileSection(value: string): value is GuestProfileSection {
   return (
@@ -93,6 +124,7 @@ export function isGuestProfileSection(value: string): value is GuestProfileSecti
     value === "accommodation" ||
     value === "transfer" ||
     value === "interests" ||
-    value === "identity"
+    value === "identity" ||
+    value === "companion"
   );
 }

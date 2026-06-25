@@ -12,8 +12,9 @@ import {
   IN_THE_BOOTH,
   INSTAGRAM_TAG_URL,
   WEDDING_HASHTAG,
-  type HashtagPhoto,
 } from "@/lib/photos";
+import type { WallPhoto } from "@/types/wall-photo";
+import { GuestPhotoSharePanel } from "@/components/wedding/photos/guest-photo-share-panel";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 
@@ -24,7 +25,7 @@ type PhotosScreenProps = {
 export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
   const { isFeatureVisible } = useWeddingPhase();
   const showBingo = isFeatureVisible("photobooth-bingo");
-  const [photos, setPhotos] = useState<HashtagPhoto[]>([]);
+  const [photos, setPhotos] = useState<WallPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [configured, setConfigured] = useState(false);
 
@@ -48,6 +49,8 @@ export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
       <SubHeader title="Photos" subtitle="Memories & booth" onBack={() => setActiveTab("home")} />
 
       <div className="mt-6 space-y-4 px-6">
+        <GuestPhotoSharePanel />
+
         {showBingo && (
         <GuideCard
           card={{
@@ -188,34 +191,53 @@ export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
             >
               <p className="text-sm font-light leading-relaxed text-gray-600">
                 {configured
-                  ? "No posts yet — be the first to tag #J-rodandJamo!"
-                  : "Photos tagged #J-rodandJamo will appear here. Open the hashtag section above to view on Instagram."}
+                  ? "No posts yet — upload above or tag #J-rodandJamo on Instagram!"
+                  : "Guest uploads and Instagram posts tagged #J-rodandJamo appear here together."}
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
-              {photos.map((photo) => (
-                <a
-                  key={photo.id}
-                  href={photo.permalink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative aspect-square overflow-hidden rounded-2xl border bg-[var(--wedding-bg)] shadow-sm"
-                  style={{ borderColor: theme.border }}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={photo.mediaUrl}
-                    alt="Wedding guest photo"
-                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                  {photo.mediaType === "VIDEO" && (
-                    <span className="absolute bottom-2 right-2 rounded-md bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
-                      Video
-                    </span>
-                  )}
-                </a>
-              ))}
+              {photos.map((photo) => {
+                const Wrapper = photo.permalink ? "a" : "div";
+                const linkProps = photo.permalink
+                  ? {
+                      href: photo.permalink,
+                      target: "_blank" as const,
+                      rel: "noopener noreferrer",
+                    }
+                  : {};
+
+                return (
+                  <Wrapper
+                    key={photo.id}
+                    {...linkProps}
+                    className="group relative aspect-square overflow-hidden rounded-2xl border bg-[var(--wedding-bg)] shadow-sm"
+                    style={{ borderColor: theme.border }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={photo.mediaUrl}
+                      alt="Wedding guest photo"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    {photo.source === "hashtag" && photo.mediaType === "VIDEO" && (
+                      <span className="absolute bottom-2 right-2 rounded-md bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                        Video
+                      </span>
+                    )}
+                    {photo.source === "upload" && (
+                      <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                        {photo.guestName ?? "Guest"}
+                      </span>
+                    )}
+                    {photo.source === "hashtag" && (
+                      <span className="absolute top-2 left-2 rounded-md bg-black/60 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                        IG
+                      </span>
+                    )}
+                  </Wrapper>
+                );
+              })}
             </div>
           )}
         </div>

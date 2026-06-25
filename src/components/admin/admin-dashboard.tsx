@@ -1,12 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Bus, Heart, LogOut, Mail, Users } from "lucide-react";
+import { ArrowLeft, Bus, Camera, Heart, LogOut, Mail, Store, Users } from "lucide-react";
 import { AdminBroadcastEmail } from "@/components/admin/admin-broadcast-email";
 import { AdminBroadcastPush } from "@/components/admin/admin-broadcast-push";
+import { AdminDriveConnect } from "@/components/admin/admin-drive-connect";
+import { AdminVisionStatus } from "@/components/admin/admin-vision-status";
 import { AdminGmailConnect } from "@/components/admin/admin-gmail-connect";
 import { AdminGuestList } from "@/components/admin/admin-guest-list";
+import { AdminGuestPhotos } from "@/components/admin/admin-guest-photos";
 import { AdminGuestStories } from "@/components/admin/admin-guest-stories";
+import { AdminKioskPanel } from "@/components/admin/admin-kiosk-panel";
+import { AdminVendors } from "@/components/admin/admin-vendors";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import { theme } from "@/lib/theme";
 import type { AdminGuest } from "@/types/wedding";
@@ -17,7 +22,7 @@ type AdminDashboardProps = {
   onUnauthorized?: () => void;
 };
 
-type AdminView = "hub" | "guests" | "shuttle" | "updates" | "stories";
+type AdminView = "hub" | "guests" | "shuttle" | "updates" | "stories" | "photos" | "vendors";
 
 type CommandStats = {
   guests: { total: number; rsvpAccepted: number; rsvpPending: number; profilePhotos: number };
@@ -103,6 +108,8 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
     shuttle: "Shuttle Driver",
     updates: "Guest Updates",
     stories: "Story Moderation",
+    photos: "Photo Moderation",
+    vendors: "Vendors",
   };
 
   return (
@@ -213,6 +220,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
                 onClick={() => setView("guests")}
               />
               <AdminSectionCard
+                title="Vendors"
+                description="Upload supplier contacts, contracts, and notes for the wedding party."
+                actionLabel="Manage Vendors"
+                icon={Store}
+                onClick={() => setView("vendors")}
+              />
+              <AdminSectionCard
                 title="Shuttle Driver"
                 description="Generate a one-time magic link for your courtesy bus driver portal."
                 actionLabel="Driver Portal"
@@ -226,6 +240,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
                 icon={Mail}
                 variant="gold"
                 onClick={() => setView("updates")}
+              />
+              <AdminSectionCard
+                title="Photo Wall"
+                description="Approve guest uploads before they appear on the live TV slideshow."
+                actionLabel="Moderate Photos"
+                icon={Camera}
+                onClick={() => setView("photos")}
               />
               <AdminSectionCard
                 title="Story Wall"
@@ -274,6 +295,9 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
         {view === "updates" && (
           <div className="space-y-6">
+            <AdminKioskPanel onMessage={setMessage} />
+            <AdminVisionStatus />
+            <AdminDriveConnect />
             <AdminGmailConnect />
             <AdminBroadcastPush guestCount={guests.length} onMessage={setMessage} />
             <AdminBroadcastEmail guestCount={guests.length} onMessage={setMessage} />
@@ -281,6 +305,10 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
         )}
 
         {view === "stories" && <AdminGuestStories onMessage={setMessage} />}
+
+        {view === "photos" && <AdminGuestPhotos onMessage={setMessage} />}
+
+        {view === "vendors" && <AdminVendors />}
       </div>
     </div>
   );

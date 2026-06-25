@@ -322,6 +322,33 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
             </button>
           </div>
           {passwordState.error && <p className="text-[10px] text-red-500">{passwordState.error}</p>}
+          <div>
+            <p className="mb-1 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              Wedding party role
+            </p>
+            <select
+              value={guest.partyRole ?? ""}
+              onChange={async (e) => {
+                const partyRole = e.target.value === "BEST_BITCH" ? "BEST_BITCH" : null;
+                const res = await fetch(`/api/admin/guests/${guest.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ partyRole }),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                  onError(data.error ?? "Failed to update party role.");
+                  return;
+                }
+                onUpdated({ ...guest, ...data.guest, isAdmin: guest.isAdmin });
+              }}
+              className={inputClass}
+              style={fieldStyle}
+            >
+              <option value="">None</option>
+              <option value="BEST_BITCH">Best Bitch (vendor access 5 days before)</option>
+            </select>
+          </div>
         </div>
       </CollapsibleSection>
 

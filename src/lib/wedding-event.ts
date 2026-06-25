@@ -52,6 +52,24 @@ export function isShuttleLiveWindow(now = new Date()): boolean {
   return now >= start && now <= end;
 }
 
+/** Best Bitches and other party roles can view vendors from this many days before the wedding. */
+export const VENDOR_PORTAL_DAYS_BEFORE = 5;
+
+export function daysUntilWedding(now = new Date()): number {
+  const wedding = new Date(`${WEDDING_DATE_ISO}T00:00:00+10:00`);
+  return Math.floor((wedding.getTime() - now.getTime()) / 86_400_000);
+}
+
+export function isWithinDaysBeforeWedding(days: number, now = new Date()): boolean {
+  const remaining = daysUntilWedding(now);
+  return remaining >= 0 && remaining <= days;
+}
+
+export function canViewVendorPortal(now = new Date()): boolean {
+  if (process.env.VENDOR_PORTAL_FORCE_VISIBLE === "true") return true;
+  return isWithinDaysBeforeWedding(VENDOR_PORTAL_DAYS_BEFORE, now);
+}
+
 export function getWeddingPhase(now = new Date()): WeddingPhase {
   const wedding = new Date(`${WEDDING_DATE_ISO}T00:00:00+10:00`);
   const msPerDay = 86_400_000;

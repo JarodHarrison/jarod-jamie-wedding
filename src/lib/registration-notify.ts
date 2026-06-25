@@ -7,7 +7,8 @@ export type RegistrationEvent =
   | "accommodation"
   | "transfer"
   | "interests"
-  | "identity";
+  | "identity"
+  | "companion";
 
 const EVENT_TITLES: Record<RegistrationEvent, string> = {
   signup: "New guest account created",
@@ -16,6 +17,7 @@ const EVENT_TITLES: Record<RegistrationEvent, string> = {
   transfer: "Airport transfer details updated",
   interests: "Pre-wedding or on-site service interest",
   identity: "Guest profile details updated",
+  companion: "Plus-one / companion details updated",
 };
 
 const GLOW_UP_LABELS: Record<string, string> = {
@@ -109,6 +111,18 @@ function formatInterests(guest: SerializedGuestProfile) {
     .join("\n");
 }
 
+function formatCompanion(guest: SerializedGuestProfile) {
+  const linked = guest.plusOneGuest?.name ?? null;
+  return [
+    formatGuestBlock(guest),
+    line("Here with (linked guest)", linked),
+    line("Here with (name only)", linked ? null : guest.plusOneName),
+    line("Companion photo uploaded", guest.hasCompanionPhoto ? "Yes" : null),
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 function formatIdentity(guest: SerializedGuestProfile) {
   return [
     formatGuestBlock(guest),
@@ -130,6 +144,7 @@ export function notifyRegistration(event: RegistrationEvent, guest: SerializedGu
   if (event === "transfer") body = formatTransfer(guest);
   if (event === "interests") body = formatInterests(guest);
   if (event === "identity") body = formatIdentity(guest);
+  if (event === "companion") body = formatCompanion(guest);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://jarodandjamiewedding.com";
   const text = `${title}\n\n${body}\n\nView guest list in admin: ${appUrl}`;

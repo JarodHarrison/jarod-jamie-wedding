@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { fetchHashtagPhotos, WEDDING_HASHTAG } from "@/lib/photos";
+import { fetchWeddingWallPhotos } from "@/lib/wedding-photo-wall";
+import { WEDDING_HASHTAG } from "@/lib/photos";
 
 export async function GET() {
-  const photos = await fetchHashtagPhotos();
+  const photos = await fetchWeddingWallPhotos({ uploadsOnlyApproved: true });
   const configured = Boolean(
     process.env.INSTAGRAM_ACCESS_TOKEN && process.env.INSTAGRAM_USER_ID,
   );

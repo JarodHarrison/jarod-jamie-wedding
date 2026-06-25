@@ -21,6 +21,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       name?: string;
       email?: string;
       tier?: "PENTHOUSE" | "ON_SITE" | "OFF_SITE";
+      partyRole?: "BEST_BITCH" | null;
       passwordHash?: string;
       passwordPlaintext?: string | null;
     } = {};
@@ -40,6 +41,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (body.tier !== undefined) {
       if (!isValidGuestTier(body.tier)) return jsonError("Invalid guest tier.", 400);
       data.tier = body.tier;
+    }
+
+    if (body.partyRole !== undefined) {
+      data.partyRole = body.partyRole === "BEST_BITCH" ? "BEST_BITCH" : null;
     }
 
     let newPassword: string | undefined;

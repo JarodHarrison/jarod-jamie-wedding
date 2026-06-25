@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Calendar, Heart, Home, MapPin, UserCircle, Users, Shield } from "lucide-react";
+import { Calendar, Heart, Home, MapPin, UserCircle, Users, Shield, Store } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
 import { LoginScreen } from "@/components/wedding/login-screen";
 import { PhoneFrame } from "@/components/wedding/phone-frame";
@@ -19,6 +19,7 @@ import { ProfileScreen } from "@/components/wedding/screens/profile-screen";
 import { PartyScreen } from "@/components/wedding/screens/party-screen";
 import { RSVPScreen } from "@/components/wedding/screens/rsvp-screen";
 import { JarodJamieScreen } from "@/components/wedding/screens/jarod-jamie-screen";
+import { VendorsScreen } from "@/components/wedding/screens/vendors-screen";
 import { TravelScreen } from "@/components/wedding/screens/travel-screen";
 import { WeddingChatbot } from "@/components/wedding/chat/wedding-chatbot";
 import { SparkleOverlay } from "@/components/wedding/shared/sparkle-overlay";
@@ -41,6 +42,7 @@ const guestNav: { id: MainTab; label: string; icon: typeof Home }[] = [
 ];
 
 const adminNavItem = { id: "admin" as const, label: "Admin", icon: Shield };
+const vendorsNavItem = { id: "vendors" as const, label: "Vendors", icon: Store };
 
 const SESSION_REFRESH_MS = 30_000;
 
@@ -58,6 +60,7 @@ export function WeddingApp() {
   const [user, setUser] = useState<WeddingUser | null>(null);
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [canAccessAdmin, setCanAccessAdmin] = useState(false);
+  const [canViewVendors, setCanViewVendors] = useState(false);
   const [loading, setLoading] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -74,10 +77,12 @@ export function WeddingApp() {
       if (data.admin) setAdmin(data.admin);
       else setAdmin(null);
       setCanAccessAdmin(Boolean(data.canAccessAdmin));
+      setCanViewVendors(Boolean(data.canViewVendors));
     } catch {
       setUser(null);
       setAdmin(null);
       setCanAccessAdmin(false);
+      setCanViewVendors(false);
     }
   }, []);
 
@@ -138,10 +143,12 @@ export function WeddingApp() {
     user?: WeddingUser | null;
     admin?: AdminUser | null;
     canAccessAdmin?: boolean;
+    canViewVendors?: boolean;
   }) => {
     setUser(data.user ?? null);
     setAdmin(data.admin ?? null);
     setCanAccessAdmin(Boolean(data.canAccessAdmin));
+    setCanViewVendors(Boolean(data.canViewVendors));
     setActiveTab("home");
   };
 
@@ -150,6 +157,7 @@ export function WeddingApp() {
     setUser(null);
     setAdmin(null);
     setCanAccessAdmin(false);
+    setCanViewVendors(false);
     setActiveTab("home");
   }, []);
 
@@ -182,7 +190,11 @@ export function WeddingApp() {
   const isPenthouse = user?.tier === "PENTHOUSE" || canAccessAdmin;
   const isOnSite = hasOnSiteAppAccess(user?.tier) || canAccessAdmin;
   const showAdminNav = canAccessAdmin;
-  const navItems = showAdminNav ? [...guestNav, adminNavItem] : guestNav;
+  const navItems = [
+    ...guestNav,
+    ...(canViewVendors && !canAccessAdmin ? [vendorsNavItem] : []),
+    ...(showAdminNav ? [adminNavItem] : []),
+  ];
 
   const renderScreen = () => {
     switch (activeTab) {
@@ -219,6 +231,8 @@ export function WeddingApp() {
         );
       case "party":
         return <PartyScreen />;
+      case "vendors":
+        return <VendorsScreen setActiveTab={setActiveTab} />;
       case "jarodjamie":
         return <JarodJamieScreen setActiveTab={setActiveTab} />;
       case "faq":

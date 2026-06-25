@@ -133,5 +133,21 @@ export function buildGuestProfileSectionUpdate(
     };
   }
 
+  if (section === "companion") {
+    const plusOneName = trimOrNull(body.plusOneName);
+    const plusOneGuestId = body.plusOneGuestId === null || body.plusOneGuestId === ""
+      ? null
+      : trimOrNull(body.plusOneGuestId);
+
+    return {
+      ok: true,
+      data: {
+        plusOneGuestId,
+        plusOneName: plusOneGuestId ? null : plusOneName,
+        profileUpdatedAt: now,
+      },
+    };
+  }
+
   return { ok: false, error: "Invalid form section.", status: 400 };
 }

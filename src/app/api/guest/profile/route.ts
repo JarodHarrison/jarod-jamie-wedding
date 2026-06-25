@@ -11,6 +11,7 @@ import { tierForClovellyAccommodation } from "@/lib/on-site-access";
 import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import { requireGuestSession } from "@/lib/auth/session";
 import { notifyRegistration } from "@/lib/registration-notify";
+import { applyPlusOneLink } from "@/lib/plus-one-link";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -50,6 +51,38 @@ export async function PATCH(request: Request) {
     if (!existing) return jsonError("Guest not found.", 404);
 
     const updateData = { ...result.data };
+
+    if (section === "companion") {
+      try {
+        const plusOneGuestId = (updateData.plusOneGuestId as string | null) ?? null;
+        if (plusOneGuestId) {
+          await applyPlusOneLink(session.id, plusOneGuestId);
+        } else {
+          await applyPlusOneLink(session.id, null);
+          await prisma.guest.update({
+            where: { id: session.id },
+            data: {
+              plusOneName: (updateData.plusOneName as string | null) ?? null,
+              profileUpdatedAt: new Date(),
+            },
+          });
+        }
+      } catch (linkError) {
+        const message = linkError instanceof Error ? linkError.message : "Failed to link plus-one.";
+        return jsonError(message, 400);
+      }
+
+      const guest = await prisma.guest.findUnique({
+        where: { id: session.id },
+        select: guestProfileSelect,
+      });
+      if (!guest) return jsonError("Guest not found.", 404);
+
+      const profile = serializeGuestProfile(guest);
+      notifyRegistration("companion", profile);
+      return NextResponse.json({ profile, tierUpdated: false });
+    }
+
     if (section === "accommodation") {
       const nextTier = tierForClovellyAccommodation(
         updateData.accommodationType as string | undefined,

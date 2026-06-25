@@ -29,7 +29,7 @@ export type SubTab =
   | "glowup"
   | "onsite";
 
-export type AppTab = MainTab | SubTab | "admin";
+export type AppTab = MainTab | SubTab | "admin" | "vendors";
 
 export type ScheduleBooking = {
   sub: string;
@@ -48,6 +48,16 @@ export type AdminGuest = {
   createdAt: string;
   phone: string | null;
   plusOneName: string | null;
+  plusOneGuestId: string | null;
+  plusOneGuest: {
+    id: string;
+    name: string;
+    email: string;
+    hasProfilePhoto: boolean;
+    photoUrl: string | null;
+  } | null;
+  hasCompanionPhoto: boolean;
+  partyRole: "BEST_BITCH" | null;
   dietaryNotes: string | null;
   songRequest: string | null;
   rsvpSubmittedAt: string | null;
@@ -74,6 +84,7 @@ export type AdminGuest = {
   onSiteServiceInterest: string | null;
   interestsSubmittedAt: string | null;
   profilePhotoMime: string | null;
+  companionPhotoMime: string | null;
   guestOfHost: string | null;
   guestRelationship: string | null;
   guestRelationshipNote: string | null;
@@ -89,4 +100,23 @@ export type AdminGuest = {
   isAdmin?: boolean;
 };
 
-export type GuestProfile = Omit<AdminGuest, "createdAt"> & { createdAt: string };
+export type GuestProfile = Omit<AdminGuest, "createdAt" | "passwordPlaintext" | "isAdmin"> & {
+  createdAt: string;
+};
+
+export type Vendor = {
+  id: string;
+  name: string;
+  category: string;
+  contactName: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  notes: string | null;
+  sortOrder: number;
+  documentName: string | null;
+  documentMime: string | null;
+  hasDocument: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
