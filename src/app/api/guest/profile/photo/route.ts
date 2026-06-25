@@ -3,6 +3,7 @@ import { jsonError } from "@/lib/api-utils";
 import { requireGuestSession } from "@/lib/auth/session";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { PROFILE_PHOTO_ACCEPT, PROFILE_PHOTO_MAX_BYTES } from "@/lib/guest-identity";
+import { notifyRegistration } from "@/lib/registration-notify";
 import { prisma } from "@/lib/prisma";
 
 const ALLOWED_MIME = new Set(["image/jpeg", "image/png", "image/webp"]);
@@ -78,7 +79,10 @@ export async function POST(request: Request) {
       select: guestProfileSelect,
     });
 
-    return NextResponse.json({ profile: serializeGuestProfile(guest) });
+    const profile = serializeGuestProfile(guest);
+    notifyRegistration("identity", profile);
+
+    return NextResponse.json({ profile });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonError("Unauthorized", 401);

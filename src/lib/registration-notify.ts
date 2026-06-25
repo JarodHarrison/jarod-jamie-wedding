@@ -10,12 +10,24 @@ export type RegistrationEvent =
   | "identity";
 
 const EVENT_TITLES: Record<RegistrationEvent, string> = {
-  signup: "New guest account",
-  rsvp: "RSVP submitted",
-  accommodation: "Accommodation preferences submitted",
-  transfer: "Shared transfer details submitted",
-  interests: "Service interest registered",
-  identity: "Guest profile photo & details updated",
+  signup: "New guest account created",
+  rsvp: "RSVP updated",
+  accommodation: "Accommodation & shuttle planning updated",
+  transfer: "Airport transfer details updated",
+  interests: "Pre-wedding or on-site service interest",
+  identity: "Guest profile details updated",
+};
+
+const GLOW_UP_LABELS: Record<string, string> = {
+  teeth: "Teeth whitening",
+  botox: "Botox pump party",
+  both: "Teeth whitening & Botox",
+};
+
+const ON_SITE_LABELS: Record<string, string> = {
+  hair: "Hair & make-up",
+  barber: "Barber / fresh cut",
+  both: "Hair & make-up and barber",
 };
 
 function line(label: string, value: string | number | boolean | null | undefined) {
@@ -49,7 +61,7 @@ function formatAccommodation(guest: SerializedGuestProfile) {
     line("Address", guest.accommodationAddress),
     line("Check-in", guest.checkInDate),
     line("Check-out", guest.checkOutDate),
-    line("Needs shuttle", guest.needsShuttle === null ? null : guest.needsShuttle ? "Yes" : "No"),
+    line("Needs courtesy shuttle", guest.needsShuttle === null ? null : guest.needsShuttle ? "Yes" : "No"),
     line("Notes", guest.accommodationNotes),
   ]
     .filter(Boolean)
@@ -59,9 +71,19 @@ function formatAccommodation(guest: SerializedGuestProfile) {
 function formatTransfer(guest: SerializedGuestProfile) {
   return [
     formatGuestBlock(guest),
-    line("Wants shared transfer", guest.wantsSharedTransfer ? "Yes" : "No"),
-    line("Arrival", guest.arrivalAirport ? `${guest.arrivalAirport} ${guest.arrivalDate ?? ""} ${guest.arrivalTime ?? ""}`.trim() : null),
-    line("Departure", guest.departureAirport ? `${guest.departureAirport} ${guest.departureDate ?? ""} ${guest.departureTime ?? ""}`.trim() : null),
+    line("Wants shared airport transfer", guest.wantsSharedTransfer ? "Yes" : "No"),
+    line(
+      "Arrival",
+      guest.arrivalAirport
+        ? `${guest.arrivalAirport} ${guest.arrivalDate ?? ""} ${guest.arrivalTime ?? ""}`.trim()
+        : null,
+    ),
+    line(
+      "Departure",
+      guest.departureAirport
+        ? `${guest.departureAirport} ${guest.departureDate ?? ""} ${guest.departureTime ?? ""}`.trim()
+        : null,
+    ),
     line("Flight", guest.flightNumber),
     line("Passengers", guest.passengerCount),
     line("Notes", guest.transferNotes),
@@ -71,10 +93,17 @@ function formatTransfer(guest: SerializedGuestProfile) {
 }
 
 function formatInterests(guest: SerializedGuestProfile) {
+  const glowUp = guest.glowUpInterest
+    ? GLOW_UP_LABELS[guest.glowUpInterest] ?? guest.glowUpInterest
+    : null;
+  const onSite = guest.onSiteServiceInterest
+    ? ON_SITE_LABELS[guest.onSiteServiceInterest] ?? guest.onSiteServiceInterest
+    : null;
+
   return [
     formatGuestBlock(guest),
-    line("Glow up interest", guest.glowUpInterest),
-    line("On-site services", guest.onSiteServiceInterest),
+    line("Pre-wedding glow-up", glowUp),
+    line("On-site services (wedding day)", onSite),
   ]
     .filter(Boolean)
     .join("\n");
@@ -102,8 +131,8 @@ export function notifyRegistration(event: RegistrationEvent, guest: SerializedGu
   if (event === "interests") body = formatInterests(guest);
   if (event === "identity") body = formatIdentity(guest);
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://jarod-jamie-wedding-delta.vercel.app";
-  const text = `${title}\n\n${body}\n\nView in admin: ${appUrl}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://jarodandjamiewedding.com";
+  const text = `${title}\n\n${body}\n\nView guest list in admin: ${appUrl}`;
 
   void sendNotificationEmail(`[Wedding] ${title} — ${guest.name}`, text);
 }

@@ -3,7 +3,7 @@ import type SMTPTransport from "nodemailer/lib/smtp-transport";
 import { isGmailOAuthConfigured } from "@/lib/gmail-oauth";
 import { sendViaGmailApi } from "@/lib/gmail-send";
 
-const DEFAULT_NOTIFY_EMAIL = "theboys@jarodandjamiewedding.com";
+const DEFAULT_NOTIFY_EMAIL = "J-rodandJamie@outlook.com";
 const WEDDING_NAME = "Jarod & Jamie Wedding";
 const DOMAIN = "jarodandjamiewedding.com";
 
@@ -126,7 +126,19 @@ export async function sendEmail({
   }
 }
 
+export function getNotificationRecipients(): string[] {
+  const raw = process.env.NOTIFY_EMAIL ?? DEFAULT_NOTIFY_EMAIL;
+  return raw
+    .split(",")
+    .map((email) => email.trim())
+    .filter(Boolean);
+}
+
 export async function sendNotificationEmail(subject: string, text: string): Promise<boolean> {
-  const to = process.env.NOTIFY_EMAIL ?? DEFAULT_NOTIFY_EMAIL;
-  return sendEmail({ to, subject, text, from: "notifications" });
+  const recipients = getNotificationRecipients();
+  if (recipients.length === 0) {
+    console.warn("[email] NOTIFY_EMAIL is empty — skipping notification:", subject);
+    return false;
+  }
+  return sendEmail({ to: recipients, subject, text, from: "notifications" });
 }
