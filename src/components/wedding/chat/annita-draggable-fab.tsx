@@ -146,7 +146,7 @@ export function AnnitaDraggableFab({ onOpen, children }: AnnitaDraggableFabProps
             className="absolute left-1/2 -translate-x-1/2 text-center text-[10px] font-bold uppercase tracking-widest text-rose-400"
             style={{ top: `calc(${dismissTop} + 2.75rem)` }}
           >
-            Drop to hide Annita
+            Drop to hide for now
           </p>
         </div>
       )}

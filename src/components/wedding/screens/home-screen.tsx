@@ -15,7 +15,7 @@ import { RecoveryHero } from "@/components/wedding/shared/recovery-hero";
 import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
 import { GuideCard, type GuideCardConfig } from "@/components/wedding/shared/guide-card";
 import { HeroImage } from "@/components/wedding/shared/hero-image";
-import { NotificationBell } from "@/components/wedding/shared/notification-bell";
+import { HomeHeaderActions } from "@/components/wedding/shared/home-header-actions";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { WeddingChecklist } from "@/components/wedding/shared/wedding-checklist";
 import { WeddingWeather } from "@/components/wedding/shared/wedding-weather";
@@ -175,7 +175,7 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat, onOpe
               </button>
             )}
             <div className="wedding-top-offset absolute left-6">
-              <NotificationBell />
+              <HomeHeaderActions />
             </div>
           </div>
           <EventDayHero setActiveTab={setActiveTab} onOpenChat={onOpenChat} />
@@ -193,7 +193,7 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat, onOpe
               </button>
             )}
             <div className="wedding-top-offset absolute left-6">
-              <NotificationBell />
+              <HomeHeaderActions />
             </div>
           </div>
           <RecoveryHero setActiveTab={setActiveTab} />
@@ -211,7 +211,7 @@ export function HomeScreen({ setActiveTab, onLogout, userName, onOpenChat, onOpe
           </button>
         )}
         <div className="wedding-top-offset absolute left-6">
-          <NotificationBell />
+          <HomeHeaderActions />
         </div>
         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-400">
           Welcome, {userName}

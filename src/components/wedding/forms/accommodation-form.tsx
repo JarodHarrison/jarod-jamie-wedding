@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
+import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommodation-property-picker";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
+import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
 import { theme } from "@/lib/theme";
 
 const inputClass =
@@ -66,7 +68,14 @@ export function AccommodationForm() {
       <div className="relative">
         <select
           value={accommodationType}
-          onChange={(e) => setAccommodationType(e.target.value)}
+          onChange={(e) => {
+            const nextType = e.target.value;
+            setAccommodationType(nextType);
+            if (nextType === "ON_SITE") {
+              setAccommodationName(SPICERS_CLOVELLY.name);
+              setAccommodationAddress(SPICERS_CLOVELLY.address);
+            }
+          }}
           className={`${inputClass} appearance-none`}
           style={{ borderColor: theme.border }}
           required
@@ -83,21 +92,12 @@ export function AccommodationForm() {
           className="pointer-events-none absolute right-4 top-1/2 rotate-90 -translate-y-1/2 text-gray-400"
         />
       </div>
-      <input
-        type="text"
-        placeholder="Property or hotel name"
-        value={accommodationName}
-        onChange={(e) => setAccommodationName(e.target.value)}
-        className={inputClass}
-        style={{ borderColor: theme.border }}
-      />
-      <input
-        type="text"
-        placeholder="Address"
-        value={accommodationAddress}
-        onChange={(e) => setAccommodationAddress(e.target.value)}
-        className={inputClass}
-        style={{ borderColor: theme.border }}
+      <AccommodationPropertyPicker
+        accommodationType={accommodationType}
+        name={accommodationName}
+        address={accommodationAddress}
+        onNameChange={setAccommodationName}
+        onAddressChange={setAccommodationAddress}
       />
       <div className="grid grid-cols-2 gap-3">
         <input

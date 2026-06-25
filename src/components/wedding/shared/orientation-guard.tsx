@@ -16,24 +16,40 @@ function shouldLockPortrait(): boolean {
   return true;
 }
 
+function isPhysicallyLandscape(): boolean {
+  if (typeof window === "undefined") return false;
+
+  const orient = window.screen.orientation;
+  if (orient?.type) {
+    return orient.type.startsWith("landscape");
+  }
+
+  if (typeof orient?.angle === "number") {
+    const angle = Math.abs(orient.angle % 180);
+    return angle === 90;
+  }
+
+  // Screen dimensions stay stable when the soft keyboard opens (unlike the viewport).
+  return window.screen.width > window.screen.height;
+}
+
 export function OrientationGuard() {
   const [showRotatePrompt, setShowRotatePrompt] = useState(false);
 
   useEffect(() => {
     if (!shouldLockPortrait()) return;
 
-    const orientation = window.matchMedia("(orientation: landscape)");
-
     const sync = () => {
-      setShowRotatePrompt(orientation.matches);
+      setShowRotatePrompt(isPhysicallyLandscape());
     };
 
     sync();
-    orientation.addEventListener("change", sync);
+    window.screen.orientation?.addEventListener("change", sync);
+    window.addEventListener("orientationchange", sync);
 
     const lockPortrait = async () => {
       try {
-        const orientation = screen.orientation as ScreenOrientation & {
+        const orientation = window.screen.orientation as ScreenOrientation & {
           lock?: (mode: string) => Promise<void>;
         };
         await orientation?.lock?.("portrait-primary");
@@ -45,7 +61,8 @@ export function OrientationGuard() {
     void lockPortrait();
 
     return () => {
-      orientation.removeEventListener("change", sync);
+      window.screen.orientation?.removeEventListener("change", sync);
+      window.removeEventListener("orientationchange", sync);
     };
   }, []);
 

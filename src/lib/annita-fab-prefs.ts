@@ -1,28 +1,41 @@
 export const ANNITA_FAB_POSITION_KEY = "annita-fab-position";
-export const ANNITA_FAB_HIDDEN_KEY = "annita-fab-hidden";
+const LEGACY_ANNITA_FAB_HIDDEN_KEY = "annita-fab-hidden";
 
 export type AnnitaFabPosition = {
   x: number;
   y: number;
 };
 
-export function readAnnitaFabHidden(): boolean {
-  if (typeof window === "undefined") return false;
-  try {
-    return localStorage.getItem(ANNITA_FAB_HIDDEN_KEY) === "1";
-  } catch {
-    return false;
-  }
-}
+/** In-memory only — cleared when the app shell loads again. */
+let annitaFabHiddenSession = false;
 
-export function writeAnnitaFabHidden(hidden: boolean) {
+/** Drop legacy permanent hide flag from older builds. */
+function clearLegacyHiddenPref() {
   try {
-    if (hidden) localStorage.setItem(ANNITA_FAB_HIDDEN_KEY, "1");
-    else localStorage.removeItem(ANNITA_FAB_HIDDEN_KEY);
+    localStorage.removeItem(LEGACY_ANNITA_FAB_HIDDEN_KEY);
   } catch {
     // ignore
   }
+}
+
+export function readAnnitaFabHidden(): boolean {
+  if (typeof window === "undefined") return false;
+  clearLegacyHiddenPref();
+  return annitaFabHiddenSession;
+}
+
+export function writeAnnitaFabHidden(hidden: boolean) {
+  annitaFabHiddenSession = hidden;
+  clearLegacyHiddenPref();
   window.dispatchEvent(new CustomEvent("annita-fab:hidden", { detail: hidden }));
+}
+
+/** Ensure Annita's bubble is visible each time the app shell loads. */
+export function resetAnnitaFabHiddenForNewSession() {
+  if (typeof window === "undefined") return;
+  annitaFabHiddenSession = false;
+  clearLegacyHiddenPref();
+  window.dispatchEvent(new CustomEvent("annita-fab:hidden", { detail: false }));
 }
 
 export function readAnnitaFabPosition(): AnnitaFabPosition | null {

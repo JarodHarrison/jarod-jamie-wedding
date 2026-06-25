@@ -26,6 +26,7 @@ import { SparkleOverlay } from "@/components/wedding/shared/sparkle-overlay";
 import { InstallAppPopup } from "@/components/wedding/shared/install-app-popup";
 import { OfflineBanner } from "@/components/wedding/shared/offline-banner";
 import { requestInstallGuide } from "@/lib/pwa/install-guide";
+import { resetAnnitaFabHiddenForNewSession } from "@/lib/annita-fab-prefs";
 import { theme } from "@/lib/theme";
 import type { AdminUser, AppTab, GuestTier, MainTab, WeddingUser } from "@/types/wedding";
 import { hasOnSiteAppAccess } from "@/lib/on-site-access";
@@ -63,6 +64,10 @@ export function WeddingApp() {
   const [canViewVendors, setCanViewVendors] = useState(false);
   const [loading, setLoading] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    resetAnnitaFabHiddenForNewSession();
+  }, []);
 
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0, left: 0 });

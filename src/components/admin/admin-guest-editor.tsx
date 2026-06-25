@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommodation-property-picker";
+import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
 import { theme } from "@/lib/theme";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import type { AdminGuest } from "@/types/wedding";
@@ -468,7 +470,19 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
           <div className="space-y-2">
             <select
               value={accommodation.accommodationType}
-              onChange={(e) => setAccommodation({ ...accommodation, accommodationType: e.target.value })}
+              onChange={(e) => {
+                const nextType = e.target.value;
+                setAccommodation((current) => ({
+                  ...current,
+                  accommodationType: nextType,
+                  ...(nextType === "ON_SITE"
+                    ? {
+                        accommodationName: SPICERS_CLOVELLY.name,
+                        accommodationAddress: SPICERS_CLOVELLY.address,
+                      }
+                    : {}),
+                }));
+              }}
               className={inputClass}
               style={fieldStyle}
               required
@@ -480,21 +494,16 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               <option value="MONTVILLE">Montville area</option>
               <option value="OTHER">Other</option>
             </select>
-            <input
-              type="text"
-              placeholder="Property name"
-              value={accommodation.accommodationName}
-              onChange={(e) => setAccommodation({ ...accommodation, accommodationName: e.target.value })}
-              className={inputClass}
-              style={fieldStyle}
-            />
-            <input
-              type="text"
-              placeholder="Address"
-              value={accommodation.accommodationAddress}
-              onChange={(e) => setAccommodation({ ...accommodation, accommodationAddress: e.target.value })}
-              className={inputClass}
-              style={fieldStyle}
+            <AccommodationPropertyPicker
+              accommodationType={accommodation.accommodationType}
+              name={accommodation.accommodationName}
+              address={accommodation.accommodationAddress}
+              onNameChange={(value) =>
+                setAccommodation({ ...accommodation, accommodationName: value })
+              }
+              onAddressChange={(value) =>
+                setAccommodation({ ...accommodation, accommodationAddress: value })
+              }
             />
             <div className="grid grid-cols-2 gap-2">
               <input
