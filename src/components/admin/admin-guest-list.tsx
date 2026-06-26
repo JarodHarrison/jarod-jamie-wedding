@@ -1,8 +1,9 @@
 "use client";
 
-import { ChevronDown, Plus, RefreshCw, Shield, Trash2 } from "lucide-react";
+import { ChevronDown, Heart, Link2, Plus, RefreshCw, Shield, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { GUEST_TIER_LABELS } from "@/lib/api-utils";
+import { getGuestCompanionSummary } from "@/lib/guest-companion-display";
 import { theme } from "@/lib/theme";
 import { AdminGuestEditor } from "@/components/admin/admin-guest-editor";
 import { AdminGuestImport } from "@/components/admin/admin-guest-import";
@@ -122,6 +123,14 @@ export function AdminGuestList({
     onMessage(`Updated ${updated.name}.`);
   };
 
+  const openLinkedGuest = (guestId: string) => {
+    const inFilter = filteredGuests.some((g) => g.id === guestId);
+    if (!inFilter) {
+      onFilterChange("all");
+    }
+    setExpandedId(guestId);
+  };
+
   return (
     <div>
       <AdminGuestImport onMessage={onMessage} onImported={onRefresh} />
@@ -231,6 +240,7 @@ export function AdminGuestList({
         <div className="space-y-3">
           {filteredGuests.map((guest) => {
             const isExpanded = expandedId === guest.id;
+            const companion = getGuestCompanionSummary(guest);
             return (
               <div
                 key={guest.id}
@@ -252,6 +262,28 @@ export function AdminGuestList({
                       )}
                     </div>
                     <p className="text-xs text-gray-500">{guest.email}</p>
+                    {companion && (
+                      <p className="mt-0.5 text-[10px] text-gray-500">
+                        {companion.linked && companion.guestId ? (
+                          <button
+                            type="button"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              if (companion.guestId) openLinkedGuest(companion.guestId);
+                            }}
+                            className="inline-flex items-center gap-1 font-medium text-[#c3a379] hover:underline"
+                          >
+                            <Link2 size={10} aria-hidden />
+                            With {companion.name}
+                          </button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1">
+                            <Heart size={10} className="text-[#c3a379]" aria-hidden />
+                            +1: {companion.name}
+                          </span>
+                        )}
+                      </p>
+                    )}
                     {guest.sayiPartyName && (
                       <p className="text-[10px] text-gray-400">Party: {guest.sayiPartyName}</p>
                     )}
