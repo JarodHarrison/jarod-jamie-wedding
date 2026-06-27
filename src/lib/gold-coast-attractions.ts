@@ -76,7 +76,8 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     intro: "Hollywood on the Gold Coast — blockbuster rides, shows, and character meet-and-greets.",
     details: [
       "Home to DC Super Heroes and Looney Tunes lands, plus some of Australia's biggest thrill rides.",
-      "Add our Unlimited Fast Pass and skip the regular queues — we'll organise it all for you.",
+      "Add the Movie World Fast Pass and skip the queues in style — we'll organise it all for you.",
+      "Spend less time waiting and more time riding, laughing, and making unforgettable memories.",
       "Don't miss the stunt and parade shows — they're camp, chaotic, and very fun.",
     ],
     tip: "Wear comfy shoes and sunscreen. You'll be on your feet all day.",
@@ -89,14 +90,16 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
   },
   "little-truffle": {
     id: "little-truffle",
+    calendarEventId: "gc-little-truffle",
     time: "07:00 PM",
     title: "Little Truffle",
     loc: "Mermaid Beach",
     stripeProductId: "little-truffle",
-    intro: "A refined group dinner to wind down after a big theme park day.",
+    intro:
+      "Enjoy a 4-course dinner with us at Little Truffle — Mermaid Beach's award-winning hidden gem.",
     details: [
-      "Modern Australian fine dining in Mermaid Beach — think seasonal produce and polished service.",
-      "Our group booking covers a 4-course dinner; dietary needs can usually be accommodated with notice.",
+      "An intimate dining room, elegant contemporary surrounds, and an exceptional wine list.",
+      "Seasonal modern Australian menu — sample courses include duck liver parfait, barramundi, and dark chocolate mousse.",
       "Smart casual dress — you've earned something fabulous after Movie World.",
     ],
     sampleMenu: LITTLE_TRUFFLE_SAMPLE_MENU,
@@ -116,8 +119,8 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     stripeProductId: "dreamworld-fast-pass",
     intro: "Big thrills, DreamWorks zones, wildlife, and white-knuckle coasters in one mega park.",
     details: [
-      "Unlimited Fast Pass lets you skip the regular queue on participating attractions — huge time saver.",
-      "Mix of family-friendly zones and serious thrill rides (looking at you, Giant Drop).",
+      "Add the Dreamworld Unlimited Fast Pass and skip the regular queues on participating attractions.",
+      "Mix of family-friendly zones and serious thrill rides (looking at you, Steel Taipan and Giant Drop).",
       "Wildlife areas and shows break up the adrenaline if you need a breather.",
     ],
     tip: "Hydrate and pace yourself — it's a full day before Dracula's tonight.",
@@ -135,10 +138,11 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     title: "Dracula's Cabaret",
     loc: "Broadbeach",
     stripeProductId: "draculas",
-    intro: "Comedy-horror cabaret, ghost train, and a three-course dinner — pure Gold Coast chaos.",
+    intro:
+      "Join us for a wickedly fabulous evening at Dracula's — decadent dining, dazzling performances, and deliciously dark glamour.",
     details: [
       "Catch an Uber from the hotel around 6:15 PM and arrive 15 minutes before doors open.",
-      "Priority entry, the ghost train ride, and a theatrical dinner show with plenty of audience participation.",
+      "Priority entry, the ghost train ride, and a theatrical three-course dinner show with plenty of audience participation.",
       "A-Reserve VIP gets you closer to the action — dress to impress (within reason for splashes of fake blood).",
     ],
     tip: "Leave Dreamworld on time — you want time to freshen up before this one.",
@@ -156,12 +160,13 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     title: "Australia Zoo",
     loc: "Beerwah",
     stripeProductId: "australia-zoo",
-    intro: "The Home of the Crocodile Hunter — wildlife shows, crocs, and conservation in action.",
+    intro:
+      "Join us for a wild day at Australia Zoo — iconic wildlife, lush tropical surrounds, and unforgettable animal encounters.",
     details: [
-      "Allow a full morning: wildlife presentations, the Africa exhibit, Crocs Lair, and roving keepers.",
+      "The Home of the Crocodile Hunter — wildlife presentations, the Africa exhibit, Crocs Lair, and roving keepers.",
       "The drive from the Gold Coast is about two hours, so our 10 AM arrival allows for a coffee stop or traffic.",
       "Optional Animal Encounters (koala cuddles, lemurs, wombats, rhinos, and more) are booked separately from entry.",
-      "Encounters are intimate, keeper-led experiences with strict group sizes — they sell out quickly, especially in school holidays.",
+      "Encounters are intimate, keeper-led experiences with strict group sizes — they sell out quickly.",
     ],
     tip: "If you want an encounter, book as far in advance as possible. Popular sessions disappear fast.",
     booking: {

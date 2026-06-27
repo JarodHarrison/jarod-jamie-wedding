@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ChevronDown, ChevronRight, Clock, ExternalLink, MapPin } from "lucide-react";
 import { AddToCalendarButton } from "@/components/wedding/shared/add-to-calendar-button";
+import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
 import { SampleMenuPanel } from "@/components/wedding/shared/sample-menu-panel";
 import { theme } from "@/lib/theme";
 import type { SampleMenu } from "@/lib/little-truffle-menu";
@@ -48,11 +49,13 @@ export function ScheduleNode({
   defaultOpen = false,
 }: ScheduleNodeProps) {
   const [open, setOpen] = useState(defaultOpen);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const hasBody = Boolean(
     desc || details?.length || tip || loc || attire || booking || extraLinks?.length || calendarEventId || sampleMenu || promoImage,
   );
 
   return (
+    <>
     <div className="relative pr-2 pl-12">
       <div
         className="absolute left-[20px] top-5 z-10 flex h-3 w-3 items-center justify-center rounded-full border-2 bg-white"
@@ -93,15 +96,21 @@ export function ScheduleNode({
         {hasBody && open && (
           <div className="border-t px-4 pb-4 pt-3" style={{ borderColor: theme.border }}>
             {promoImage && (
-              <div className="mb-3 overflow-hidden rounded-2xl border" style={{ borderColor: theme.border }}>
+              <button
+                type="button"
+                onClick={() => setLightboxOpen(true)}
+                className="mb-3 block w-full cursor-zoom-in overflow-hidden rounded-2xl border text-left"
+                style={{ borderColor: theme.border }}
+                aria-label={`View ${title} full screen`}
+              >
                 <Image
                   src={promoImage}
-                  alt=""
+                  alt={title}
                   width={800}
                   height={500}
                   className="h-auto w-full"
                 />
-              </div>
+              </button>
             )}
 
             {desc && <p className="mb-3 text-xs leading-relaxed text-gray-600">{desc}</p>}
@@ -198,5 +207,15 @@ export function ScheduleNode({
         )}
       </div>
     </div>
+
+      {promoImage && (
+        <ImageLightbox
+          open={lightboxOpen}
+          src={promoImage}
+          alt={title}
+          onClose={() => setLightboxOpen(false)}
+        />
+      )}
+    </>
   );
 }

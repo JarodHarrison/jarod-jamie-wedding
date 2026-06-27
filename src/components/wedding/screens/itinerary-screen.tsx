@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ScheduleNode } from "@/components/wedding/shared/schedule-node";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { GoldCoastOfferCard } from "@/components/wedding/shared/gold-coast-offer-card";
+import { GoldCoastTripHeader } from "@/components/wedding/shared/gold-coast-trip-header";
 import { attractionToScheduleProps, goldCoastAttractions } from "@/lib/gold-coast-attractions";
 import { LAKESIDE_MEET_GREET } from "@/lib/on-site-access";
 import { saveOfflineBundle } from "@/lib/offline-cache";
@@ -89,12 +90,12 @@ function WeddingSchedule({
 function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
   return (
     <div className="animate-fade-in space-y-8 pb-6">
-      {isPenthouse && (
-        <div className="space-y-4">
-          <GoldCoastOfferCard productId="gcue" badge="Recommended · all in" />
-          <GoldCoastOfferCard productId="penthouse" badge="À la carte · stay only" />
-        </div>
-      )}
+      <GoldCoastTripHeader isPenthouse={isPenthouse} />
+
+      <div className="space-y-4">
+        <GoldCoastOfferCard productId="gcue" badge="Recommended · all in" />
+        <GoldCoastOfferCard productId="penthouse" badge="À la carte · stay only" />
+      </div>
 
       <div className="relative space-y-6 before:absolute before:inset-0 before:ml-6 before:h-full before:w-0.5 before:-translate-x-px before:bg-gradient-to-b before:from-[#e2d5c4]/0 before:via-[#e2d5c4] before:to-[#e2d5c4]/0">
         <h3 className="pl-10 font-serif text-xl text-[#c3a379]">Tue 22.09 · Byron Bay & Skydeck</h3>
@@ -102,8 +103,12 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
           <ScheduleNode
             time="09:00 AM"
             title="Depart Brisbane"
-            desc="Pick up at Pullman Brisbane Airport (BNE) and drive south."
-            loc="Pullman Brisbane Airport"
+            desc="Minivan pick-up from Pullman Brisbane Airport — have luggage ready for the drive south."
+            loc="Pullman Brisbane Airport (BNE)"
+            details={[
+              "We meet at the Pullman Brisbane Airport hotel before heading down the coast.",
+              "The minivan covers Brisbane → Byron Bay → Gold Coast penthouse check-in.",
+            ]}
           />
         )}
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions["byron-lunch"])} />
@@ -113,8 +118,12 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
             <ScheduleNode
               time="02:15 PM"
               title="Penthouse Check-in"
-              desc="Arrive on the Gold Coast and settle into the penthouse."
+              desc="Arrive on the Gold Coast and settle into our three-storey Surfers Paradise penthouse."
               loc="Surfers Paradise"
+              details={[
+                "Three nights — Tue 22, Wed 23 & Thu 24 Sep.",
+                "Ocean views, room to spread out, and the perfect base for theme park days and nights out.",
+              ]}
             />
           </>
         )}
@@ -131,7 +140,7 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
             <ScheduleNode
               time="05:45 PM"
               title="Hotel Refresh"
-              desc="Freshen up at the hotel before dinner."
+              desc="Freshen up at the penthouse before a beautifully indulgent evening at Little Truffle."
               loc="Surfers Paradise"
             />
           </>
@@ -157,8 +166,12 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
         <ScheduleNode
           time="06:15 PM"
           title="Uber to Dracula's"
-          desc="Catch an Uber to Dracula's Cabaret — arrive 15 minutes before doors open."
+          desc="Catch an Uber to Dracula's Cabaret — arrive 15 minutes before doors open for priority entry and the ghost train."
           loc="Broadbeach"
+          details={[
+            "Decadent dining, dazzling performances, and deliciously dark glamour.",
+            "A-Reserve VIP gets you closer to the action for the three-course dinner show.",
+          ]}
         />
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions.draculas)} />
 
@@ -167,8 +180,12 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
           <ScheduleNode
             time="07:30 AM"
             title="Depart the Gold Coast"
-            desc="Check out of the penthouse and head north towards the Sunshine Coast."
+            desc="Check out of the penthouse and head north towards the Sunshine Coast and Australia Zoo."
             loc="Surfers Paradise"
+            details={[
+              "Allow about two hours to Beerwah with a coffee stop — traffic can vary.",
+              "After the zoo we continue up into the hinterland to Spicers Clovelly Estate.",
+            ]}
           />
         )}
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions["australia-zoo"])} />

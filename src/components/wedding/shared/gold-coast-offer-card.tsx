@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
+import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
 import {
   getGoldCoastProduct,
   getGoldCoastStripeUrl,
@@ -15,22 +17,31 @@ type GoldCoastOfferCardProps = {
 };
 
 export function GoldCoastOfferCard({ productId, badge }: GoldCoastOfferCardProps) {
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const product = getGoldCoastProduct(productId);
   const stripeUrl = getGoldCoastStripeUrl(productId);
 
   return (
-    <div
-      className="overflow-hidden rounded-3xl border bg-white/80 shadow-sm"
-      style={{ borderColor: theme.border }}
-    >
-      <Image
-        src={product.image}
-        alt={product.title}
-        width={1200}
-        height={750}
-        className="h-auto w-full"
-      />
-      <div className="p-5 text-center">
+    <>
+      <div
+        className="overflow-hidden rounded-3xl border bg-white/80 shadow-sm"
+        style={{ borderColor: theme.border }}
+      >
+        <button
+          type="button"
+          onClick={() => setLightboxOpen(true)}
+          className="block w-full cursor-zoom-in"
+          aria-label={`View ${product.title} full screen`}
+        >
+          <Image
+            src={product.image}
+            alt={product.title}
+            width={1200}
+            height={750}
+            className="h-auto w-full"
+          />
+        </button>
+        <div className="p-5 text-center">
         {badge && (
           <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
             {badge}
@@ -59,8 +70,16 @@ export function GoldCoastOfferCard({ productId, badge }: GoldCoastOfferCardProps
             Payment link coming soon
           </p>
         )}
-        <p className="mt-2 text-[10px] text-gray-400">Secure checkout · card, Apple Pay &amp; Google Pay</p>
+          <p className="mt-2 text-[10px] text-gray-400">Secure checkout · card, Apple Pay &amp; Google Pay</p>
+        </div>
       </div>
-    </div>
+
+      <ImageLightbox
+        open={lightboxOpen}
+        src={product.image}
+        alt={product.title}
+        onClose={() => setLightboxOpen(false)}
+      />
+    </>
   );
 }

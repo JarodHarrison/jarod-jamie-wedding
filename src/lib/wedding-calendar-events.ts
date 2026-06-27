@@ -100,6 +100,12 @@ export const WEDDING_CALENDAR_EVENTS: Record<string, WeddingCalendarEvent> = {
     description: "Theme park day on the Gold Coast trip.",
     location: "Warner Bros. Movie World, Gold Coast",
   }),
+  "gc-little-truffle": eventWindow("2026-09-23", "7:00pm", 150, {
+    id: "gc-little-truffle",
+    title: "Little Truffle Dinner",
+    description: "4-course group dinner at Little Truffle, Mermaid Beach.",
+    location: "Little Truffle, Mermaid Beach",
+  }),
   "gc-dreamworld": eventWindow("2026-09-24", "10:00am", 420, {
     id: "gc-dreamworld",
     title: "Dreamworld",
