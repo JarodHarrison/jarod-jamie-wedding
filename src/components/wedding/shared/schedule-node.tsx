@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { ChevronDown, ChevronRight, Clock, ExternalLink, MapPin } from "lucide-react";
 import { AddToCalendarButton } from "@/components/wedding/shared/add-to-calendar-button";
+import { SampleMenuPanel } from "@/components/wedding/shared/sample-menu-panel";
 import { theme } from "@/lib/theme";
+import type { SampleMenu } from "@/lib/little-truffle-menu";
 import type { ScheduleBooking } from "@/types/wedding";
 
 export type ScheduleExtraLink = {
@@ -23,6 +26,8 @@ export type ScheduleNodeProps = {
   booking?: ScheduleBooking;
   extraLinks?: ScheduleExtraLink[];
   calendarEventId?: string;
+  sampleMenu?: SampleMenu;
+  promoImage?: string;
   defaultOpen?: boolean;
 };
 
@@ -38,11 +43,13 @@ export function ScheduleNode({
   booking,
   extraLinks,
   calendarEventId,
+  sampleMenu,
+  promoImage,
   defaultOpen = false,
 }: ScheduleNodeProps) {
   const [open, setOpen] = useState(defaultOpen);
   const hasBody = Boolean(
-    desc || details?.length || tip || loc || attire || booking || extraLinks?.length || calendarEventId,
+    desc || details?.length || tip || loc || attire || booking || extraLinks?.length || calendarEventId || sampleMenu || promoImage,
   );
 
   return (
@@ -85,6 +92,18 @@ export function ScheduleNode({
 
         {hasBody && open && (
           <div className="border-t px-4 pb-4 pt-3" style={{ borderColor: theme.border }}>
+            {promoImage && (
+              <div className="mb-3 overflow-hidden rounded-2xl border" style={{ borderColor: theme.border }}>
+                <Image
+                  src={promoImage}
+                  alt=""
+                  width={800}
+                  height={500}
+                  className="h-auto w-full"
+                />
+              </div>
+            )}
+
             {desc && <p className="mb-3 text-xs leading-relaxed text-gray-600">{desc}</p>}
 
             {details && details.length > 0 && (
@@ -97,6 +116,8 @@ export function ScheduleNode({
                 ))}
               </ul>
             )}
+
+            {sampleMenu && <SampleMenuPanel menu={sampleMenu} />}
 
             {tip && (
               <p className="mb-3 rounded-xl bg-[#f7f4ee] px-3 py-2 text-[11px] leading-relaxed text-[#2a2723]">
@@ -136,10 +157,21 @@ export function ScheduleNode({
                   >
                     {booking.btn} <ExternalLink size={12} />
                   </a>
+                ) : booking.url ? (
+                  <a
+                    href={booking.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-sm transition-transform active:scale-95"
+                    style={{ backgroundColor: theme.btnDark, color: theme.gold }}
+                  >
+                    {booking.btn} <ChevronRight size={12} />
+                  </a>
                 ) : (
                   <button
                     type="button"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-sm transition-transform active:scale-95"
+                    disabled
+                    className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[10px] font-bold uppercase tracking-widest opacity-50"
                     style={{ backgroundColor: theme.btnDark, color: theme.gold }}
                   >
                     {booking.btn} <ChevronRight size={12} />

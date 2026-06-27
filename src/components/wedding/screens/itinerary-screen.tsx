@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ScheduleNode } from "@/components/wedding/shared/schedule-node";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
+import { GoldCoastOfferCard } from "@/components/wedding/shared/gold-coast-offer-card";
 import { attractionToScheduleProps, goldCoastAttractions } from "@/lib/gold-coast-attractions";
 import { LAKESIDE_MEET_GREET } from "@/lib/on-site-access";
 import { saveOfflineBundle } from "@/lib/offline-cache";
@@ -89,22 +90,9 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
   return (
     <div className="animate-fade-in space-y-8 pb-6">
       {isPenthouse && (
-        <div
-          className="rounded-3xl border bg-white/80 p-6 text-center shadow-sm"
-          style={{ borderColor: theme.border }}
-        >
-          <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
-            Accommodation + Minivan
-          </p>
-          <h2 className="font-serif text-4xl text-[#2a2723]">$550.00</h2>
-          <p className="mt-1 text-xs text-[#c3a379]">($1100 per couple)</p>
-          <button
-            type="button"
-            className="mt-4 w-full rounded-full py-3 text-[10px] font-bold uppercase tracking-widest shadow-md transition-transform active:scale-95"
-            style={{ backgroundColor: theme.gold, color: theme.btnDark }}
-          >
-            Pay Securely via Stripe
-          </button>
+        <div className="space-y-4">
+          <GoldCoastOfferCard productId="gcue" badge="Recommended · all in" />
+          <GoldCoastOfferCard productId="penthouse" badge="À la carte · stay only" />
         </div>
       )}
 

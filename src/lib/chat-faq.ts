@@ -108,7 +108,7 @@ const INSTANT_FAQ: FaqEntry[] = [
   {
     patterns: [/\bwishing well\b/i, /\bgift\b/i, /\bpresent\b/i],
     reply:
-      "Wishing well: **pocketwell.com.au/events/jarod-and-jamie** — your presence is the present, but we won't say no to a little envelope love, honey.",
+      "Wishing well: open **Home → Wishing Well** in the app for our honeymoon poem and secure **Stripe** checkout — your presence is the present, honey.",
   },
   {
     patterns: [/\b(bingo|photobooth bingo)\b/i],

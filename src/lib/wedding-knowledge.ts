@@ -11,7 +11,7 @@ const WEDDING_CORE_KNOWLEDGE = `
 - Ceremony and reception are at the same venue
 - Hashtag: #J-rodandJamo
 - In The Booth event code: JJ260926
-- Wishing well: https://www.pocketwell.com.au/events/jarod-and-jamie
+- Wishing well (Stripe): https://buy.stripe.com/fZudRagja2K1gzlcXD5AQ00 — digital wishing well for honeymoon contributions (Maldives, Dubai, theme parks)
 
 ## Wedding Weekend Schedule
 
@@ -105,12 +105,14 @@ const WEDDING_ESSENTIALS = `
 - Sun 9am family breakfast | Reception nanny on-site; no children at reception dinner
 - RSVP in app (late RSVPs accepted) | On-site rooms fully booked | Off-site: Expedia links in Travel tab
 - Montville courtesy shuttle — submit accommodation in app | Ubers/taxis limited — pre-book
-- MCY ~35 min, BNE ~90 min from venue | Wishing well: pocketwell.com.au/events/jarod-and-jamie
+- MCY ~35 min, BNE ~90 min from venue | Wishing well: Stripe link in app (Home → Wishing Well)
 `.trim();
 
 const WEDDING_PENTHOUSE_KNOWLEDGE = `
 ## Gold Coast Trip (Penthouse guests — pre-wedding)
-Penthouse package: $550 per person ($1100 per couple) — accommodation + minivan
+Ultimate Gold Coast Experience (GCUE): all tickets included — Stripe checkout in app (Itinerary → Gold Coast Trip). Couples select quantity 2.
+Penthouse stay only: $550/person via Stripe (quantity 2 for couples = $1,100)
+À la carte Stripe add-ons in itinerary: Movie World Fast Pass, Dreamworld Fast Pass, Little Truffle dinner ($89), Dracula's ($149), Australia Zoo ($79.45)
 
 ### Tue 22 Sep — Byron Bay & Skydeck
 - 09:00 Depart Brisbane (minivan from Pullman Brisbane Airport) — penthouse only

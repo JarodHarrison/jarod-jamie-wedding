@@ -1,5 +1,12 @@
 import type { ScheduleNodeProps } from "@/components/wedding/shared/schedule-node";
 import type { ScheduleBooking } from "@/types/wedding";
+import { LITTLE_TRUFFLE_SAMPLE_MENU } from "@/lib/little-truffle-menu";
+import type { SampleMenu } from "@/lib/little-truffle-menu";
+import {
+  getGoldCoastProduct,
+  getGoldCoastStripeUrl,
+  type GoldCoastStripeProductId,
+} from "@/lib/gold-coast-stripe";
 
 export type AttractionLink = {
   label: string;
@@ -17,6 +24,9 @@ export type GoldCoastAttraction = {
   booking?: ScheduleBooking;
   extraLinks?: AttractionLink[];
   calendarEventId?: string;
+  sampleMenu?: SampleMenu;
+  stripeProductId?: GoldCoastStripeProductId;
+  promoImage?: string;
 };
 
 export const AUSTRALIA_ZOO_ENCOUNTERS_URL =
@@ -62,19 +72,19 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "10:00 AM – 5:00 PM",
     title: "Warner Bros. Movie World",
     loc: "Movie World",
+    stripeProductId: "movie-world-fast-pass",
     intro: "Hollywood on the Gold Coast — blockbuster rides, shows, and character meet-and-greets.",
     details: [
       "Home to DC Super Heroes and Looney Tunes lands, plus some of Australia's biggest thrill rides.",
-      "Expect queues in late September — Fast Track passes are worth it if you want maximum ride time.",
+      "Add our Unlimited Fast Pass and skip the regular queues — we'll organise it all for you.",
       "Don't miss the stunt and parade shows — they're camp, chaotic, and very fun.",
     ],
     tip: "Wear comfy shoes and sunscreen. You'll be on your feet all day.",
     booking: {
-      sub: "Adult Entry | Optional Fast Track",
-      price: "$109 - $208",
-      btn: "Book Yourself",
-      ext: true,
-      url: "https://movieworld.com.au/",
+      sub: "Unlimited Fast Pass",
+      price: "Via Stripe",
+      btn: "Pay with Stripe",
+      ext: false,
     },
   },
   "little-truffle": {
@@ -82,16 +92,18 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "07:00 PM",
     title: "Little Truffle",
     loc: "Mermaid Beach",
+    stripeProductId: "little-truffle",
     intro: "A refined group dinner to wind down after a big theme park day.",
     details: [
       "Modern Australian fine dining in Mermaid Beach — think seasonal produce and polished service.",
       "Our group booking covers a 4-course dinner; dietary needs can usually be accommodated with notice.",
       "Smart casual dress — you've earned something fabulous after Movie World.",
     ],
+    sampleMenu: LITTLE_TRUFFLE_SAMPLE_MENU,
     booking: {
       sub: "4-Course Dinner",
       price: "$89.00",
-      btn: "Pay Group Booking",
+      btn: "Pay with Stripe",
       ext: false,
     },
   },
@@ -101,19 +113,19 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "10:00 AM – 5:00 PM",
     title: "Dreamworld",
     loc: "Dreamworld",
+    stripeProductId: "dreamworld-fast-pass",
     intro: "Big thrills, DreamWorks zones, wildlife, and white-knuckle coasters in one mega park.",
     details: [
-      "Ride Express passes let you skip the regular queue on participating attractions — huge time saver.",
+      "Unlimited Fast Pass lets you skip the regular queue on participating attractions — huge time saver.",
       "Mix of family-friendly zones and serious thrill rides (looking at you, Giant Drop).",
       "Wildlife areas and shows break up the adrenaline if you need a breather.",
     ],
     tip: "Hydrate and pace yourself — it's a full day before Dracula's tonight.",
     booking: {
-      sub: "Adult Entry | Optional Ride Express",
-      price: "$139 - $269",
-      btn: "Book Yourself",
-      ext: true,
-      url: "https://dreamworld.com.au/",
+      sub: "Unlimited Fast Pass",
+      price: "Via Stripe",
+      btn: "Pay with Stripe",
+      ext: false,
     },
   },
   draculas: {
@@ -122,6 +134,7 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "07:00 PM",
     title: "Dracula's Cabaret",
     loc: "Broadbeach",
+    stripeProductId: "draculas",
     intro: "Comedy-horror cabaret, ghost train, and a three-course dinner — pure Gold Coast chaos.",
     details: [
       "Catch an Uber from the hotel around 6:15 PM and arrive 15 minutes before doors open.",
@@ -131,8 +144,8 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     tip: "Leave Dreamworld on time — you want time to freshen up before this one.",
     booking: {
       sub: "A-Reserve VIP",
-      price: "$149 - $155",
-      btn: "Pay Group Booking",
+      price: "$149.00",
+      btn: "Pay with Stripe",
       ext: false,
     },
   },
@@ -142,6 +155,7 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "10:00 AM",
     title: "Australia Zoo",
     loc: "Beerwah",
+    stripeProductId: "australia-zoo",
     intro: "The Home of the Crocodile Hunter — wildlife shows, crocs, and conservation in action.",
     details: [
       "Allow a full morning: wildlife presentations, the Africa exhibit, Crocs Lair, and roving keepers.",
@@ -152,10 +166,9 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     tip: "If you want an encounter, book as far in advance as possible. Popular sessions disappear fast.",
     booking: {
       sub: "Adult Entry",
-      price: "$75 - $77",
-      btn: "Book Yourself",
-      ext: true,
-      url: "https://australiazoo.com.au/",
+      price: "$79.45",
+      btn: "Pay with Stripe",
+      ext: false,
     },
     extraLinks: [
       {
@@ -166,6 +179,27 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
   },
 };
 
+function resolveStripeBooking(attraction: GoldCoastAttraction): ScheduleBooking | undefined {
+  if (!attraction.booking) return undefined;
+
+  if (attraction.stripeProductId) {
+    const url = getGoldCoastStripeUrl(attraction.stripeProductId);
+    if (url) {
+      return { ...attraction.booking, ext: false, url, btn: "Pay with Stripe" };
+    }
+  }
+
+  return attraction.booking;
+}
+
+function resolvePromoImage(attraction: GoldCoastAttraction): string | undefined {
+  if (attraction.promoImage) return attraction.promoImage;
+  if (attraction.stripeProductId) {
+    return getGoldCoastProduct(attraction.stripeProductId).image;
+  }
+  return undefined;
+}
+
 export function attractionToScheduleProps(attraction: GoldCoastAttraction): ScheduleNodeProps {
   return {
     time: attraction.time,
@@ -174,8 +208,10 @@ export function attractionToScheduleProps(attraction: GoldCoastAttraction): Sche
     desc: attraction.intro,
     details: attraction.details,
     tip: attraction.tip,
-    booking: attraction.booking,
+    booking: resolveStripeBooking(attraction),
     extraLinks: attraction.extraLinks,
     calendarEventId: attraction.calendarEventId,
+    sampleMenu: attraction.sampleMenu,
+    promoImage: resolvePromoImage(attraction),
   };
 }
