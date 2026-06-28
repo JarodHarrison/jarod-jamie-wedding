@@ -14,7 +14,14 @@ export async function GET() {
         id: true,
         name: true,
         email: true,
+        guestOfHost: true,
+        guestRelationship: true,
+        guestRelationshipNote: true,
+        plusOneName: true,
         profileUpdatedAt: true,
+        plusOneGuest: {
+          select: { name: true },
+        },
       },
     });
 
@@ -22,6 +29,10 @@ export async function GET() {
       guests: guests.map((guest) => ({
         name: guest.name,
         email: guest.email,
+        guestOfHost: guest.guestOfHost,
+        guestRelationship: guest.guestRelationship,
+        guestRelationshipNote: guest.guestRelationshipNote,
+        plusOneName: guest.plusOneGuest?.name ?? guest.plusOneName,
         photoUrl: `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`,
       })),
     });

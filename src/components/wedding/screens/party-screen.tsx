@@ -3,8 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
-import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
+import { GuestPhotoLightbox } from "@/components/wedding/shared/guest-photo-lightbox";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
+import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import {
   applyPhotosToRoster,
   type GuestProfilePhoto,
@@ -22,15 +23,18 @@ const PERSON_PLACEHOLDER = "/party/person-placeholder.svg";
 type PartyPhotoLightbox = {
   src: string;
   alt: string;
+  profile?: GuestProfileCardData | null;
 };
 
 function PersonAvatar({
   name,
   imageSrc,
+  guestProfile,
   onPhotoTap,
 }: {
   name: string;
   imageSrc?: string;
+  guestProfile?: GuestProfileCardData;
   onPhotoTap?: (photo: PartyPhotoLightbox) => void;
 }) {
   const canExpand = Boolean(imageSrc && imageSrc !== PERSON_PLACEHOLDER);
@@ -49,7 +53,7 @@ function PersonAvatar({
     return (
       <button
         type="button"
-        onClick={() => onPhotoTap({ src: imageSrc, alt: name })}
+        onClick={() => onPhotoTap({ src: imageSrc, alt: name, profile: guestProfile })}
         className="relative h-14 w-14 shrink-0 cursor-zoom-in overflow-hidden rounded-full border-2 bg-[#f7f4ee] shadow-sm"
         style={{ borderColor: theme.border }}
         aria-label={`View ${name} full screen`}
@@ -81,7 +85,12 @@ function PersonRow({
       className="flex items-center gap-3 border-b py-3 last:border-0 last:pb-0"
       style={{ borderColor: theme.border }}
     >
-      <PersonAvatar name={person.name} imageSrc={person.imageSrc} onPhotoTap={onPhotoTap} />
+      <PersonAvatar
+        name={person.name}
+        imageSrc={person.imageSrc}
+        guestProfile={person.guestProfile}
+        onPhotoTap={onPhotoTap}
+      />
       <div className="min-w-0 flex-1">
         <p className="font-medium text-[#2a2723]">{person.name}</p>
         <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">{person.role}</p>
@@ -137,7 +146,7 @@ function FamilyAccordion({
                     type="button"
                     onClick={(event) => {
                       event.stopPropagation();
-                      onPhotoTap({ src: member.imageSrc!, alt: member.name });
+                      onPhotoTap({ src: member.imageSrc!, alt: member.name, profile: member.guestProfile });
                     }}
                     className="relative h-10 w-10 cursor-zoom-in overflow-hidden rounded-full border-2 border-white bg-[#f7f4ee]"
                     aria-label={`View ${member.name} full screen`}
@@ -208,7 +217,9 @@ function GroomCard({
       {canExpand && onPhotoTap && person.imageSrc ? (
         <button
           type="button"
-          onClick={() => onPhotoTap({ src: person.imageSrc!, alt: person.name })}
+          onClick={() =>
+            onPhotoTap({ src: person.imageSrc!, alt: person.name, profile: person.guestProfile })
+          }
           className="relative mb-3 h-24 w-24 cursor-zoom-in overflow-hidden rounded-full border-2 shadow-md"
           style={{ borderColor: theme.gold }}
           aria-label={`View ${person.name} full screen`}
@@ -308,7 +319,12 @@ export function PartyScreen() {
                 className="flex items-center gap-3 rounded-2xl border bg-white/80 p-4 shadow-sm"
                 style={{ borderColor: theme.border }}
               >
-                <PersonAvatar name={person.name} imageSrc={person.imageSrc} onPhotoTap={setLightbox} />
+                <PersonAvatar
+                  name={person.name}
+                  imageSrc={person.imageSrc}
+                  guestProfile={person.guestProfile}
+                  onPhotoTap={setLightbox}
+                />
                 <div>
                   <p className="font-serif text-lg text-[#2a2723]">{person.name}</p>
                   <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
@@ -353,10 +369,11 @@ export function PartyScreen() {
         </section>
       </div>
 
-      <ImageLightbox
+      <GuestPhotoLightbox
         open={Boolean(lightbox)}
         src={lightbox?.src ?? ""}
         alt={lightbox?.alt ?? ""}
+        profile={lightbox?.profile}
         onClose={() => setLightbox(null)}
       />
     </div>

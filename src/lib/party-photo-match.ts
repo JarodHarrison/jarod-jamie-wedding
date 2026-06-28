@@ -1,15 +1,16 @@
 import { normalizeEmail } from "@/lib/api-utils";
 import { normalizeGuestName } from "@/lib/guest-name";
+import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import type { PartyRosterMember } from "@/lib/party-roster";
 
-export type GuestProfilePhoto = {
-  name: string;
+export type GuestProfilePhoto = GuestProfileCardData & {
   email?: string;
   photoUrl: string;
 };
 
 export type PartyMemberWithPhoto = PartyRosterMember & {
   imageSrc?: string;
+  guestProfile?: GuestProfileCardData;
 };
 
 function nameTokens(name: string): string[] {
@@ -25,10 +26,20 @@ function collectMatchKeys(member: PartyRosterMember): string[] {
   return [...keys];
 }
 
+function toGuestProfileCard(guest: GuestProfilePhoto): GuestProfileCardData {
+  return {
+    name: guest.name,
+    plusOneName: guest.plusOneName,
+    guestOfHost: guest.guestOfHost,
+    guestRelationship: guest.guestRelationship,
+    guestRelationshipNote: guest.guestRelationshipNote,
+  };
+}
+
 export function findPhotoForMember(
   member: PartyRosterMember,
   guests: GuestProfilePhoto[],
-): string | undefined {
+): GuestProfilePhoto | undefined {
   const matchKeys = collectMatchKeys(member);
   const matchKeySet = new Set(matchKeys);
   const matchEmailSet = new Set(
@@ -37,13 +48,13 @@ export function findPhotoForMember(
 
   for (const guest of guests) {
     if (guest.email && matchEmailSet.has(normalizeEmail(guest.email))) {
-      return guest.photoUrl;
+      return guest;
     }
   }
 
   for (const guest of guests) {
     const normalized = normalizeGuestName(guest.name);
-    if (matchKeySet.has(normalized)) return guest.photoUrl;
+    if (matchKeySet.has(normalized)) return guest;
   }
 
   const memberTokens = nameTokens(member.name);
@@ -57,11 +68,11 @@ export function findPhotoForMember(
     if (guestTokens.length === 0 || guestTokens[0] !== firstName) continue;
 
     if (!lastName) {
-      if (guestTokens.length === 1) return guest.photoUrl;
+      if (guestTokens.length === 1) return guest;
       continue;
     }
 
-    if (guestTokens.includes(lastName)) return guest.photoUrl;
+    if (guestTokens.includes(lastName)) return guest;
   }
 
   return undefined;
@@ -74,12 +85,25 @@ export function applyPhotosToRoster(
   const usedPhotoUrls = new Set<string>();
 
   return members.map((member) => {
-    const photoUrl = findPhotoForMember(member, guests);
+    const guest = findPhotoForMember(member, guests);
+    const photoUrl = guest?.photoUrl;
     if (!photoUrl || usedPhotoUrls.has(photoUrl)) {
       return member;
     }
 
     usedPhotoUrls.add(photoUrl);
-    return { ...member, imageSrc: photoUrl };
+    return {
+      ...member,
+      imageSrc: photoUrl,
+      guestProfile: guest ? toGuestProfileCard(guest) : undefined,
+    };
   });
+}
+
+export function findGuestProfileByPhoto(
+  guests: GuestProfilePhoto[],
+  photoUrl: string,
+): GuestProfileCardData | undefined {
+  const guest = guests.find((entry) => entry.photoUrl === photoUrl);
+  return guest ? toGuestProfileCard(guest) : undefined;
 }
