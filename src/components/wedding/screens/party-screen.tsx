@@ -4,52 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
-import { normalizeGuestName } from "@/lib/guest-name";
+import {
+  applyPhotosToRoster,
+  type GuestProfilePhoto,
+  type PartyMemberWithPhoto,
+} from "@/lib/party-photo-match";
+import {
+  partyFamilyGroups,
+  partyGrooms,
+  partyWeddingParty,
+} from "@/lib/party-roster";
 import { theme } from "@/lib/theme";
 
 const PERSON_PLACEHOLDER = "/party/person-placeholder.svg";
-
-type PartyMember = {
-  name: string;
-  role: string;
-  imageSrc?: string;
-};
-
-const GROOM_NAME_KEYS: Record<string, string> = {
-  "jarod harrison": "jarod",
-  "jamie stocks": "jamie",
-};
-
-const grooms: PartyMember[] = [
-  { name: "Jarod Harrison", role: "Groom" },
-  { name: "Jamie Stocks", role: "Groom" },
-];
-
-const weddingParty: PartyMember[] = [
-  { name: "Kirra ten-Hove Smith", role: "J-rod's Best Bitch" },
-  { name: "Samantha Cooper", role: "Jamo's Best Bitch" },
-];
-
-const jrodFamily: PartyMember[] = [
-  { name: "Bernadette Harrison", role: "Mother" },
-  { name: "John Harrison", role: "Father" },
-  { name: "Grace Dillon", role: "Sister" },
-  { name: "Max Dillon", role: "Brother-in-law" },
-  { name: "Rosie Dillon", role: "Niece (Flower girl)" },
-];
-
-const jamoFamily: PartyMember[] = [
-  { name: "Tracey Gooden", role: "Mother Figure" },
-  { name: "Akara Gooden", role: "Sister" },
-  { name: "Kai", role: "Nephew (Ring bearer)" },
-  { name: "Jo Bloodworth", role: "Father figure" },
-  { name: "AJ Heta", role: "Jo's husband" },
-];
-
-const familyGroups = [
-  { id: "jrod", title: "J-rod's Family", members: jrodFamily },
-  { id: "jamo", title: "Jamo's Family", members: jamoFamily },
-];
 
 function PersonAvatar({ name, imageSrc }: { name: string; imageSrc?: string }) {
   return (
@@ -67,7 +34,7 @@ function PersonAvatar({ name, imageSrc }: { name: string; imageSrc?: string }) {
   );
 }
 
-function PersonRow({ person }: { person: PartyMember }) {
+function PersonRow({ person }: { person: PartyMemberWithPhoto }) {
   return (
     <div
       className="flex items-center gap-3 border-b py-3 last:border-0 last:pb-0"
@@ -88,7 +55,7 @@ function FamilyAccordion({
   defaultOpen = false,
 }: {
   title: string;
-  members: PartyMember[];
+  members: PartyMemberWithPhoto[];
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -145,7 +112,7 @@ function FamilyAccordion({
   );
 }
 
-function GroomCard({ person }: { person: PartyMember }) {
+function GroomCard({ person }: { person: PartyMemberWithPhoto }) {
   return (
     <div
       className="flex flex-col items-center rounded-3xl border bg-white/80 p-5 text-center shadow-sm"
@@ -169,23 +136,15 @@ function GroomCard({ person }: { person: PartyMember }) {
 }
 
 export function PartyScreen() {
-  const [photoByNameKey, setPhotoByNameKey] = useState<Record<string, string>>({});
+  const [profilePhotos, setProfilePhotos] = useState<GuestProfilePhoto[]>([]);
 
   useEffect(() => {
     void (async () => {
       try {
-        const res = await fetch("/api/guests/wall");
+        const res = await fetch("/api/party/photos");
         if (!res.ok) return;
         const data = await res.json();
-        const guests: { name: string; photoUrl: string }[] = data.guests ?? [];
-        const next: Record<string, string> = {};
-
-        for (const guest of guests) {
-          const groomKey = GROOM_NAME_KEYS[normalizeGuestName(guest.name)];
-          if (groomKey) next[groomKey] = guest.photoUrl;
-        }
-
-        setPhotoByNameKey(next);
+        setProfilePhotos(data.guests ?? []);
       } catch {
         // non-blocking
       }
@@ -193,14 +152,22 @@ export function PartyScreen() {
   }, []);
 
   const groomsWithPhotos = useMemo(
+    () => applyPhotosToRoster(partyGrooms, profilePhotos),
+    [profilePhotos],
+  );
+
+  const weddingPartyWithPhotos = useMemo(
+    () => applyPhotosToRoster(partyWeddingParty, profilePhotos),
+    [profilePhotos],
+  );
+
+  const familyGroupsWithPhotos = useMemo(
     () =>
-      grooms.map((person) => {
-        const groomKey = GROOM_NAME_KEYS[normalizeGuestName(person.name)];
-        return groomKey && photoByNameKey[groomKey]
-          ? { ...person, imageSrc: photoByNameKey[groomKey] }
-          : person;
-      }),
-    [photoByNameKey],
+      partyFamilyGroups.map((family) => ({
+        ...family,
+        members: applyPhotosToRoster([...family.members], profilePhotos),
+      })),
+    [profilePhotos],
   );
 
   return (
@@ -240,7 +207,7 @@ export function PartyScreen() {
             The Wedding Party
           </h3>
           <div className="grid gap-4">
-            {weddingParty.map((person) => (
+            {weddingPartyWithPhotos.map((person) => (
               <div
                 key={person.name}
                 className="flex items-center gap-3 rounded-2xl border bg-white/80 p-4 shadow-sm"
@@ -266,7 +233,7 @@ export function PartyScreen() {
             The Families
           </h3>
 
-          {familyGroups.map((family, index) => (
+          {familyGroupsWithPhotos.map((family, index) => (
             <FamilyAccordion
               key={family.id}
               title={family.title}
