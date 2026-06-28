@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { guestHasActivatedAppAccount } from "@/lib/guest-account-status";
 
 export const guestProfileSelect = {
   id: true,
@@ -73,6 +74,12 @@ export type GuestProfileRecord = Prisma.GuestGetPayload<{ select: typeof guestPr
 export const adminGuestSelect = {
   ...guestProfileSelect,
   passwordPlaintext: true,
+  _count: {
+    select: {
+      linkedLogins: true,
+      passkeyCredentials: true,
+    },
+  },
 } satisfies Prisma.GuestSelect;
 
 export type AdminGuestRecord = Prisma.GuestGetPayload<{ select: typeof adminGuestSelect }>;
@@ -111,9 +118,18 @@ export function serializeGuestProfile(guest: GuestProfileRecord) {
 export type SerializedGuestProfile = ReturnType<typeof serializeGuestProfile>;
 
 export function serializeAdminGuest(guest: AdminGuestRecord) {
+  const { _count, passwordPlaintext, ...profileGuest } = guest;
+  const linkedLoginCount = _count?.linkedLogins ?? 0;
+  const passkeyCount = _count?.passkeyCredentials ?? 0;
+
   return {
-    ...serializeGuestProfile(guest),
-    passwordPlaintext: guest.passwordPlaintext ?? null,
+    ...serializeGuestProfile(profileGuest),
+    passwordPlaintext: passwordPlaintext ?? null,
+    hasAppAccount: guestHasActivatedAppAccount({
+      passwordPlaintext,
+      linkedLoginCount,
+      passkeyCount,
+    }),
   };
 }
 

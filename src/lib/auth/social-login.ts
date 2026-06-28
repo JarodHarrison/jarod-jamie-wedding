@@ -123,6 +123,8 @@ async function createOrClaimGoogleGuest(email: string, name: string) {
         select: guestSelect,
       });
 
+  await recordGoogleLoginForGuest(guest.id, normalized);
+
   return guest;
 }
 
@@ -188,6 +190,15 @@ export async function linkGoogleAccountToGuest(guestId: string, googleEmail: str
   });
 
   return { email: normalized, alreadyLinked: false };
+}
+
+export async function recordGoogleLoginForGuest(guestId: string, googleEmail: string) {
+  const normalized = normalizeEmail(googleEmail);
+  await prisma.guestLinkedLogin.upsert({
+    where: { email: normalized },
+    create: { guestId, provider: "google", email: normalized },
+    update: { guestId },
+  });
 }
 
 export async function unlinkGoogleAccountFromGuest(guestId: string, linkedEmail: string) {

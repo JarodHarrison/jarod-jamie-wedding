@@ -107,6 +107,7 @@ export type AdminGuest = {
   sayiCustomData: Record<string, string> | null;
   hasProfilePhoto: boolean;
   passwordPlaintext: string | null;
+  hasAppAccount: boolean;
   isAdmin?: boolean;
 };
 

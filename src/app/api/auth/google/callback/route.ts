@@ -4,6 +4,7 @@ import { getGoogleOAuthOrigin } from "@/lib/auth/request-origin";
 import { validateOAuthState } from "@/lib/auth/oauth-state";
 import {
   linkGoogleAccountToGuest,
+  recordGoogleLoginForGuest,
   signInWithEmailAccountRedirect,
   signUpWithGoogleAccountRedirect,
 } from "@/lib/auth/social-login";
@@ -67,6 +68,14 @@ export async function GET(request: Request) {
     );
     if (!response) {
       return redirectWithError(origin, "google_no_account");
+    }
+
+    const guest = await prisma.guest.findUnique({
+      where: { email: profile.email },
+      select: { id: true },
+    });
+    if (guest) {
+      await recordGoogleLoginForGuest(guest.id, profile.email);
     }
 
     return response;

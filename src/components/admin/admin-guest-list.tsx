@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Heart, Link2, Plus, RefreshCw, Shield, Trash2 } from "lucide-react";
+import { ChevronDown, Heart, Link2, Plus, RefreshCw, Shield, Trash2, BadgeCheck } from "lucide-react";
 import { useState } from "react";
 import { GUEST_TIER_LABELS } from "@/lib/api-utils";
 import { getGuestCompanionSummary } from "@/lib/guest-companion-display";
@@ -255,6 +255,15 @@ export function AdminGuestList({
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="font-medium text-[#2a2723]">{guest.name}</p>
+                      {guest.hasAppAccount && (
+                        <span
+                          className="inline-flex items-center text-emerald-600"
+                          title="Signed up in the app"
+                          aria-label={`${guest.name} has signed up in the app`}
+                        >
+                          <BadgeCheck size={16} strokeWidth={2.25} />
+                        </span>
+                      )}
                       {guest.isAdmin && (
                         <span className="inline-flex items-center gap-1 rounded-md bg-[#2a2723] px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#c3a379]">
                           <Shield size={10} /> Admin
