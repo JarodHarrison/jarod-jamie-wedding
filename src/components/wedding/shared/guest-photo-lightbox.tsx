@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
 import { GuestProfileCard } from "@/components/wedding/shared/guest-profile-card";
 import {
@@ -72,11 +71,12 @@ export function GuestPhotoLightbox({
         onClick={(event) => event.stopPropagation()}
       >
         <div
-          className={`relative w-full shrink-0 ${
-            showProfileCard ? "h-[min(50vh,420px)]" : "h-[min(75vh,640px)]"
+          className={`flex w-full shrink-0 items-center justify-center ${
+            showProfileCard ? "max-h-[min(50vh,420px)]" : "max-h-[min(75vh,640px)]"
           }`}
         >
-          <Image src={src} alt={alt} fill className="object-contain" sizes="100vw" priority />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={src} alt={alt} className="max-h-full w-full object-contain" />
         </div>
 
         {showProfileCard && profile && (

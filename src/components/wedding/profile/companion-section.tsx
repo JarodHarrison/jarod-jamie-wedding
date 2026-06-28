@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Camera, Heart, Loader2, Search, Trash2, UserRound } from "lucide-react";
+import { Camera, ChevronDown, Heart, Loader2, Search, Trash2, UserRound } from "lucide-react";
 import { PROFILE_PHOTO_ACCEPT } from "@/lib/guest-identity";
 import { theme } from "@/lib/theme";
 import type { GuestProfile } from "@/types/wedding";
@@ -39,8 +39,11 @@ export function CompanionSection({
   const [saved, setSaved] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [companionPreview, setCompanionPreview] = useState<string | null>(null);
-
   const linkedGuest = profile.plusOneGuest;
+  const hasCompanion = Boolean(
+    linkedGuest || plusOneName || profile.plusOneName || profile.plusOneGuestId,
+  );
+  const [detailsOpen, setDetailsOpen] = useState(() => !hasCompanion);
   const partnerHasOwnProfile = Boolean(linkedGuest?.hasProfilePhoto);
   const showCompanionPhotoUpload = Boolean(
     (linkedGuest && !partnerHasOwnProfile) || (!linkedGuest && (plusOneName || profile.plusOneName)),
@@ -193,7 +196,24 @@ export function CompanionSection({
         </p>
       )}
 
-      <div className="mt-5 space-y-3">
+      <button
+        type="button"
+        onClick={() => setDetailsOpen((open) => !open)}
+        aria-expanded={detailsOpen}
+        className={`flex w-full items-center justify-between gap-3 text-left ${displayName ? "mt-4 border-t pt-4" : "mt-3"}`}
+        style={displayName ? { borderColor: theme.border } : undefined}
+      >
+        <span className="text-xs font-medium text-gray-600">
+          {displayName ? "Edit companion details" : "Add companion details"}
+        </span>
+        <ChevronDown
+          size={18}
+          className={`shrink-0 text-[var(--wedding-gold)] transition-transform duration-300 ${detailsOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {detailsOpen && (
+      <div className="mt-3 space-y-3">
         <label className="block text-xs font-medium text-gray-600">
           Search guest list
           <div className="relative mt-1">
@@ -289,8 +309,9 @@ export function CompanionSection({
 
         {saved && <p className="text-xs text-emerald-600">Companion details saved.</p>}
       </div>
+      )}
 
-      {showCompanionPhotoUpload && (
+      {detailsOpen && showCompanionPhotoUpload && (
         <div className="mt-5 border-t pt-5" style={{ borderColor: theme.border }}>
           <p className="text-xs text-gray-500">
             {linkedGuest && !partnerHasOwnProfile

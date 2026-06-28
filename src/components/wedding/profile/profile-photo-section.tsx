@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Camera, Loader2, Trash2 } from "lucide-react";
+import { Camera, ChevronDown, Loader2, Trash2 } from "lucide-react";
 import {
   GUEST_OF_HOST_OPTIONS,
   GUEST_RELATIONSHIP_OPTIONS,
@@ -37,12 +37,20 @@ export function ProfilePhotoSection({
   const [guestRelationshipNote, setGuestRelationshipNote] = useState("");
   const [showIdentityForm, setShowIdentityForm] = useState(false);
   const [identitySaved, setIdentitySaved] = useState(false);
+  const identityComplete = Boolean(profile.guestOfHost && profile.guestRelationship);
+  const [aboutYouOpen, setAboutYouOpen] = useState(() => !identityComplete);
 
   useEffect(() => {
     setGuestOfHost(profile.guestOfHost ?? "");
     setGuestRelationship(profile.guestRelationship ?? "");
     setGuestRelationshipNote(profile.guestRelationshipNote ?? "");
   }, [profile]);
+
+  useEffect(() => {
+    if (showIdentityForm || !profile.guestOfHost || !profile.guestRelationship) {
+      setAboutYouOpen(true);
+    }
+  }, [showIdentityForm, profile.guestOfHost, profile.guestRelationship]);
 
   useEffect(() => {
     if (!profile.hasProfilePhoto) {
@@ -218,66 +226,82 @@ export function ProfilePhotoSection({
       />
 
       {(showIdentityForm || profile.guestOfHost || profile.guestRelationship || profile.hasProfilePhoto) && (
-        <div className="mt-5 space-y-3 border-t pt-5" style={{ borderColor: theme.border }}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-            About you
-          </p>
-          <label className="block text-xs font-medium text-gray-600">
-            I am a guest of
-            <select
-              value={guestOfHost}
-              onChange={(e) => setGuestOfHost(e.target.value)}
-              className={`${inputClass} mt-1`}
-              style={{ borderColor: theme.border }}
-            >
-              <option value="">Select…</option>
-              {GUEST_OF_HOST_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="block text-xs font-medium text-gray-600">
-            Relationship to the grooms
-            <select
-              value={guestRelationship}
-              onChange={(e) => setGuestRelationship(e.target.value)}
-              className={`${inputClass} mt-1`}
-              style={{ borderColor: theme.border }}
-            >
-              <option value="">Select…</option>
-              {GUEST_RELATIONSHIP_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          {guestRelationship === "other" && (
-            <label className="block text-xs font-medium text-gray-600">
-              Tell us more (optional)
-              <input
-                type="text"
-                value={guestRelationshipNote}
-                onChange={(e) => setGuestRelationshipNote(e.target.value)}
-                placeholder="e.g. Jarod's hockey team"
-                className={`${inputClass} mt-1`}
-                style={{ borderColor: theme.border }}
-              />
-            </label>
-          )}
+        <div className="mt-5 border-t pt-5" style={{ borderColor: theme.border }}>
           <button
             type="button"
-            onClick={() => void saveIdentity()}
-            disabled={savingIdentity}
-            className="w-full rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
-            style={{ backgroundColor: theme.btnDark, color: theme.gold }}
+            onClick={() => setAboutYouOpen((open) => !open)}
+            aria-expanded={aboutYouOpen}
+            className="flex w-full items-center justify-between gap-3 text-left"
           >
-            {savingIdentity ? "Saving…" : "Save guest details"}
+            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
+              About you
+            </span>
+            <ChevronDown
+              size={18}
+              className={`shrink-0 text-[var(--wedding-gold)] transition-transform duration-300 ${aboutYouOpen ? "rotate-180" : ""}`}
+            />
           </button>
-          {identitySaved && (
-            <p className="text-center text-xs text-emerald-600">Guest details saved.</p>
+
+          {aboutYouOpen && (
+            <div className="mt-3 space-y-3">
+              <label className="block text-xs font-medium text-gray-600">
+                I am a guest of
+                <select
+                  value={guestOfHost}
+                  onChange={(e) => setGuestOfHost(e.target.value)}
+                  className={`${inputClass} mt-1`}
+                  style={{ borderColor: theme.border }}
+                >
+                  <option value="">Select…</option>
+                  {GUEST_OF_HOST_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-xs font-medium text-gray-600">
+                Relationship to the grooms
+                <select
+                  value={guestRelationship}
+                  onChange={(e) => setGuestRelationship(e.target.value)}
+                  className={`${inputClass} mt-1`}
+                  style={{ borderColor: theme.border }}
+                >
+                  <option value="">Select…</option>
+                  {GUEST_RELATIONSHIP_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {guestRelationship === "other" && (
+                <label className="block text-xs font-medium text-gray-600">
+                  Tell us more (optional)
+                  <input
+                    type="text"
+                    value={guestRelationshipNote}
+                    onChange={(e) => setGuestRelationshipNote(e.target.value)}
+                    placeholder="e.g. Jarod's hockey team"
+                    className={`${inputClass} mt-1`}
+                    style={{ borderColor: theme.border }}
+                  />
+                </label>
+              )}
+              <button
+                type="button"
+                onClick={() => void saveIdentity()}
+                disabled={savingIdentity}
+                className="w-full rounded-xl py-3 text-[10px] font-bold uppercase tracking-widest disabled:opacity-60"
+                style={{ backgroundColor: theme.btnDark, color: theme.gold }}
+              >
+                {savingIdentity ? "Saving…" : "Save guest details"}
+              </button>
+              {identitySaved && (
+                <p className="text-center text-xs text-emerald-600">Guest details saved.</p>
+              )}
+            </div>
           )}
         </div>
       )}

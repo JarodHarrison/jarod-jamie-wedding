@@ -44,119 +44,121 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
   }
 
   return (
-    <div className="animate-fade-in animate-slide-right pb-10">
+    <div className="animate-fade-in animate-slide-right pb-24">
       <SubHeader title="My Profile" subtitle="Guest account" onBack={() => setActiveTab("home")} />
 
-      <div className="mt-6 space-y-4 px-6">
+      <div className="mt-6 flex min-h-[calc(100vh-12rem)] flex-col px-6">
         {error && (
           <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </p>
         )}
 
-        <ProfilePhotoSection
-          profile={profile}
-          onProfileChange={setProfile}
-          onError={setError}
-          visionModerationEnabled={visionModerationEnabled}
-        />
+        <div className="space-y-4">
+          <ProfilePhotoSection
+            profile={profile}
+            onProfileChange={setProfile}
+            onError={setError}
+            visionModerationEnabled={visionModerationEnabled}
+          />
 
-        <CompanionSection
-          profile={profile}
-          onProfileChange={setProfile}
-          onError={setError}
-          visionModerationEnabled={visionModerationEnabled}
-        />
+          <CompanionSection
+            profile={profile}
+            onProfileChange={setProfile}
+            onError={setError}
+            visionModerationEnabled={visionModerationEnabled}
+          />
+
+          <ContentAccordion
+            defaultOpenId="rsvp"
+            items={[
+              {
+                id: "rsvp",
+                title: "RSVP & celebration details",
+                content: <RsvpProfileForm />,
+              },
+              {
+                id: "accommodation",
+                title: "Accommodation & shuttle",
+                content: <AccommodationForm />,
+              },
+              {
+                id: "transfer",
+                title: "Flights & shared transfers",
+                content: <TransferShareForm />,
+              },
+              {
+                id: "interests",
+                title: "Pre-wedding experiences",
+                content: (
+                  <div className="space-y-6">
+                    <InterestForm
+                      field="glowUpInterest"
+                      options={[
+                        { value: "teeth", label: "Teeth Whitening" },
+                        { value: "botox", label: "Botox Pump Party" },
+                        { value: "both", label: "Hit me with both!" },
+                      ]}
+                    />
+                    <InterestForm
+                      field="onSiteServiceInterest"
+                      options={[
+                        { value: "hair", label: "Hair & Make-up" },
+                        { value: "barber", label: "Barber / Fresh Cut" },
+                        { value: "both", label: "Both Services" },
+                      ]}
+                    />
+                  </div>
+                ),
+              },
+              {
+                id: "gift-colours",
+                title: "Gift colour preference",
+                content: <GiftColourForm />,
+              },
+              {
+                id: "preferences",
+                title: "App preferences",
+                content: (
+                  <div className="space-y-4">
+                    {passkeyMessage && (
+                      <p
+                        className="rounded-xl border bg-white px-4 py-3 text-xs text-[var(--wedding-text-dark)]"
+                        style={{ borderColor: theme.border }}
+                      >
+                        {passkeyMessage}
+                      </p>
+                    )}
+                    <PasskeySettings embedded onMessage={setPasskeyMessage} />
+                    <GoogleLinkSettings embedded onMessage={setPasskeyMessage} />
+                    <ThemeToggle />
+                    {annitaHidden && (
+                      <button
+                        type="button"
+                        onClick={showAnnita}
+                        className="w-full rounded-2xl border bg-white px-4 py-3 text-left text-sm font-medium"
+                        style={{ borderColor: theme.border, color: theme.textDark }}
+                      >
+                        Show Annita chat bubble
+                      </button>
+                    )}
+                  </div>
+                ),
+              },
+            ]}
+          />
+        </div>
 
         {onLogout && (
           <button
             type="button"
             onClick={onLogout}
-            className="w-full rounded-2xl border bg-white/60 px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-colors hover:text-[var(--wedding-text-dark)]"
+            className="mt-auto w-full rounded-2xl border bg-white/60 px-4 py-3 pt-8 text-[10px] font-bold uppercase tracking-widest text-gray-400 transition-colors hover:text-[var(--wedding-text-dark)]"
             style={{ borderColor: theme.border }}
           >
             Sign out
           </button>
         )}
-
-        <ContentAccordion
-          defaultOpenId="rsvp"
-          items={[
-            {
-              id: "rsvp",
-              title: "RSVP & celebration details",
-              content: <RsvpProfileForm />,
-            },
-            {
-              id: "accommodation",
-              title: "Accommodation & shuttle",
-              content: <AccommodationForm />,
-            },
-            {
-              id: "transfer",
-              title: "Flights & shared transfers",
-              content: <TransferShareForm />,
-            },
-            {
-              id: "interests",
-              title: "Pre-wedding experiences",
-              content: (
-                <div className="space-y-6">
-                  <InterestForm
-                    field="glowUpInterest"
-                    options={[
-                      { value: "teeth", label: "Teeth Whitening" },
-                      { value: "botox", label: "Botox Pump Party" },
-                      { value: "both", label: "Hit me with both!" },
-                    ]}
-                  />
-                  <InterestForm
-                    field="onSiteServiceInterest"
-                    options={[
-                      { value: "hair", label: "Hair & Make-up" },
-                      { value: "barber", label: "Barber / Fresh Cut" },
-                      { value: "both", label: "Both Services" },
-                    ]}
-                  />
-                </div>
-              ),
-            },
-            {
-              id: "gift-colours",
-              title: "Colour preferences",
-              content: <GiftColourForm />,
-            },
-            {
-              id: "preferences",
-              title: "App preferences",
-              content: (
-                <div className="space-y-4">
-                  {passkeyMessage && (
-                    <p
-                      className="rounded-xl border bg-white px-4 py-3 text-xs text-[var(--wedding-text-dark)]"
-                      style={{ borderColor: theme.border }}
-                    >
-                      {passkeyMessage}
-                    </p>
-                  )}
-                  <PasskeySettings embedded onMessage={setPasskeyMessage} />
-                  <GoogleLinkSettings embedded onMessage={setPasskeyMessage} />
-                  <ThemeToggle />
-                  {annitaHidden && (
-                    <button
-                      type="button"
-                      onClick={showAnnita}
-                      className="w-full rounded-2xl border bg-white px-4 py-3 text-left text-sm font-medium"
-                      style={{ borderColor: theme.border, color: theme.textDark }}
-                    >
-                      Show Annita chat bubble
-                    </button>
-                  )}
-                </div>
-              ),
-            },
-          ]}
-        />
       </div>
     </div>
   );

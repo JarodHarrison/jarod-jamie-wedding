@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
 import { GuestPhotoLightbox } from "@/components/wedding/shared/guest-photo-lightbox";
+import { rosterProfileOverlay } from "@/lib/party-photo-match";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import { theme } from "@/lib/theme";
 
@@ -62,19 +63,29 @@ export function GuestPhotoWall({ compact = false }: { compact?: boolean }) {
           <div key={guest.id} className="text-center">
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
+                const overlay = rosterProfileOverlay({
+                  name: guest.name,
+                  email: undefined,
+                  photoUrl: guest.photoUrl,
+                  plusOneName: guest.plusOneName,
+                  guestOfHost: guest.guestOfHost,
+                  guestRelationship: guest.guestRelationship,
+                  guestRelationshipNote: guest.guestRelationshipNote,
+                });
                 setLightbox({
                   src: guest.photoUrl,
-                  alt: guest.name,
+                  alt: overlay.name,
                   profile: {
-                    name: guest.name,
+                    name: overlay.name,
                     plusOneName: guest.plusOneName,
                     guestOfHost: guest.guestOfHost,
                     guestRelationship: guest.guestRelationship,
                     guestRelationshipNote: guest.guestRelationshipNote,
+                    hideConnection: overlay.hideConnection,
                   },
-                })
-              }
+                });
+              }}
               className="mx-auto mb-1.5 block aspect-square w-full max-w-[72px] cursor-zoom-in overflow-hidden rounded-full border-2 shadow-sm"
               style={{ borderColor: theme.gold }}
               aria-label={`View ${guest.name} full screen`}

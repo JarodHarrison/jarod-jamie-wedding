@@ -2,6 +2,11 @@ import { normalizeEmail } from "@/lib/api-utils";
 import { normalizeGuestName } from "@/lib/guest-name";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import type { PartyRosterMember } from "@/lib/party-roster";
+import {
+  partyFamilyGroups,
+  partyGrooms,
+  partyWeddingParty,
+} from "@/lib/party-roster";
 
 export type GuestProfilePhoto = GuestProfileCardData & {
   email?: string;
@@ -95,7 +100,13 @@ export function applyPhotosToRoster(
     return {
       ...member,
       imageSrc: photoUrl,
-      guestProfile: guest ? toGuestProfileCard(guest) : undefined,
+      guestProfile: guest
+        ? {
+            ...toGuestProfileCard(guest),
+            name: member.name,
+            hideConnection: member.role === "Groom",
+          }
+        : undefined,
     };
   });
 }
@@ -106,4 +117,25 @@ export function findGuestProfileByPhoto(
 ): GuestProfileCardData | undefined {
   const guest = guests.find((entry) => entry.photoUrl === photoUrl);
   return guest ? toGuestProfileCard(guest) : undefined;
+}
+
+const allPartyRosterMembers: PartyRosterMember[] = [
+  ...partyGrooms,
+  ...partyWeddingParty,
+  ...partyFamilyGroups.flatMap((group) => [...group.members]),
+];
+
+/** Prefer roster display name (e.g. Jarod Harrison over J-rod H) and groom card rules. */
+export function rosterProfileOverlay(
+  guest: GuestProfilePhoto,
+): Pick<GuestProfileCardData, "name" | "hideConnection"> {
+  for (const member of allPartyRosterMembers) {
+    if (findPhotoForMember(member, [guest])) {
+      return {
+        name: member.name,
+        hideConnection: member.role === "Groom",
+      };
+    }
+  }
+  return { name: guest.name };
 }
