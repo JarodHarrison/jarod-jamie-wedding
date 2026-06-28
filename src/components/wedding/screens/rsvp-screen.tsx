@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
+import { deriveRsvpFormState } from "@/lib/rsvp-form-defaults";
 import { theme } from "@/lib/theme";
 
 const inputClass =
@@ -21,11 +22,12 @@ export function RSVPScreen() {
 
   useEffect(() => {
     if (!profile) return;
-    setPhone(profile.phone ?? "");
-    setAttending(profile.rsvpStatus === "PENDING" ? "" : profile.rsvpStatus);
-    setPlusOneName(profile.plusOneName ?? "");
-    setDietaryNotes(profile.dietaryNotes ?? "");
-    setSongRequest(profile.songRequest ?? "");
+    const derived = deriveRsvpFormState(profile);
+    setPhone(derived.phone);
+    setAttending(derived.attending);
+    setPlusOneName(derived.plusOneName);
+    setDietaryNotes(derived.dietaryNotes);
+    setSongRequest(derived.songRequest);
   }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {

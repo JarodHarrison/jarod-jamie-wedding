@@ -1,6 +1,6 @@
 import { prisma } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/auth/password";
-import { JAROD_ADMIN_EMAIL, JAROD_GUEST_EMAIL } from "../src/lib/auth/account-roles";
+import { JAROD_ADMIN_EMAIL, JAROD_GUEST_EMAIL, JAMIE_ADMIN_EMAIL } from "../src/lib/auth/account-roles";
 
 import { SHUTTLE_STOPS } from "../src/lib/shuttle/stops";
 
@@ -52,6 +52,34 @@ async function main() {
   await prisma.admin.update({
     where: { email: JAROD_ADMIN_EMAIL },
     data: { linkedGuestId: jarodGuest.id },
+  });
+
+  const jamieGuest = await prisma.guest.upsert({
+    where: { email: JAMIE_ADMIN_EMAIL },
+    update: {
+      name: "Jamie Stocks",
+      tier: "PENTHOUSE",
+      rsvpStatus: "ACCEPTED",
+      guestOfHost: "both",
+      guestRelationship: "other",
+      guestRelationshipNote: "Groom",
+    },
+    create: {
+      name: "Jamie Stocks",
+      email: JAMIE_ADMIN_EMAIL,
+      tier: "PENTHOUSE",
+      rsvpStatus: "ACCEPTED",
+      guestOfHost: "both",
+      guestRelationship: "other",
+      guestRelationshipNote: "Groom",
+      passwordHash: guestPasswordHash,
+      passwordPlaintext: demoGuestPassword,
+    },
+  });
+
+  await prisma.admin.update({
+    where: { email: JAMIE_ADMIN_EMAIL },
+    data: { linkedGuestId: jamieGuest.id },
   });
 
   await prisma.guest.upsert({

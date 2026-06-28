@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { jsonError } from "@/lib/api-utils";
-import {
-  guestProfileSelect,
-  isGuestProfileSection,
-  serializeGuestProfile,
-  type GuestProfileSection,
-} from "@/lib/guest-profile";
+import { buildRsvpHydrationUpdate } from "@/lib/rsvp-form-defaults";
+import { guestProfileSelect, isGuestProfileSection, serializeGuestProfile, type GuestProfileSection } from "@/lib/guest-profile";
 import { buildGuestProfileSectionUpdate } from "@/lib/guest-profile-update";
 import { tierForClovellyAccommodation } from "@/lib/on-site-access";
 import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
@@ -18,12 +14,35 @@ import { isVisionModerationEnabled } from "@/lib/google-vision-moderation";
 export async function GET() {
   try {
     const session = await requireGuestSession();
-    const guest = await prisma.guest.findUnique({
+    let guest = await prisma.guest.findUnique({
       where: { id: session.id },
       select: guestProfileSelect,
     });
 
     if (!guest) return jsonError("Guest not found.", 404);
+
+    const sayiCustomData =
+      guest.sayiCustomData && typeof guest.sayiCustomData === "object" && !Array.isArray(guest.sayiCustomData)
+        ? (guest.sayiCustomData as Record<string, string>)
+        : null;
+
+    const hydration = buildRsvpHydrationUpdate({
+      phone: guest.phone,
+      plusOneName: guest.plusOneName,
+      plusOneGuestId: guest.plusOneGuestId,
+      dietaryNotes: guest.dietaryNotes,
+      songRequest: guest.songRequest,
+      sayiCustomData,
+      sayiImportedAt: guest.sayiImportedAt,
+    });
+
+    if (hydration) {
+      guest = await prisma.guest.update({
+        where: { id: session.id },
+        data: hydration,
+        select: guestProfileSelect,
+      });
+    }
 
     return NextResponse.json({
       profile: serializeGuestProfile(guest),

@@ -3,12 +3,79 @@ import crypto from "node:crypto";
 import { prisma } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/auth/password";
 import {
+  JAMIE_ADMIN_EMAIL,
   JAROD_ADMIN_EMAIL,
   JAROD_GUEST_EMAIL,
 } from "../src/lib/auth/account-roles";
+import { buildRsvpHydrationUpdate, groomDefaultRsvpPatch } from "../src/lib/rsvp-form-defaults";
 
 const LEGACY_GUEST_EMAIL = JAROD_ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.JAROD_ADMIN_PASSWORD ?? "Smile4me";
+
+async function findJamieGuestProfile() {
+  const byAdminEmail = await prisma.guest.findUnique({
+    where: { email: JAMIE_ADMIN_EMAIL },
+    select: { id: true, name: true, email: true },
+  });
+  if (byAdminEmail) return byAdminEmail;
+
+  const candidates = await prisma.guest.findMany({
+    where: {
+      OR: [
+        { name: { contains: "Jamie", mode: "insensitive" } },
+        { name: { contains: "Jamo", mode: "insensitive" } },
+        { email: { contains: "jamie", mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, name: true, email: true },
+  });
+
+  return (
+    candidates.find((guest) => guest.name.toLowerCase().includes("stocks")) ??
+    candidates.find((guest) => guest.name.toLowerCase().includes("jamie")) ??
+    candidates[0] ??
+    null
+  );
+}
+
+async function hydrateGuestRsvp(guestId: string) {
+  const guest = await prisma.guest.findUnique({ where: { id: guestId } });
+  if (!guest) return;
+
+  const groomPatch = groomDefaultRsvpPatch(guest.name);
+  const groomUpdates =
+    guest.rsvpStatus === "PENDING" && Object.keys(groomPatch).length > 0 ? groomPatch : {};
+
+  const sayiCustomData =
+    guest.sayiCustomData && typeof guest.sayiCustomData === "object" && !Array.isArray(guest.sayiCustomData)
+      ? (guest.sayiCustomData as Record<string, string>)
+      : null;
+
+  const hydration = buildRsvpHydrationUpdate({
+    phone: guest.phone,
+    plusOneName: guest.plusOneName,
+    plusOneGuestId: guest.plusOneGuestId,
+    dietaryNotes: guest.dietaryNotes,
+    songRequest: guest.songRequest,
+    sayiCustomData,
+    sayiImportedAt: guest.sayiImportedAt,
+  });
+
+  const data = { ...groomUpdates, ...hydration };
+  if (Object.keys(data).length === 0) return;
+
+  await prisma.guest.update({ where: { id: guestId }, data });
+  console.log(`Hydrated RSVP fields for guest ${guest.name} (${guest.email}).`);
+}
+
+async function linkAdminToGuest(adminEmail: string, guest: { id: string; name: string; email: string }) {
+  await prisma.admin.update({
+    where: { email: adminEmail },
+    data: { linkedGuestId: guest.id },
+  });
+  console.log(`Linked admin ${adminEmail} to guest ${guest.name} (${guest.email}).`);
+  await hydrateGuestRsvp(guest.id);
+}
 
 async function findJarodGuestProfile() {
   const byEmail = await prisma.guest.findUnique({
@@ -137,15 +204,16 @@ async function main() {
 
   const jarodGuestProfile = await findJarodGuestProfile();
   if (jarodGuestProfile) {
-    await prisma.admin.update({
-      where: { email: JAROD_ADMIN_EMAIL },
-      data: { linkedGuestId: jarodGuestProfile.id },
-    });
-    console.log(
-      `Linked admin ${JAROD_ADMIN_EMAIL} to guest ${jarodGuestProfile.name} (${jarodGuestProfile.email}).`,
-    );
+    await linkAdminToGuest(JAROD_ADMIN_EMAIL, jarodGuestProfile);
   } else {
     console.warn(`No guest profile found to link — create ${JAROD_GUEST_EMAIL} first.`);
+  }
+
+  const jamieGuestProfile = await findJamieGuestProfile();
+  if (jamieGuestProfile) {
+    await linkAdminToGuest(JAMIE_ADMIN_EMAIL, jamieGuestProfile);
+  } else {
+    console.warn("No Jamie guest profile found — import or create Jamie Stocks guest first.");
   }
 
   const gmailGuest = jarodGuestProfile
