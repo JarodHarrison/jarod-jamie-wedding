@@ -7,7 +7,7 @@
     "build": "node scripts/prisma-generate.mjs && next build",
     "vercel-build": "node scripts/prisma-generate.mjs && prisma db push --accept-data-loss && next build",
     "start": "next start",
-    "postinstall": "prisma generate",
+    "postinstall": "node scripts/prisma-generate.mjs",
     "lint": "eslint",
     "db:generate": "node scripts/prisma-generate.mjs",
     "db:migrate": "prisma migrate dev",
