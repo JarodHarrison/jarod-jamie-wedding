@@ -1,12 +1,21 @@
+import { JAROD_GUEST_EMAIL } from "@/lib/auth/account-roles";
+
 export type PartyRosterMember = {
   name: string;
   role: string;
   /** Guest profile names that should also map to this person */
   matchNames?: string[];
+  /** Guest login emails that should map to this person */
+  matchEmails?: string[];
 };
 
 export const partyGrooms: PartyRosterMember[] = [
-  { name: "Jarod Harrison", role: "Groom", matchNames: ["J-rod H", "J-rod"] },
+  {
+    name: "Jarod Harrison",
+    role: "Groom",
+    matchNames: ["J-rod H", "J-rod"],
+    matchEmails: [JAROD_GUEST_EMAIL],
+  },
   { name: "Jamie Stocks", role: "Groom", matchNames: ["Jamo"] },
 ];
 

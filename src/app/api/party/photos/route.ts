@@ -13,6 +13,7 @@ export async function GET() {
       select: {
         id: true,
         name: true,
+        email: true,
         profileUpdatedAt: true,
       },
     });
@@ -20,6 +21,7 @@ export async function GET() {
     return NextResponse.json({
       guests: guests.map((guest) => ({
         name: guest.name,
+        email: guest.email,
         photoUrl: `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`,
       })),
     });

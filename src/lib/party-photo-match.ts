@@ -1,8 +1,10 @@
+import { normalizeEmail } from "@/lib/api-utils";
 import { normalizeGuestName } from "@/lib/guest-name";
 import type { PartyRosterMember } from "@/lib/party-roster";
 
 export type GuestProfilePhoto = {
   name: string;
+  email?: string;
   photoUrl: string;
 };
 
@@ -29,6 +31,15 @@ export function findPhotoForMember(
 ): string | undefined {
   const matchKeys = collectMatchKeys(member);
   const matchKeySet = new Set(matchKeys);
+  const matchEmailSet = new Set(
+    (member.matchEmails ?? []).map((email) => normalizeEmail(email)).filter(Boolean),
+  );
+
+  for (const guest of guests) {
+    if (guest.email && matchEmailSet.has(normalizeEmail(guest.email))) {
+      return guest.photoUrl;
+    }
+  }
 
   for (const guest of guests) {
     const normalized = normalizeGuestName(guest.name);
