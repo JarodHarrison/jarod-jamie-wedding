@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Users } from "lucide-react";
+import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
 import { theme } from "@/lib/theme";
 
 type WallGuest = {
@@ -15,6 +16,7 @@ type WallGuest = {
 export function GuestPhotoWall({ compact = false }: { compact?: boolean }) {
   const [guests, setGuests] = useState<WallGuest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -54,19 +56,29 @@ export function GuestPhotoWall({ compact = false }: { compact?: boolean }) {
       <div className={gridClass}>
         {guests.map((guest) => (
           <div key={guest.id} className="text-center">
-            <div
-              className="mx-auto mb-1.5 aspect-square w-full max-w-[72px] overflow-hidden rounded-full border-2 shadow-sm"
+            <button
+              type="button"
+              onClick={() => setLightbox({ src: guest.photoUrl, alt: guest.name })}
+              className="mx-auto mb-1.5 block aspect-square w-full max-w-[72px] cursor-zoom-in overflow-hidden rounded-full border-2 shadow-sm"
               style={{ borderColor: theme.gold }}
+              aria-label={`View ${guest.name} full screen`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={guest.photoUrl} alt={guest.name} className="h-full w-full object-cover" />
-            </div>
+            </button>
             {!compact && (
               <p className="truncate text-[10px] font-medium text-[var(--wedding-text-dark)]">{guest.name}</p>
             )}
           </div>
         ))}
       </div>
+
+      <ImageLightbox
+        open={Boolean(lightbox)}
+        src={lightbox?.src ?? ""}
+        alt={lightbox?.alt ?? ""}
+        onClose={() => setLightbox(null)}
+      />
     </div>
   );
 }
