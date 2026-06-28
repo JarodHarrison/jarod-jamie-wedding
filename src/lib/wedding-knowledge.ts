@@ -112,7 +112,7 @@ const WEDDING_PENTHOUSE_KNOWLEDGE = `
 ## Gold Coast Trip (Penthouse guests — pre-wedding)
 Ultimate Gold Coast Experience (GCUE): all tickets included — Stripe checkout in app (Itinerary → Gold Coast Trip). Couples select quantity 2.
 Penthouse stay only: $550/person via Stripe (quantity 2 for couples = $1,100)
-À la carte Stripe add-ons in itinerary: Movie World Fast Pass, Dreamworld Fast Pass, Little Truffle dinner ($89), Dracula's ($149), Australia Zoo ($79.45)
+Individual activities in the itinerary use Book Yourself links to each venue's official site.
 
 ### Tue 22 Sep — Byron Bay & Skydeck
 - 09:00 Depart Brisbane (minivan from Pullman Brisbane Airport) — penthouse only

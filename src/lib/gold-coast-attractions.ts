@@ -2,11 +2,7 @@ import type { ScheduleNodeProps } from "@/components/wedding/shared/schedule-nod
 import type { ScheduleBooking } from "@/types/wedding";
 import { LITTLE_TRUFFLE_SAMPLE_MENU } from "@/lib/little-truffle-menu";
 import type { SampleMenu } from "@/lib/little-truffle-menu";
-import {
-  getGoldCoastProduct,
-  getGoldCoastStripeUrl,
-  type GoldCoastStripeProductId,
-} from "@/lib/gold-coast-stripe";
+import { getGoldCoastVenueImage, type GoldCoastVenueImageId } from "@/lib/gold-coast-images";
 
 export type AttractionLink = {
   label: string;
@@ -14,7 +10,7 @@ export type AttractionLink = {
 };
 
 export type GoldCoastAttraction = {
-  id: string;
+  id: GoldCoastVenueImageId;
   time: string;
   title: string;
   loc?: string;
@@ -25,14 +21,12 @@ export type GoldCoastAttraction = {
   extraLinks?: AttractionLink[];
   calendarEventId?: string;
   sampleMenu?: SampleMenu;
-  stripeProductId?: GoldCoastStripeProductId;
-  promoImage?: string;
 };
 
 export const AUSTRALIA_ZOO_ENCOUNTERS_URL =
   "https://go.australiazoo.com.au/experiences/encounters";
 
-export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
+export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttraction> = {
   "byron-lunch": {
     id: "byron-lunch",
     calendarEventId: "gc-byron-lunch",
@@ -72,20 +66,19 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "10:00 AM – 5:00 PM",
     title: "Warner Bros. Movie World",
     loc: "Movie World",
-    stripeProductId: "movie-world-fast-pass",
     intro: "Hollywood on the Gold Coast — blockbuster rides, shows, and character meet-and-greets.",
     details: [
       "Home to DC Super Heroes and Looney Tunes lands, plus some of Australia's biggest thrill rides.",
-      "Add the Movie World Fast Pass and skip the queues in style — we'll organise it all for you.",
-      "Spend less time waiting and more time riding, laughing, and making unforgettable memories.",
+      "Expect queues in late September — Fast Track passes are worth it if you want maximum ride time.",
       "Don't miss the stunt and parade shows — they're camp, chaotic, and very fun.",
     ],
     tip: "Wear comfy shoes and sunscreen. You'll be on your feet all day.",
     booking: {
-      sub: "Unlimited Fast Pass",
-      price: "Via Stripe",
-      btn: "Pay with Stripe",
-      ext: false,
+      sub: "Adult Entry | Optional Fast Track",
+      price: "$109 - $208",
+      btn: "Book Yourself",
+      ext: true,
+      url: "https://movieworld.com.au/",
     },
   },
   "little-truffle": {
@@ -94,20 +87,20 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "07:00 PM",
     title: "Little Truffle",
     loc: "Mermaid Beach",
-    stripeProductId: "little-truffle",
     intro:
       "Enjoy a 4-course dinner with us at Little Truffle — Mermaid Beach's award-winning hidden gem.",
     details: [
       "An intimate dining room, elegant contemporary surrounds, and an exceptional wine list.",
-      "Seasonal modern Australian menu — sample courses include duck liver parfait, barramundi, and dark chocolate mousse.",
+      "Our group booking covers a 4-course dinner; dietary needs can usually be accommodated with notice.",
       "Smart casual dress — you've earned something fabulous after Movie World.",
     ],
     sampleMenu: LITTLE_TRUFFLE_SAMPLE_MENU,
     booking: {
       sub: "4-Course Dinner",
-      price: "$89.00",
-      btn: "Pay with Stripe",
-      ext: false,
+      price: "From $89",
+      btn: "Book Yourself",
+      ext: true,
+      url: "https://www.littletruffle.com.au/",
     },
   },
   dreamworld: {
@@ -116,19 +109,19 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "10:00 AM – 5:00 PM",
     title: "Dreamworld",
     loc: "Dreamworld",
-    stripeProductId: "dreamworld-fast-pass",
     intro: "Big thrills, DreamWorks zones, wildlife, and white-knuckle coasters in one mega park.",
     details: [
-      "Add the Dreamworld Unlimited Fast Pass and skip the regular queues on participating attractions.",
-      "Mix of family-friendly zones and serious thrill rides (looking at you, Steel Taipan and Giant Drop).",
+      "Ride Express passes let you skip the regular queue on participating attractions — huge time saver.",
+      "Mix of family-friendly zones and serious thrill rides (Steel Taipan, Giant Drop, and more).",
       "Wildlife areas and shows break up the adrenaline if you need a breather.",
     ],
     tip: "Hydrate and pace yourself — it's a full day before Dracula's tonight.",
     booking: {
-      sub: "Unlimited Fast Pass",
-      price: "Via Stripe",
-      btn: "Pay with Stripe",
-      ext: false,
+      sub: "Adult Entry | Optional Ride Express",
+      price: "$139 - $269",
+      btn: "Book Yourself",
+      ext: true,
+      url: "https://dreamworld.com.au/",
     },
   },
   draculas: {
@@ -137,7 +130,6 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "07:00 PM",
     title: "Dracula's Cabaret",
     loc: "Broadbeach",
-    stripeProductId: "draculas",
     intro:
       "Join us for a wickedly fabulous evening at Dracula's — decadent dining, dazzling performances, and deliciously dark glamour.",
     details: [
@@ -148,9 +140,10 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     tip: "Leave Dreamworld on time — you want time to freshen up before this one.",
     booking: {
       sub: "A-Reserve VIP",
-      price: "$149.00",
-      btn: "Pay with Stripe",
-      ext: false,
+      price: "$149 - $155",
+      btn: "Book Yourself",
+      ext: true,
+      url: "https://www.draculas.com.au/",
     },
   },
   "australia-zoo": {
@@ -159,7 +152,6 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     time: "10:00 AM",
     title: "Australia Zoo",
     loc: "Beerwah",
-    stripeProductId: "australia-zoo",
     intro:
       "Join us for a wild day at Australia Zoo — iconic wildlife, lush tropical surrounds, and unforgettable animal encounters.",
     details: [
@@ -171,9 +163,10 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
     tip: "If you want an encounter, book as far in advance as possible. Popular sessions disappear fast.",
     booking: {
       sub: "Adult Entry",
-      price: "$79.45",
-      btn: "Pay with Stripe",
-      ext: false,
+      price: "$75 - $77",
+      btn: "Book Yourself",
+      ext: true,
+      url: "https://australiazoo.com.au/",
     },
     extraLinks: [
       {
@@ -184,27 +177,6 @@ export const goldCoastAttractions: Record<string, GoldCoastAttraction> = {
   },
 };
 
-function resolveStripeBooking(attraction: GoldCoastAttraction): ScheduleBooking | undefined {
-  if (!attraction.booking) return undefined;
-
-  if (attraction.stripeProductId) {
-    const url = getGoldCoastStripeUrl(attraction.stripeProductId);
-    if (url) {
-      return { ...attraction.booking, ext: false, url, btn: "Pay with Stripe" };
-    }
-  }
-
-  return attraction.booking;
-}
-
-function resolvePromoImage(attraction: GoldCoastAttraction): string | undefined {
-  if (attraction.promoImage) return attraction.promoImage;
-  if (attraction.stripeProductId) {
-    return getGoldCoastProduct(attraction.stripeProductId).image;
-  }
-  return undefined;
-}
-
 export function attractionToScheduleProps(attraction: GoldCoastAttraction): ScheduleNodeProps {
   return {
     time: attraction.time,
@@ -213,10 +185,10 @@ export function attractionToScheduleProps(attraction: GoldCoastAttraction): Sche
     desc: attraction.intro,
     details: attraction.details,
     tip: attraction.tip,
-    booking: resolveStripeBooking(attraction),
+    booking: attraction.booking,
     extraLinks: attraction.extraLinks,
     calendarEventId: attraction.calendarEventId,
     sampleMenu: attraction.sampleMenu,
-    promoImage: resolvePromoImage(attraction),
+    promoImage: getGoldCoastVenueImage(attraction.id),
   };
 }
