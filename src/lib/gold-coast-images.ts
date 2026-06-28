@@ -1,11 +1,11 @@
 /** Venue photos for the Gold Coast itinerary (not Stripe promo graphics). */
 
 export const GOLD_COAST_VENUE_IMAGES = {
-  "byron-lunch": "/gold-coast/venues/byron-bay.jpg",
-  skydeck: "/gold-coast/venues/q1-skydeck.jpg",
-  "movie-world": "/gold-coast/venues/movie-world.jpg",
-  dreamworld: "/gold-coast/venues/dreamworld.jpg",
-  "australia-zoo": "/gold-coast/venues/australia-zoo.jpg",
+  "byron-lunch": "/gold-coast/venues/byron-bay.png",
+  skydeck: "/gold-coast/venues/q1-skydeck.png",
+  "movie-world": "/gold-coast/venues/movie-world.png",
+  dreamworld: "/gold-coast/venues/dreamworld.png",
+  "australia-zoo": "/gold-coast/venues/australia-zoo.png",
   draculas: "/gold-coast/draculas.png",
   "little-truffle": "/gold-coast/little-truffle.png",
 } as const;

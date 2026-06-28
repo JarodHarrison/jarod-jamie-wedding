@@ -5,7 +5,7 @@ export type WeddingCalendarEvent = {
   id: string;
   title: string;
   description?: string;
-  location?: string;
+  location: string;
   /** ISO 8601 with offset */
   start: string;
   end: string;
@@ -36,16 +36,13 @@ function eventWindow(
   isoDate: string,
   time: string,
   durationMinutes: number,
-  partial?: Omit<WeddingCalendarEvent, "start" | "end">,
+  partial: Omit<WeddingCalendarEvent, "start" | "end">,
 ): WeddingCalendarEvent {
   const startDate = parseTimeOnDate(isoDate, time);
   const endDate = new Date(startDate.getTime() + durationMinutes * 60_000);
 
   return {
-    id: partial?.id ?? `${isoDate}-${time}`,
-    title: partial?.title ?? "Wedding event",
-    description: partial?.description,
-    location: partial?.location,
+    ...partial,
     start: startDate.toISOString(),
     end: endDate.toISOString(),
   };
@@ -56,7 +53,7 @@ export const WEDDING_CALENDAR_EVENTS: Record<string, WeddingCalendarEvent> = {
     id: "lakeside-meet-greet",
     title: LAKESIDE_MEET_GREET.title,
     description: LAKESIDE_MEET_GREET.desc,
-    location: LAKESIDE_MEET_GREET.loc,
+    location: `Lake View Deck, ${VENUE}`,
   }),
   ceremony: eventWindow("2026-09-26", "3:00pm", 75, {
     id: "ceremony",
@@ -64,74 +61,10 @@ export const WEDDING_CALENDAR_EVENTS: Record<string, WeddingCalendarEvent> = {
     description: "Colourful cocktail attire. Adults-only ceremony.",
     location: VENUE,
   }),
-  "garden-party": eventWindow("2026-09-26", "4:30pm", 90, {
-    id: "garden-party",
-    title: "Garden Party",
-    description: "Canapés, drinks, face painter, and glitter bar on the Upper Lawn.",
-    location: `${VENUE} — Upper Lawn`,
-  }),
-  reception: eventWindow("2026-09-26", "6:00pm", 300, {
-    id: "reception",
-    title: "Wedding Reception",
-    description: "Dinner, drinks, and dancing in The Pavilion.",
-    location: `${VENUE} — The Pavilion`,
-  }),
-  "family-breakfast": eventWindow("2026-09-27", "9:00am", 120, {
-    id: "family-breakfast",
-    title: "Family Breakfast",
-    description: "A relaxed farewell breakfast at Spicers Clovelly Estate.",
-    location: VENUE,
-  }),
-  "gc-byron-lunch": eventWindow("2026-09-22", "11:00am", 120, {
-    id: "gc-byron-lunch",
-    title: "Byron Bay Lunch",
-    description: "Coastal lunch stop in Byron Bay during the Gold Coast trip.",
-    location: "Byron Bay, NSW",
-  }),
-  "gc-skydeck": eventWindow("2026-09-22", "5:00pm", 90, {
-    id: "gc-skydeck",
-    title: "Q1 Skydeck",
-    description: "Sunset views from SkyPoint, Surfers Paradise.",
-    location: "SkyPoint, Surfers Paradise",
-  }),
-  "gc-movie-world": eventWindow("2026-09-23", "10:00am", 420, {
-    id: "gc-movie-world",
-    title: "Warner Bros. Movie World",
-    description: "Theme park day on the Gold Coast trip.",
-    location: "Warner Bros. Movie World, Gold Coast",
-  }),
-  "gc-little-truffle": eventWindow("2026-09-23", "7:00pm", 150, {
-    id: "gc-little-truffle",
-    title: "Little Truffle Dinner",
-    description: "4-course group dinner at Little Truffle, Mermaid Beach.",
-    location: "Little Truffle, Mermaid Beach",
-  }),
-  "gc-dreamworld": eventWindow("2026-09-24", "10:00am", 420, {
-    id: "gc-dreamworld",
-    title: "Dreamworld",
-    description: "Theme park day on the Gold Coast trip.",
-    location: "Dreamworld, Gold Coast",
-  }),
-  "gc-draculas": eventWindow("2026-09-24", "7:00pm", 150, {
-    id: "gc-draculas",
-    title: "Dracula's Cabaret",
-    description: "Evening cabaret show in Broadbeach.",
-    location: "Dracula's Cabaret, Broadbeach",
-  }),
-  "gc-australia-zoo": eventWindow("2026-09-25", "10:00am", 270, {
-    id: "gc-australia-zoo",
-    title: "Australia Zoo",
-    description: "Wildlife day before heading to the hinterland.",
-    location: "Australia Zoo, Beerwah",
-  }),
 };
 
 export function getCalendarEvent(eventId: string): WeddingCalendarEvent | null {
   return WEDDING_CALENDAR_EVENTS[eventId] ?? null;
-}
-
-export function listCalendarEvents(): WeddingCalendarEvent[] {
-  return Object.values(WEDDING_CALENDAR_EVENTS);
 }
 
 export const CALENDAR_TIMEZONE_LABEL = WEDDING_TIMEZONE;

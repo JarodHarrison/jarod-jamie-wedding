@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
 import { guestIsMcOrAdmin } from "@/lib/auth/mc-access";
 import { isGuestOnlyEmail } from "@/lib/auth/account-roles";
+import { getLinkedGuestForAdmin, toWeddingUser } from "@/lib/auth/linked-guest";
 import {
   applySessionCookie,
   createSessionCookieValue,
@@ -90,8 +91,11 @@ export async function createGuestSessionResponse(guest: GuestAccount, hasAdminRe
 export async function createAdminSessionResponse(admin: AdminAccount) {
   await setAdminSessionCookie(admin);
 
+  const linkedGuest = await getLinkedGuestForAdmin(admin.id);
+
   return NextResponse.json({
     admin: { id: admin.id, name: admin.name, email: admin.email },
+    user: linkedGuest ? toWeddingUser(linkedGuest) : undefined,
     canAccessAdmin: true,
     canVerifyBingo: true,
   });

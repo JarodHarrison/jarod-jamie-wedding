@@ -204,8 +204,13 @@ export function WeddingApp() {
           onGuestLogin={(loggedInUser, canAccessAdmin, canVerifyBingo) => {
             applySession({ user: loggedInUser, admin: null, canAccessAdmin, canVerifyBingo });
           }}
-          onAdminLogin={(loggedInAdmin) => {
-            applySession({ user: null, admin: loggedInAdmin, canAccessAdmin: true, canVerifyBingo: true });
+          onAdminLogin={(loggedInAdmin, linkedUser) => {
+            applySession({
+              user: linkedUser ?? null,
+              admin: loggedInAdmin,
+              canAccessAdmin: true,
+              canVerifyBingo: true,
+            });
           }}
         />
       </PhoneFrame>

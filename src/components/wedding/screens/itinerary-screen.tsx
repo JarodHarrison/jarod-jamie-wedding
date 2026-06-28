@@ -65,7 +65,6 @@ function WeddingSchedule({
         time="4:30pm"
         loc="Upper Lawn"
         desc="Decadent canapés, divine drinks, face painter, and a glitter bar! ✨"
-        calendarEventId="garden-party"
       />
       <ScheduleNode
         date="26.09"
@@ -73,7 +72,6 @@ function WeddingSchedule({
         time="6:00pm"
         loc="The Pavilion"
         desc="Celebrate with amazing food, drinks, and dance."
-        calendarEventId="reception"
       />
       <ScheduleNode
         date="27.09"
@@ -81,7 +79,6 @@ function WeddingSchedule({
         time="9:00am"
         attire="Sunglasses probably required"
         loc="Spicers Clovelly Estate"
-        calendarEventId="family-breakfast"
       />
     </div>
   );
@@ -201,6 +198,7 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
           </>
         )}
       </div>
+
     </div>
   );
 }

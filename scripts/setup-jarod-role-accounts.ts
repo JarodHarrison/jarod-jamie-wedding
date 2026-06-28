@@ -10,6 +10,33 @@ import {
 const LEGACY_GUEST_EMAIL = JAROD_ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.JAROD_ADMIN_PASSWORD ?? "Smile4me";
 
+async function findJarodGuestProfile() {
+  const byEmail = await prisma.guest.findUnique({
+    where: { email: JAROD_GUEST_EMAIL },
+    select: { id: true, name: true, email: true },
+  });
+  if (byEmail) return byEmail;
+
+  const candidates = await prisma.guest.findMany({
+    where: {
+      OR: [
+        { email: JAROD_GUEST_EMAIL },
+        { name: { contains: "J-rod", mode: "insensitive" } },
+        { name: { contains: "Jarod", mode: "insensitive" } },
+        { email: { contains: "jarod.harrison87", mode: "insensitive" } },
+      ],
+    },
+    select: { id: true, name: true, email: true },
+  });
+
+  return (
+    candidates.find((guest) => guest.email === JAROD_GUEST_EMAIL) ??
+    candidates.find((guest) => guest.email.includes("jarod.harrison87")) ??
+    candidates[0] ??
+    null
+  );
+}
+
 async function main() {
   const legacyGuest = await prisma.guest.findUnique({
     where: { email: LEGACY_GUEST_EMAIL },
@@ -108,7 +135,25 @@ async function main() {
   });
   console.log(`Ensured admin account at ${JAROD_ADMIN_EMAIL}.`);
 
-  const gmailGuest = await prisma.guest.findUnique({
+  const jarodGuestProfile = await findJarodGuestProfile();
+  if (jarodGuestProfile) {
+    await prisma.admin.update({
+      where: { email: JAROD_ADMIN_EMAIL },
+      data: { linkedGuestId: jarodGuestProfile.id },
+    });
+    console.log(
+      `Linked admin ${JAROD_ADMIN_EMAIL} to guest ${jarodGuestProfile.name} (${jarodGuestProfile.email}).`,
+    );
+  } else {
+    console.warn(`No guest profile found to link — create ${JAROD_GUEST_EMAIL} first.`);
+  }
+
+  const gmailGuest = jarodGuestProfile
+    ? await prisma.guest.findUnique({
+        where: { id: jarodGuestProfile.id },
+        select: { email: true, tier: true, rsvpStatus: true, name: true },
+      })
+    : await prisma.guest.findUnique({
     where: { email: JAROD_GUEST_EMAIL },
     select: { email: true, tier: true, rsvpStatus: true, name: true },
   });

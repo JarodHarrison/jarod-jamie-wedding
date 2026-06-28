@@ -38,13 +38,13 @@ function speakWithBrowser(text: string) {
 }
 
 export function useAnnitaVoice() {
-  const [speakEnabled, setSpeakEnabled] = useState(true);
+  const [speakEnabled, setSpeakEnabled] = useState(false);
   const [speaking, setSpeaking] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    setSpeakEnabled(localStorage.getItem(SPEAK_PREF_KEY) !== "0");
+    setSpeakEnabled(localStorage.getItem(SPEAK_PREF_KEY) === "1");
   }, []);
 
   const stop = useCallback(() => {

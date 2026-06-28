@@ -9,6 +9,7 @@ export type WeddingPhase = "before" | "week" | "day" | "recovery" | "after";
 export type WeddingFeature =
   | "live-shuttle"
   | "photobooth-bingo"
+  | "guest-pic"
   | "event-day-hero"
   | "recovery-hero"
   | "wedding-week-banner"
@@ -32,6 +33,7 @@ export const EMERGENCY_CONTACTS = [
 const FEATURE_PHASES: Record<WeddingFeature, readonly WeddingPhase[]> = {
   "live-shuttle": ["week", "day"],
   "photobooth-bingo": ["day"],
+  "guest-pic": ["week", "day", "recovery"],
   "event-day-hero": ["day"],
   "recovery-hero": ["recovery"],
   "wedding-week-banner": ["week"],
@@ -89,6 +91,11 @@ export function isWeddingFeatureVisible(feature: WeddingFeature, now = new Date(
 
   if (feature === "live-shuttle") {
     return FEATURE_PHASES[feature].includes(phase) && isShuttleLiveWindow(now);
+  }
+
+  if (feature === "guest-pic") {
+    if (process.env.GUEST_PIC_FORCE_VISIBLE === "true") return true;
+    if (process.env.GUEST_PIC_FORCE_VISIBLE === "false") return false;
   }
 
   return FEATURE_PHASES[feature].includes(phase);

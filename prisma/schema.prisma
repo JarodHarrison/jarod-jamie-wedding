@@ -116,6 +116,7 @@ model Guest {
   guestStories GuestStory[]
   sharedPhotos GuestSharedPhoto[]
   linkedLogins GuestLinkedLogin[]
+  linkedAdmin  Admin?
 }
 
 model GuestLinkedLogin {
@@ -204,6 +205,8 @@ model Admin {
   name         String
   email        String   @unique
   passwordHash String
+  linkedGuestId String? @unique
+  linkedGuest   Guest?  @relation(fields: [linkedGuestId], references: [id], onDelete: SetNull)
   createdAt    DateTime @default(now()) @db.Timestamptz
   updatedAt    DateTime @updatedAt @db.Timestamptz
   passkeyCredentials PasskeyCredential[]

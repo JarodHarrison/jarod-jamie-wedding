@@ -23,7 +23,6 @@ export type GoldCoastAttraction = {
   tip?: string;
   booking?: ScheduleBooking;
   extraLinks?: AttractionLink[];
-  calendarEventId?: string;
   sampleMenu?: SampleMenu;
   stripeProductId?: GoldCoastStripeProductId;
 };
@@ -34,7 +33,6 @@ export const AUSTRALIA_ZOO_ENCOUNTERS_URL =
 export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttraction> = {
   "byron-lunch": {
     id: "byron-lunch",
-    calendarEventId: "gc-byron-lunch",
     time: "11:00 AM – 1:00 PM",
     title: "Byron Bay Lunch",
     loc: "Byron Bay",
@@ -46,7 +44,6 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
   },
   skydeck: {
     id: "skydeck",
-    calendarEventId: "gc-skydeck",
     time: "05:00 PM",
     title: "Q1 Skydeck",
     loc: "SkyPoint, Surfers Paradise",
@@ -67,7 +64,6 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
   },
   "movie-world": {
     id: "movie-world",
-    calendarEventId: "gc-movie-world",
     time: "10:00 AM – 5:00 PM",
     title: "Warner Bros. Movie World",
     loc: "Movie World",
@@ -88,7 +84,6 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
   },
   "little-truffle": {
     id: "little-truffle",
-    calendarEventId: "gc-little-truffle",
     time: "07:00 PM",
     title: "Little Truffle",
     loc: "Mermaid Beach",
@@ -110,7 +105,6 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
   },
   dreamworld: {
     id: "dreamworld",
-    calendarEventId: "gc-dreamworld",
     time: "10:00 AM – 5:00 PM",
     title: "Dreamworld",
     loc: "Dreamworld",
@@ -131,7 +125,6 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
   },
   draculas: {
     id: "draculas",
-    calendarEventId: "gc-draculas",
     time: "07:00 PM",
     title: "Dracula's Cabaret",
     loc: "Broadbeach",
@@ -153,7 +146,6 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
   },
   "australia-zoo": {
     id: "australia-zoo",
-    calendarEventId: "gc-australia-zoo",
     time: "10:00 AM",
     title: "Australia Zoo",
     loc: "Beerwah",
@@ -205,7 +197,6 @@ export function attractionToScheduleProps(attraction: GoldCoastAttraction): Sche
     tip: attraction.tip,
     booking: resolveStripeBooking(attraction),
     extraLinks: attraction.extraLinks,
-    calendarEventId: attraction.calendarEventId,
     sampleMenu: attraction.sampleMenu,
     promoImage: getGoldCoastVenueImage(attraction.id),
   };

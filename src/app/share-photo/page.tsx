@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { GuestPhotoSharePanel } from "@/components/wedding/photos/guest-photo-share-panel";
+import { isWeddingFeatureVisible, daysUntilWedding } from "@/lib/wedding-event";
 
 export default function SharePhotoPage() {
   const [authed, setAuthed] = useState<boolean | null>(null);
@@ -29,6 +30,28 @@ export default function SharePhotoPage() {
             className="mt-6 inline-block rounded-xl bg-[#2a2723] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#c3a379]"
           >
             Open wedding app
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isWeddingFeatureVisible("guest-pic")) {
+    const daysUntil = daysUntilWedding();
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#f7f4ee] px-6">
+        <div className="max-w-md rounded-3xl border border-[#e2d5c4] bg-white p-8 text-center">
+          <h1 className="font-serif text-3xl text-[#2a2723]">GuestPic opens soon</h1>
+          <p className="mt-4 text-sm text-gray-600">
+            Photo uploads unlock in wedding week
+            {daysUntil > 0 ? ` — ${daysUntil} day${daysUntil === 1 ? "" : "s"} to go` : ""}. Scan your
+            table QR or open this page again then.
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-block rounded-xl bg-[#2a2723] px-5 py-3 text-xs font-bold uppercase tracking-widest text-[#c3a379]"
+          >
+            Back to wedding app
           </Link>
         </div>
       </div>

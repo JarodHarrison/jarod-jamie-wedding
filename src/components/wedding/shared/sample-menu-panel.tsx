@@ -1,9 +1,16 @@
+"use client";
+
+import { ContentAccordion } from "@/components/wedding/shared/content-accordion";
 import type { SampleMenu } from "@/lib/little-truffle-menu";
 import { theme } from "@/lib/theme";
 
 type SampleMenuPanelProps = {
   menu: SampleMenu;
 };
+
+function courseTitle(title: string, note?: string) {
+  return note ? `${title} · ${note}` : title;
+}
 
 export function SampleMenuPanel({ menu }: SampleMenuPanelProps) {
   return (
@@ -29,15 +36,12 @@ export function SampleMenuPanel({ menu }: SampleMenuPanelProps) {
         )}
       </div>
 
-      <div className="space-y-3">
-        {menu.courses.map((course) => (
-          <div key={course.title}>
-            <div className="mb-1 flex flex-wrap items-baseline gap-x-2">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#2a2723]">
-                {course.title}
-              </p>
-              {course.note && <p className="text-[10px] italic text-gray-400">{course.note}</p>}
-            </div>
+      <ContentAccordion
+        multiple
+        items={menu.courses.map((course, index) => ({
+          id: `course-${index}`,
+          title: courseTitle(course.title, course.note),
+          content: (
             <ul className="space-y-1.5">
               {course.items.map((item) => (
                 <li key={item.name} className="text-[11px] leading-relaxed text-gray-600">
@@ -51,9 +55,9 @@ export function SampleMenuPanel({ menu }: SampleMenuPanelProps) {
                 </li>
               ))}
             </ul>
-          </div>
-        ))}
-      </div>
+          ),
+        }))}
+      />
 
       {menu.footnote && (
         <p className="mt-3 border-t pt-2 text-[10px] text-gray-500" style={{ borderColor: theme.border }}>

@@ -9,6 +9,7 @@ import {
   moderateGuestPhoto,
 } from "@/lib/google-vision-moderation";
 import { SHARED_PHOTO_ACCEPT, SHARED_PHOTO_MAX_BYTES } from "@/lib/kiosk";
+import { isWeddingFeatureVisible } from "@/lib/wedding-event";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -47,6 +48,10 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    if (!isWeddingFeatureVisible("guest-pic")) {
+      return jsonError("Photo uploads open in wedding week — check back closer to the day!", 403);
+    }
+
     const session = await requireGuestSession();
     const formData = await request.formData();
     const file = formData.get("photo");

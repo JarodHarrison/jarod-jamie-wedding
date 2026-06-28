@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { resolveLinkedGuestSession } from "@/lib/auth/linked-guest";
 import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import type { GuestTier } from "@/types/wedding";
 
@@ -98,14 +99,22 @@ export async function requireAdminSession(): Promise<AdminSession> {
 
 export async function requireGuestSession(): Promise<GuestSession> {
   const session = await getSession();
-  if (!session || session.type !== "guest") {
+  if (!session) {
     throw new Error("Unauthorized");
   }
 
-  const fresh = await syncGuestSessionFromDb(session);
-  if (!fresh) {
-    throw new Error("Unauthorized");
+  if (session.type === "guest") {
+    const fresh = await syncGuestSessionFromDb(session);
+    if (!fresh) {
+      throw new Error("Unauthorized");
+    }
+    return fresh;
   }
 
-  return fresh;
+  const linked = await resolveLinkedGuestSession(session.id);
+  if (linked) {
+    return linked;
+  }
+
+  throw new Error("Unauthorized");
 }

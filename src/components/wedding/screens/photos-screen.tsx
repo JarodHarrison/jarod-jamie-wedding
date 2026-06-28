@@ -7,6 +7,7 @@ import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { ContentAccordion } from "@/components/wedding/shared/content-accordion";
 import { GuideCard } from "@/components/wedding/shared/guide-card";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
+import { daysUntilWedding } from "@/lib/wedding-event";
 import {
   BOOTH_EVENT_CODE,
   IN_THE_BOOTH,
@@ -25,6 +26,8 @@ type PhotosScreenProps = {
 export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
   const { isFeatureVisible } = useWeddingPhase();
   const showBingo = isFeatureVisible("photobooth-bingo");
+  const showGuestPic = isFeatureVisible("guest-pic");
+  const daysUntil = daysUntilWedding();
   const [photos, setPhotos] = useState<WallPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [configured, setConfigured] = useState(false);
@@ -49,7 +52,24 @@ export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
       <SubHeader title="Photos" subtitle="Memories & booth" onBack={() => setActiveTab("home")} />
 
       <div className="mt-6 space-y-4 px-6">
-        <GuestPhotoSharePanel onUploaded={loadPhotos} />
+        {showGuestPic ? (
+          <GuestPhotoSharePanel onUploaded={loadPhotos} />
+        ) : (
+          <div
+            className="rounded-2xl border bg-white/70 p-5 shadow-sm"
+            style={{ borderColor: theme.border }}
+          >
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+              GuestPic — coming soon
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">
+              Uploads and table-card QR sharing open in wedding week
+              {daysUntil > 0 ? ` (${daysUntil} day${daysUntil === 1 ? "" : "s"} to go)` : ""}. Until
+              then, tag <strong>#{WEDDING_HASHTAG}</strong> on Instagram — those posts still appear on
+              the wall below.
+            </p>
+          </div>
+        )}
 
         {showBingo && (
         <GuideCard

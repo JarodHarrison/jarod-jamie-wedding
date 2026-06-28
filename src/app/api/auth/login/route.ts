@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
 import { guestIsMcOrAdmin } from "@/lib/auth/mc-access";
 import { isAdminPreferredEmail, isGuestOnlyEmail } from "@/lib/auth/account-roles";
+import { createAdminSessionResponse } from "@/lib/auth/create-session";
 import { verifyPassword } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
@@ -67,18 +68,7 @@ export async function POST(request: Request) {
     }
 
     if (isAdminPreferredEmail(email) && admin && adminValid) {
-      await setSessionCookie({
-        type: "admin",
-        id: admin.id,
-        name: admin.name,
-        email: admin.email,
-      });
-
-      return NextResponse.json({
-        admin: { id: admin.id, name: admin.name, email: admin.email },
-        canAccessAdmin: true,
-        canVerifyBingo: true,
-      });
+      return createAdminSessionResponse(admin);
     }
 
     // Prefer a guest session when both exist so RSVP/forms keep working.
@@ -107,18 +97,7 @@ export async function POST(request: Request) {
     }
 
     if (admin && adminValid) {
-      await setSessionCookie({
-        type: "admin",
-        id: admin.id,
-        name: admin.name,
-        email: admin.email,
-      });
-
-      return NextResponse.json({
-        admin: { id: admin.id, name: admin.name, email: admin.email },
-        canAccessAdmin: true,
-        canVerifyBingo: true,
-      });
+      return createAdminSessionResponse(admin);
     }
 
     return jsonError("Invalid email or password.", 401);

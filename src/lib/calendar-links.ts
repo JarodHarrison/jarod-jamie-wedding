@@ -16,18 +16,17 @@ export function googleCalendarUrl(event: WeddingCalendarEvent): string {
   });
 
   if (event.description) params.set("details", event.description);
-  if (event.location) params.set("location", event.location);
+  params.set("location", event.location);
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
 export function buildIcsCalendar(event: WeddingCalendarEvent): string {
+  return buildIcsCalendarBundle([event]);
+}
+
+function icsEventLines(event: WeddingCalendarEvent): string[] {
   const lines = [
-    "BEGIN:VCALENDAR",
-    "VERSION:2.0",
-    "PRODID:-//Jarod and Jamie Wedding//EN",
-    "CALSCALE:GREGORIAN",
-    "METHOD:PUBLISH",
     "BEGIN:VEVENT",
     `UID:${event.id}@jarodandjamiewedding.com`,
     `DTSTAMP:${formatIcsUtc(new Date().toISOString())}`,
@@ -37,9 +36,26 @@ export function buildIcsCalendar(event: WeddingCalendarEvent): string {
   ];
 
   if (event.description) lines.push(`DESCRIPTION:${escapeIcsText(event.description)}`);
-  if (event.location) lines.push(`LOCATION:${escapeIcsText(event.location)}`);
+  lines.push(`LOCATION:${escapeIcsText(event.location)}`);
 
-  lines.push("END:VEVENT", "END:VCALENDAR");
+  lines.push("END:VEVENT");
+  return lines;
+}
+
+export function buildIcsCalendarBundle(events: WeddingCalendarEvent[]): string {
+  const lines = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//Jarod and Jamie Wedding//EN",
+    "CALSCALE:GREGORIAN",
+    "METHOD:PUBLISH",
+  ];
+
+  for (const event of events) {
+    lines.push(...icsEventLines(event));
+  }
+
+  lines.push("END:VCALENDAR");
   return `${lines.join("\r\n")}\r\n`;
 }
 
@@ -53,7 +69,7 @@ export function outlookCalendarUrl(event: WeddingCalendarEvent): string {
   });
 
   if (event.description) params.set("body", event.description);
-  if (event.location) params.set("location", event.location);
+  params.set("location", event.location);
 
   return `https://outlook.live.com/calendar/0/deeplink/compose?${params.toString()}`;
 }

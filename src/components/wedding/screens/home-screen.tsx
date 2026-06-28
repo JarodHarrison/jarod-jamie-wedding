@@ -154,6 +154,7 @@ export function HomeScreen({
   const { phase, isFeatureVisible } = useWeddingPhase();
   const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
   const showBingo = isFeatureVisible("photobooth-bingo");
+  const showGuestPic = isFeatureVisible("guest-pic");
 
   const homeCards = buildHomeCards(onOpenChat, showBingo)
     .filter((card) => {
@@ -163,6 +164,14 @@ export function HomeScreen({
     })
     .map((card) => {
     if (card.id === "annita") return card;
+    if (card.id === "photos" && !showGuestPic) {
+      return {
+        ...card,
+        description: showBingo
+          ? "Hashtag wall, booth downloads, and photobooth bingo — GuestPic uploads open in wedding week."
+          : "Hashtag wall and booth downloads — GuestPic uploads open in wedding week.",
+      };
+    }
     return {
       ...card,
       action: () => setActiveTab(card.id as AppTab),

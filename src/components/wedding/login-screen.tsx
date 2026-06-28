@@ -16,7 +16,7 @@ import type { AdminUser, WeddingUser } from "@/types/wedding";
 
 type LoginScreenProps = {
   onGuestLogin: (user: WeddingUser, canAccessAdmin?: boolean, canVerifyBingo?: boolean) => void;
-  onAdminLogin: (admin: AdminUser) => void;
+  onAdminLogin: (admin: AdminUser, linkedUser?: WeddingUser | null) => void;
 };
 
 type AuthMode = "signin" | "signup" | "forgot";
@@ -109,7 +109,7 @@ export function LoginScreen({ onGuestLogin, onAdminLogin }: LoginScreenProps) {
       }
 
       if (data.admin) {
-        onAdminLogin(data.admin);
+        onAdminLogin(data.admin, data.user ?? null);
         return;
       }
 

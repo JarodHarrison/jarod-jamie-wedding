@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
 import { guestIsMcOrAdmin } from "@/lib/auth/mc-access";
 import { getVendorAccessForSession } from "@/lib/auth/vendor-access";
+import { getLinkedGuestForAdmin, toWeddingUser } from "@/lib/auth/linked-guest";
 import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import { getSession } from "@/lib/auth/session";
 import { hasOnSiteAppAccess } from "@/lib/on-site-access";
@@ -66,8 +67,10 @@ export async function GET() {
     });
   }
 
+  const linkedGuest = await getLinkedGuestForAdmin(session.id);
+
   return NextResponse.json({
-    user: null,
+    user: linkedGuest ? toWeddingUser(linkedGuest) : null,
     admin: { id: session.id, name: session.name, email: session.email },
     canAccessAdmin: true,
     canVerifyBingo: true,
