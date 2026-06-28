@@ -129,7 +129,7 @@ export async function PATCH(request: Request) {
     }
 
     const profile = serializeGuestProfile(guest);
-    notifyRegistration(section as GuestProfileSection, profile);
+    notifyRegistration(section, profile);
 
     return NextResponse.json({ profile, tierUpdated: guest.tier !== session.tier });
   } catch (error) {

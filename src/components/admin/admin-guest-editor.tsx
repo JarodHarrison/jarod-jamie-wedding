@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommodation-property-picker";
 import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
+import { BED_PREFERENCE_OPTIONS } from "@/lib/bed-preference";
 import { GIFT_COLOUR_OPTIONS } from "@/lib/gift-colour-choices";
 import { theme } from "@/lib/theme";
 import type { GuestProfileSection } from "@/lib/guest-profile";

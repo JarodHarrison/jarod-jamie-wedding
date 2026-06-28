@@ -1,4 +1,5 @@
 import type { SerializedGuestProfile } from "@/lib/guest-profile";
+import { giftColourLabel } from "@/lib/gift-colour-choices";
 import { sendNotificationEmail } from "@/lib/email";
 import { adminGuestEventEmailHtml } from "@/lib/email-templates";
 
@@ -8,6 +9,7 @@ export type RegistrationEvent =
   | "accommodation"
   | "transfer"
   | "interests"
+  | "gift-colours"
   | "identity"
   | "companion";
 
@@ -17,6 +19,7 @@ const EVENT_TITLES: Record<RegistrationEvent, string> = {
   accommodation: "Accommodation & shuttle planning updated",
   transfer: "Airport transfer details updated",
   interests: "Pre-wedding or on-site service interest",
+  "gift-colours": "Gift colour preferences updated",
   identity: "Guest profile details updated",
   companion: "Plus-one / companion details updated",
 };
@@ -136,6 +139,16 @@ function formatIdentity(guest: SerializedGuestProfile) {
     .join("\n");
 }
 
+function formatGiftColours(guest: SerializedGuestProfile) {
+  return [
+    formatGuestBlock(guest),
+    line("First choice", giftColourLabel(guest.giftColourChoice1)),
+    line("Second choice", giftColourLabel(guest.giftColourChoice2)),
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function notifyRegistration(event: RegistrationEvent, guest: SerializedGuestProfile) {
   const title = EVENT_TITLES[event];
   let body = formatGuestBlock(guest);
@@ -144,6 +157,7 @@ export function notifyRegistration(event: RegistrationEvent, guest: SerializedGu
   if (event === "accommodation") body = formatAccommodation(guest);
   if (event === "transfer") body = formatTransfer(guest);
   if (event === "interests") body = formatInterests(guest);
+  if (event === "gift-colours") body = formatGiftColours(guest);
   if (event === "identity") body = formatIdentity(guest);
   if (event === "companion") body = formatCompanion(guest);
 

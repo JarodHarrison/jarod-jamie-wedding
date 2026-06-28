@@ -132,20 +132,21 @@ export async function executeGuestFormSave(
   });
 
   const profile = serializeGuestProfile(guest);
-  notifyRegistration(section as GuestProfileSection, profile);
+  notifyRegistration(section, profile);
 
   const labels: Record<GuestProfileSection, string> = {
     rsvp: "RSVP",
     accommodation: "accommodation details",
     transfer: "airport transfer details",
     interests: "service interests",
+    "gift-colours": "gift colour preferences",
     identity: "guest profile details",
     companion: "plus-one details",
   };
 
   return {
     success: true,
-    message: `Saved ${labels[section as GuestProfileSection]} successfully.`,
+    message: `Saved ${labels[section]} successfully.`,
     profile,
   };
 }
