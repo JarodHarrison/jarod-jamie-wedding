@@ -15,6 +15,11 @@ import {
   sanitizeChatReply,
 } from "@/lib/chat-sanitize";
 import {
+  canUseAnnitaGatewayFallback,
+  generateAnnitaGatewayFallback,
+  streamAnnitaGatewayFallback,
+} from "@/lib/annita-gateway-fallback";
+import {
   getGeminiModelCandidates,
   isRetryableGeminiError,
   isRetryableGeminiMessage,
@@ -432,6 +437,26 @@ async function callGeminiWithFallback(
     }
   }
 
+  if (
+    canUseAnnitaGatewayFallback({
+      useWebSearch: options?.useWebSearch,
+      hasTools: Boolean(options?.tools?.length),
+    })
+  ) {
+    try {
+      const { text, model } = await generateAnnitaGatewayFallback(systemInstruction, contents);
+      return {
+        data: {
+          candidates: [{ content: { parts: [{ text }] } }],
+        },
+        model,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : lastError;
+      console.warn("[chat/gateway] all free-tier fallbacks failed", lastError);
+    }
+  }
+
   throw new GeminiChatError(lastError);
 }
 
@@ -560,6 +585,18 @@ async function* streamGeminiWithFallback(
         console.warn("[chat/gemini] stream model failed", model, lastError);
         break;
       }
+    }
+  }
+
+  if (canUseAnnitaGatewayFallback({ useWebSearch, hasTools: false })) {
+    try {
+      for await (const chunk of streamAnnitaGatewayFallback(systemInstruction, contents)) {
+        yield chunk;
+      }
+      return;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : lastError;
+      console.warn("[chat/gateway] all free-tier stream fallbacks failed", lastError);
     }
   }
 
