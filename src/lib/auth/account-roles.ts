@@ -6,6 +6,9 @@ export const JAROD_GUEST_EMAIL = "jarod.harrison87@gmail.com";
 /** Jarod's Outlook — full admin dashboard and all tier-gated features. */
 export const JAROD_ADMIN_EMAIL = "jarod.harrison@outlook.com";
 
+/** Jamie's Hotmail — guest profile (admin may use jamie_chef35@gmail.com). */
+export const JAMIE_GUEST_EMAIL = "jamie_stocks27@hotmail.com";
+
 /** Jamie's Gmail — admin dashboard (guest profile may use a different login email). */
 export const JAMIE_ADMIN_EMAIL = "jamie_chef35@gmail.com";
 

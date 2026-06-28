@@ -162,7 +162,10 @@ export function buildRsvpHydrationUpdate(profile: {
   return update;
 }
 
-export function groomDefaultRsvpPatch(name: string): Partial<{
+export function groomDefaultRsvpPatch(
+  name: string,
+  email?: string | null,
+): Partial<{
   rsvpStatus: RsvpStatus;
   guestOfHost: string;
   guestRelationship: string;
@@ -170,9 +173,22 @@ export function groomDefaultRsvpPatch(name: string): Partial<{
   rsvpSubmittedAt: Date;
 }> {
   const normalized = name.toLowerCase();
-  const isGroom = normalized.includes("jarod") || normalized.includes("jamie");
+  const normalizedEmail = email?.toLowerCase() ?? "";
 
-  if (!isGroom) return {};
+  const isCoupleInvite = normalized.includes("&");
+  const isJarod =
+    normalizedEmail === "jarod.harrison87@gmail.com" ||
+    normalized.includes("jarod") ||
+    normalized.includes("j-rod") ||
+    normalized.includes("j rod");
+  const isJamie =
+    normalizedEmail === "jamie_stocks27@hotmail.com" ||
+    normalizedEmail.includes("chef35") ||
+    (normalized.includes("jamie") && !isCoupleInvite && normalized.includes("stocks")) ||
+    normalized === "jamie" ||
+    normalized.includes("jamo");
+
+  if (!isJarod && !isJamie) return {};
 
   return {
     rsvpStatus: "ACCEPTED",

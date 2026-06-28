@@ -4,6 +4,7 @@ import { prisma } from "../src/lib/prisma";
 import { hashPassword } from "../src/lib/auth/password";
 import {
   JAMIE_ADMIN_EMAIL,
+  JAMIE_GUEST_EMAIL,
   JAROD_ADMIN_EMAIL,
   JAROD_GUEST_EMAIL,
 } from "../src/lib/auth/account-roles";
@@ -13,27 +14,32 @@ const LEGACY_GUEST_EMAIL = JAROD_ADMIN_EMAIL;
 const ADMIN_PASSWORD = process.env.JAROD_ADMIN_PASSWORD ?? "Smile4me";
 
 async function findJamieGuestProfile() {
-  const byAdminEmail = await prisma.guest.findUnique({
-    where: { email: JAMIE_ADMIN_EMAIL },
+  const byGuestEmail = await prisma.guest.findUnique({
+    where: { email: JAMIE_GUEST_EMAIL },
     select: { id: true, name: true, email: true },
   });
-  if (byAdminEmail) return byAdminEmail;
+  if (byGuestEmail) return byGuestEmail;
 
   const candidates = await prisma.guest.findMany({
     where: {
       OR: [
-        { name: { contains: "Jamie", mode: "insensitive" } },
-        { name: { contains: "Jamo", mode: "insensitive" } },
-        { email: { contains: "jamie", mode: "insensitive" } },
+        { email: JAMIE_GUEST_EMAIL },
+        { name: { equals: "Jamie Stocks", mode: "insensitive" } },
+        {
+          AND: [
+            { name: { contains: "Jamie", mode: "insensitive" } },
+            { NOT: { name: { contains: "&", mode: "insensitive" } } },
+          ],
+        },
       ],
     },
     select: { id: true, name: true, email: true },
   });
 
   return (
+    candidates.find((guest) => guest.email === JAMIE_GUEST_EMAIL) ??
     candidates.find((guest) => guest.name.toLowerCase().includes("stocks")) ??
-    candidates.find((guest) => guest.name.toLowerCase().includes("jamie")) ??
-    candidates[0] ??
+    candidates.find((guest) => guest.name.toLowerCase() === "jamie") ??
     null
   );
 }
@@ -42,7 +48,7 @@ async function hydrateGuestRsvp(guestId: string) {
   const guest = await prisma.guest.findUnique({ where: { id: guestId } });
   if (!guest) return;
 
-  const groomPatch = groomDefaultRsvpPatch(guest.name);
+  const groomPatch = groomDefaultRsvpPatch(guest.name, guest.email);
   const groomUpdates =
     guest.rsvpStatus === "PENDING" && Object.keys(groomPatch).length > 0 ? groomPatch : {};
 
