@@ -9,4 +9,4 @@ export const GOLD_COAST_TRIP_PENTHOUSE_NOTE =
   "Penthouse guests: minivan transport between Brisbane, Byron Bay, the Gold Coast, Australia Zoo, and Spicers Clovelly is included. Couples select quantity 2 at Stripe checkout.";
 
 export const GOLD_COAST_TRIP_ALACARTE_NOTE =
-  "Not staying in the penthouse? Pick and choose individual activities below — each venue has a Book Yourself link.";
+  "Not staying in the penthouse? Pick individual activities below — Little Truffle and Dracula's can be paid via Stripe; other venues have Book Yourself links.";

@@ -3,6 +3,10 @@ import type { ScheduleBooking } from "@/types/wedding";
 import { LITTLE_TRUFFLE_SAMPLE_MENU } from "@/lib/little-truffle-menu";
 import type { SampleMenu } from "@/lib/little-truffle-menu";
 import { getGoldCoastVenueImage, type GoldCoastVenueImageId } from "@/lib/gold-coast-images";
+import {
+  getGoldCoastStripeUrl,
+  type GoldCoastStripeProductId,
+} from "@/lib/gold-coast-stripe";
 
 export type AttractionLink = {
   label: string;
@@ -21,6 +25,7 @@ export type GoldCoastAttraction = {
   extraLinks?: AttractionLink[];
   calendarEventId?: string;
   sampleMenu?: SampleMenu;
+  stripeProductId?: GoldCoastStripeProductId;
 };
 
 export const AUSTRALIA_ZOO_ENCOUNTERS_URL =
@@ -95,12 +100,12 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
       "Smart casual dress — you've earned something fabulous after Movie World.",
     ],
     sampleMenu: LITTLE_TRUFFLE_SAMPLE_MENU,
+    stripeProductId: "little-truffle",
     booking: {
       sub: "4-Course Dinner",
-      price: "From $89",
-      btn: "Book Yourself",
-      ext: true,
-      url: "https://www.littletruffle.com.au/",
+      price: "$89.00",
+      btn: "Pay with Stripe",
+      ext: false,
     },
   },
   dreamworld: {
@@ -138,12 +143,12 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
       "A-Reserve VIP gets you closer to the action — dress to impress (within reason for splashes of fake blood).",
     ],
     tip: "Leave Dreamworld on time — you want time to freshen up before this one.",
+    stripeProductId: "draculas",
     booking: {
       sub: "A-Reserve VIP",
-      price: "$149 - $155",
-      btn: "Book Yourself",
-      ext: true,
-      url: "https://www.draculas.com.au/",
+      price: "$149.00",
+      btn: "Pay with Stripe",
+      ext: false,
     },
   },
   "australia-zoo": {
@@ -177,6 +182,19 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
   },
 };
 
+function resolveStripeBooking(attraction: GoldCoastAttraction): ScheduleBooking | undefined {
+  if (!attraction.booking) return undefined;
+
+  if (attraction.stripeProductId) {
+    const url = getGoldCoastStripeUrl(attraction.stripeProductId);
+    if (url) {
+      return { ...attraction.booking, ext: false, url, btn: "Pay with Stripe" };
+    }
+  }
+
+  return attraction.booking;
+}
+
 export function attractionToScheduleProps(attraction: GoldCoastAttraction): ScheduleNodeProps {
   return {
     time: attraction.time,
@@ -185,7 +203,7 @@ export function attractionToScheduleProps(attraction: GoldCoastAttraction): Sche
     desc: attraction.intro,
     details: attraction.details,
     tip: attraction.tip,
-    booking: attraction.booking,
+    booking: resolveStripeBooking(attraction),
     extraLinks: attraction.extraLinks,
     calendarEventId: attraction.calendarEventId,
     sampleMenu: attraction.sampleMenu,

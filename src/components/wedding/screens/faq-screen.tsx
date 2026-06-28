@@ -1,8 +1,10 @@
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
+import { StripeCheckoutHint } from "@/components/wedding/shared/stripe-checkout-hint";
 import { ContentAccordion } from "@/components/wedding/shared/content-accordion";
 import { getWishingWellStripeUrl, WISHING_WELL_IMAGE } from "@/lib/wishing-well";
+import { STRIPE_CHECKOUT_FOOTER } from "@/lib/stripe-checkout-hints";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 
@@ -80,9 +82,8 @@ export function WishingWellScreen({ setActiveTab }: { setActiveTab: (tab: AppTab
         >
           Contribute via Stripe <ChevronRight size={14} />
         </a>
-        <p className="mt-3 text-center text-[10px] text-gray-400">
-          Secure checkout · card, Apple Pay &amp; Google Pay
-        </p>
+        <StripeCheckoutHint className="mt-3 text-center" />
+        <p className="mt-2 text-center text-[10px] text-gray-400">{STRIPE_CHECKOUT_FOOTER}</p>
       </div>
     </div>
   );

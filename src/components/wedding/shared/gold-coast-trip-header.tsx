@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronRight } from "lucide-react";
+import { StripeCheckoutHint } from "@/components/wedding/shared/stripe-checkout-hint";
 import {
   GOLD_COAST_TRIP_ALACARTE_NOTE,
   GOLD_COAST_TRIP_DATES,
@@ -8,6 +9,7 @@ import {
   GOLD_COAST_TRIP_PENTHOUSE_NOTE,
 } from "@/lib/gold-coast-trip";
 import { getGoldCoastStripeUrl } from "@/lib/gold-coast-stripe";
+import { STRIPE_CHECKOUT_FOOTER } from "@/lib/stripe-checkout-hints";
 import { theme } from "@/lib/theme";
 
 type GoldCoastTripHeaderProps = {
@@ -41,12 +43,12 @@ export function GoldCoastTripHeader({ isPenthouse }: GoldCoastTripHeaderProps) {
             className="flex flex-col rounded-2xl px-4 py-3.5 shadow-md transition-transform active:scale-[0.98]"
             style={{ backgroundColor: theme.gold, color: theme.btnDark }}
           >
-            <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Recommended · all in</span>
+            <span className="text-[9px] font-bold uppercase tracking-widest opacity-80">Add-on · we&apos;ll book everything</span>
             <span className="mt-1 flex items-center justify-between gap-2 font-serif text-base">
               Ultimate Experience
               <ChevronRight size={16} className="shrink-0" />
             </span>
-            <span className="mt-1 text-[10px] opacity-80">Penthouse, parks, dinners &amp; zoo</span>
+            <span className="mt-1 text-[10px] opacity-80">All tickets &amp; experiences · 2 dinners included</span>
           </a>
         ) : (
           <div
@@ -83,6 +85,13 @@ export function GoldCoastTripHeader({ isPenthouse }: GoldCoastTripHeaderProps) {
           </div>
         )}
       </div>
+
+      {(gcueUrl || penthouseUrl) && (
+        <div className="mt-4 space-y-2 border-t pt-4" style={{ borderColor: theme.border }}>
+          <StripeCheckoutHint />
+          <p className="text-[10px] text-gray-400">{STRIPE_CHECKOUT_FOOTER}</p>
+        </div>
+      )}
     </div>
   );
 }

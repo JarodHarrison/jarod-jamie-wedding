@@ -93,7 +93,7 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
       <GoldCoastTripHeader isPenthouse={isPenthouse} />
 
       <div className="space-y-4">
-        <GoldCoastOfferCard productId="gcue" badge="Recommended · all in" />
+        <GoldCoastOfferCard productId="gcue" badge="Add-on · we'll book everything" />
         <GoldCoastOfferCard productId="penthouse" badge="À la carte · stay only" />
       </div>
 

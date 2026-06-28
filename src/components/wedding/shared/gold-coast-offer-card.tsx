@@ -4,11 +4,13 @@ import { useState } from "react";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
+import { StripeCheckoutHint } from "@/components/wedding/shared/stripe-checkout-hint";
 import {
   getGoldCoastProduct,
   getGoldCoastStripeUrl,
   type GoldCoastStripeProductId,
 } from "@/lib/gold-coast-stripe";
+import { STRIPE_CHECKOUT_FOOTER } from "@/lib/stripe-checkout-hints";
 import { theme } from "@/lib/theme";
 
 type GoldCoastOfferCardProps = {
@@ -70,7 +72,8 @@ export function GoldCoastOfferCard({ productId, badge }: GoldCoastOfferCardProps
             Payment link coming soon
           </p>
         )}
-          <p className="mt-2 text-[10px] text-gray-400">Secure checkout · card, Apple Pay &amp; Google Pay</p>
+        {stripeUrl && <StripeCheckoutHint className="mt-3 px-1" />}
+        <p className="mt-2 text-[10px] text-gray-400">{STRIPE_CHECKOUT_FOOTER}</p>
         </div>
       </div>
 

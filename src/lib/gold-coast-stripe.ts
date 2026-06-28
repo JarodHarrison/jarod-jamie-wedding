@@ -25,11 +25,12 @@ export const GOLD_COAST_STRIPE_PRODUCTS: Record<GoldCoastStripeProductId, GoldCo
   gcue: {
     id: "gcue",
     title: "Ultimate Gold Coast Experience",
-    priceLabel: "All tickets included",
+    priceLabel: "Add-on · tickets & 2 dinners included",
     image: "/gold-coast/ultimate-gold-coast-experience.png",
     envKey: "NEXT_PUBLIC_STRIPE_GCUE_PAYMENT_LINK",
-    defaultUrl: "https://buy.stripe.com/14AdRa2sk4S92Iv3n35AQ01",
-    quantityHint: "One checkout per guest — couples select quantity 2.",
+    defaultUrl: "https://buy.stripe.com/14AdRa8QIact2Iv7Dj5AQ08",
+    quantityHint:
+      "We book all tickets and experiences for you — Little Truffle and Dracula's dinners included. Couples select quantity 2.",
   },
   penthouse: {
     id: "penthouse",

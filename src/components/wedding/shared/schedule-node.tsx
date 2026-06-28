@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Clock, ExternalLink, MapPin } from "lucide-r
 import { AddToCalendarButton } from "@/components/wedding/shared/add-to-calendar-button";
 import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
 import { SampleMenuPanel } from "@/components/wedding/shared/sample-menu-panel";
+import { StripeCheckoutHint } from "@/components/wedding/shared/stripe-checkout-hint";
 import { theme } from "@/lib/theme";
 import type { SampleMenu } from "@/lib/little-truffle-menu";
 import type { ScheduleBooking } from "@/types/wedding";
@@ -167,15 +168,20 @@ export function ScheduleNode({
                     {booking.btn} <ExternalLink size={12} />
                   </a>
                 ) : booking.url ? (
-                  <a
-                    href={booking.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-sm transition-transform active:scale-95"
-                    style={{ backgroundColor: theme.btnDark, color: theme.gold }}
-                  >
-                    {booking.btn} <ChevronRight size={12} />
-                  </a>
+                  <>
+                    <a
+                      href={booking.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-sm transition-transform active:scale-95"
+                      style={{ backgroundColor: theme.btnDark, color: theme.gold }}
+                    >
+                      {booking.btn} <ChevronRight size={12} />
+                    </a>
+                    {booking.btn === "Pay with Stripe" && (
+                      <StripeCheckoutHint className="mt-2" />
+                    )}
+                  </>
                 ) : (
                   <button
                     type="button"
