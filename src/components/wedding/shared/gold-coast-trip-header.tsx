@@ -3,7 +3,6 @@
 import { ChevronRight } from "lucide-react";
 import { StripeCheckoutHint } from "@/components/wedding/shared/stripe-checkout-hint";
 import {
-  GOLD_COAST_TRIP_ALACARTE_NOTE,
   GOLD_COAST_TRIP_DATES,
   GOLD_COAST_TRIP_INTRO,
   GOLD_COAST_TRIP_PENTHOUSE_NOTE,
@@ -12,11 +11,7 @@ import { getGoldCoastStripeUrl } from "@/lib/gold-coast-stripe";
 import { STRIPE_CHECKOUT_FOOTER } from "@/lib/stripe-checkout-hints";
 import { theme } from "@/lib/theme";
 
-type GoldCoastTripHeaderProps = {
-  isPenthouse: boolean;
-};
-
-export function GoldCoastTripHeader({ isPenthouse }: GoldCoastTripHeaderProps) {
+export function GoldCoastTripHeader() {
   const gcueUrl = getGoldCoastStripeUrl("gcue");
   const penthouseUrl = getGoldCoastStripeUrl("penthouse");
 
@@ -30,9 +25,7 @@ export function GoldCoastTripHeader({ isPenthouse }: GoldCoastTripHeaderProps) {
       </p>
       <h3 className="mt-1 font-serif text-xl text-[#2a2723]">Pre-Wedding Gold Coast Trip</h3>
       <p className="mt-3 text-xs leading-relaxed text-gray-600">{GOLD_COAST_TRIP_INTRO}</p>
-      <p className="mt-3 text-xs leading-relaxed text-gray-500">
-        {isPenthouse ? GOLD_COAST_TRIP_PENTHOUSE_NOTE : GOLD_COAST_TRIP_ALACARTE_NOTE}
-      </p>
+      <p className="mt-3 text-xs leading-relaxed text-gray-500">{GOLD_COAST_TRIP_PENTHOUSE_NOTE}</p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {gcueUrl ? (

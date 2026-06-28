@@ -142,7 +142,7 @@ Little Truffle and Dracula's also have Pay with Stripe on the itinerary; other a
 - 14:30 Depart zoo
 - 15:00 Arrive Spicers Clovelly Estate, Montville
 
-Non-penthouse guests may join some Gold Coast activities but book themselves.
+Gold Coast trip details are for Penthouse guests only — the itinerary tab is hidden for everyone else.
 `.trim();
 
 const WEDDING_LOCAL_INTRO = `

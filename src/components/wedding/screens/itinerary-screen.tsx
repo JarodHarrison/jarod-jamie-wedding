@@ -84,10 +84,10 @@ function WeddingSchedule({
   );
 }
 
-function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
+function GoldCoastSchedule() {
   return (
     <div className="animate-fade-in space-y-8 pb-6">
-      <GoldCoastTripHeader isPenthouse={isPenthouse} />
+      <GoldCoastTripHeader />
 
       <div className="space-y-4">
         <GoldCoastOfferCard productId="gcue" badge="Add-on · we'll book everything" />
@@ -96,70 +96,52 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
 
       <div className="relative space-y-6 before:absolute before:inset-0 before:ml-6 before:h-full before:w-0.5 before:-translate-x-px before:bg-gradient-to-b before:from-[#e2d5c4]/0 before:via-[#e2d5c4] before:to-[#e2d5c4]/0">
         <h3 className="pl-10 font-serif text-xl text-[#c3a379]">Tue 22.09 · Byron Bay & Skydeck</h3>
-        {isPenthouse && (
-          <ScheduleNode
-            time="09:00 AM"
-            title="Depart Brisbane"
-            desc="Minivan pick-up from Pullman Brisbane Airport — have luggage ready for the drive south."
-            loc="Pullman Brisbane Airport (BNE)"
-            details={[
-              "We meet at the Pullman Brisbane Airport hotel before heading down the coast.",
-              "The minivan covers Brisbane → Byron Bay → Gold Coast penthouse check-in.",
-            ]}
-          />
-        )}
+        <ScheduleNode
+          time="09:00 AM"
+          title="Depart Brisbane"
+          desc="Minivan pick-up from Pullman Brisbane Airport — have luggage ready for the drive south."
+          loc="Pullman Brisbane Airport (BNE)"
+          details={[
+            "We meet at the Pullman Brisbane Airport hotel before heading down the coast.",
+            "The minivan covers Brisbane → Byron Bay → Gold Coast penthouse check-in.",
+          ]}
+        />
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions["byron-lunch"])} />
-        {isPenthouse && (
-          <>
-            <ScheduleNode time="01:00 PM" title="Depart Byron Bay" desc="Hop back in the minivan and head north to the Gold Coast." />
-            <ScheduleNode
-              time="02:15 PM"
-              title="Penthouse Check-in"
-              desc="Arrive on the Gold Coast and settle into our three-storey Surfers Paradise penthouse."
-              loc="Surfers Paradise"
-              details={[
-                "Three nights — Tue 22, Wed 23 & Thu 24 Sep.",
-                "Ocean views, room to spread out, and the perfect base for theme park days and nights out.",
-              ]}
-            />
-          </>
-        )}
+        <ScheduleNode time="01:00 PM" title="Depart Byron Bay" desc="Hop back in the minivan and head north to the Gold Coast." />
+        <ScheduleNode
+          time="02:15 PM"
+          title="Penthouse Check-in"
+          desc="Arrive on the Gold Coast and settle into our three-storey Surfers Paradise penthouse."
+          loc="Surfers Paradise"
+          details={[
+            "Three nights — Tue 22, Wed 23 & Thu 24 Sep.",
+            "Ocean views, room to spread out, and the perfect base for theme park days and nights out.",
+          ]}
+        />
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions.skydeck)} />
 
         <h3 className="pt-4 pl-10 font-serif text-xl text-[#c3a379]">Wed 23.09 · Movie World & Fine Dining</h3>
-        {isPenthouse && (
-          <ScheduleNode time="09:15 AM" title="Depart the Hotel" desc="Minivan pick-up from the penthouse." loc="Surfers Paradise" />
-        )}
+        <ScheduleNode time="09:15 AM" title="Depart the Hotel" desc="Minivan pick-up from the penthouse." loc="Surfers Paradise" />
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions["movie-world"])} />
-        {isPenthouse && (
-          <>
-            <ScheduleNode time="05:00 PM" title="Depart Movie World" desc="Leave the park at closing time." />
-            <ScheduleNode
-              time="05:45 PM"
-              title="Hotel Refresh"
-              desc="Freshen up at the penthouse before a beautifully indulgent evening at Little Truffle."
-              loc="Surfers Paradise"
-            />
-          </>
-        )}
+        <ScheduleNode time="05:00 PM" title="Depart Movie World" desc="Leave the park at closing time." />
+        <ScheduleNode
+          time="05:45 PM"
+          title="Hotel Refresh"
+          desc="Freshen up at the penthouse before a beautifully indulgent evening at Little Truffle."
+          loc="Surfers Paradise"
+        />
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions["little-truffle"])} />
 
         <h3 className="pt-4 pl-10 font-serif text-xl text-[#c3a379]">Thu 24.09 · Dreamworld & Dracula&apos;s</h3>
-        {isPenthouse && (
-          <ScheduleNode time="09:15 AM" title="Depart the Hotel" desc="Minivan pick-up from the penthouse." loc="Surfers Paradise" />
-        )}
+        <ScheduleNode time="09:15 AM" title="Depart the Hotel" desc="Minivan pick-up from the penthouse." loc="Surfers Paradise" />
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions.dreamworld)} />
-        {isPenthouse && (
-          <>
-            <ScheduleNode time="05:00 PM" title="Depart Dreamworld" desc="Leave the park right at closing time." />
-            <ScheduleNode
-              time="05:45 PM"
-              title="Hotel Refresh"
-              desc="Freshen up at the hotel before the evening's entertainment."
-              loc="Surfers Paradise"
-            />
-          </>
-        )}
+        <ScheduleNode time="05:00 PM" title="Depart Dreamworld" desc="Leave the park right at closing time." />
+        <ScheduleNode
+          time="05:45 PM"
+          title="Hotel Refresh"
+          desc="Freshen up at the hotel before the evening's entertainment."
+          loc="Surfers Paradise"
+        />
         <ScheduleNode
           time="06:15 PM"
           title="Uber to Dracula's"
@@ -173,48 +155,47 @@ function GoldCoastSchedule({ isPenthouse }: { isPenthouse: boolean }) {
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions.draculas)} />
 
         <h3 className="pt-4 pl-10 font-serif text-xl text-[#c3a379]">Fri 25.09 · Australia Zoo & The Hinterland</h3>
-        {isPenthouse && (
-          <ScheduleNode
-            time="07:30 AM"
-            title="Depart the Gold Coast"
-            desc="Check out of the penthouse and head north towards the Sunshine Coast and Australia Zoo."
-            loc="Surfers Paradise"
-            details={[
-              "Allow about two hours to Beerwah with a coffee stop — traffic can vary.",
-              "After the zoo we continue up into the hinterland to Spicers Clovelly Estate.",
-            ]}
-          />
-        )}
+        <ScheduleNode
+          time="07:30 AM"
+          title="Depart the Gold Coast"
+          desc="Check out of the penthouse and head north towards the Sunshine Coast and Australia Zoo."
+          loc="Surfers Paradise"
+          details={[
+            "Allow about two hours to Beerwah with a coffee stop — traffic can vary.",
+            "After the zoo we continue up into the hinterland to Spicers Clovelly Estate.",
+          ]}
+        />
         <ScheduleNode {...attractionToScheduleProps(goldCoastAttractions["australia-zoo"])} />
-        {isPenthouse && (
-          <>
-            <ScheduleNode time="02:30 PM" title="Depart Australia Zoo" desc="Wrap up with the animals and head up into the mountains." />
-            <ScheduleNode
-              time="03:00 PM"
-              title="Arrive at Spicers Clovelly Estate"
-              desc="Time to unpack and relax before the wedding weekend kicks into gear!"
-              loc="Montville, QLD"
-            />
-          </>
-        )}
+        <ScheduleNode time="02:30 PM" title="Depart Australia Zoo" desc="Wrap up with the animals and head up into the mountains." />
+        <ScheduleNode
+          time="03:00 PM"
+          title="Arrive at Spicers Clovelly Estate"
+          desc="Time to unpack and relax before the wedding weekend kicks into gear!"
+          loc="Montville, QLD"
+        />
       </div>
-
     </div>
   );
 }
 
 export function ItineraryScreen({
-  isPenthouse,
+  canAccessGoldCoast,
   isOnSite,
   setActiveTab,
 }: {
-  isPenthouse: boolean;
+  canAccessGoldCoast: boolean;
   isOnSite: boolean;
   setActiveTab?: (tab: AppTab) => void;
 }) {
   const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
   const [view, setView] = useState<"wedding" | "goldcoast">("wedding");
   const topRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!canAccessGoldCoast && view === "goldcoast") {
+      setView("wedding");
+    }
+  }, [canAccessGoldCoast, view]);
 
   useEffect(() => {
     const main = topRef.current?.closest("main");
@@ -250,32 +231,34 @@ export function ItineraryScreen({
         <RainbowText as="h1" className="font-serif text-3xl text-[var(--wedding-text-dark)]">
           Schedule & Events
         </RainbowText>
-        <div className="mt-6 flex rounded-full bg-[#e2d5c4]/30 p-1 shadow-inner">
-          <button
-            type="button"
-            onClick={() => switchView("wedding")}
-            className={`flex-1 rounded-full py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all ${view === "wedding" ? "bg-white text-[#2a2723] shadow-md" : "text-gray-500"}`}
-          >
-            Wedding Wknd
-          </button>
-          <button
-            type="button"
-            onClick={() => switchView("goldcoast")}
-            className={`flex-1 rounded-full py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all ${view === "goldcoast" ? "bg-white text-[#2a2723] shadow-md" : "text-gray-500"}`}
-          >
-            Gold Coast Trip
-          </button>
-        </div>
+        {canAccessGoldCoast ? (
+          <div className="mt-6 flex rounded-full bg-[#e2d5c4]/30 p-1 shadow-inner">
+            <button
+              type="button"
+              onClick={() => switchView("wedding")}
+              className={`flex-1 rounded-full py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all ${view === "wedding" ? "bg-white text-[#2a2723] shadow-md" : "text-gray-500"}`}
+            >
+              Wedding Wknd
+            </button>
+            <button
+              type="button"
+              onClick={() => switchView("goldcoast")}
+              className={`flex-1 rounded-full py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all ${view === "goldcoast" ? "bg-white text-[#2a2723] shadow-md" : "text-gray-500"}`}
+            >
+              Gold Coast Trip
+            </button>
+          </div>
+        ) : null}
       </div>
       <div className="mt-4 px-6">
-        {view === "wedding" ? (
+        {view === "goldcoast" && canAccessGoldCoast ? (
+          <GoldCoastSchedule />
+        ) : (
           <WeddingSchedule
             isOnSite={isOnSite}
             showVenueMapLink={showVenueMap}
             onOpenVenueMap={setActiveTab ? () => setActiveTab("venue-map") : undefined}
           />
-        ) : (
-          <GoldCoastSchedule isPenthouse={isPenthouse} />
         )}
       </div>
     </div>

@@ -61,6 +61,7 @@ export function wantsInstallGuideHelp(messages: ChatMessage[]): boolean {
 }
 
 export function wantsPenthouseKnowledge(guestTier?: string, messages?: ChatMessage[]): boolean {
+  if (guestTier !== "PENTHOUSE") return false;
   if (!messages?.length) return false;
   const text = recentUserText(messages);
   if (PENTHOUSE_PATTERNS.some((pattern) => pattern.test(text))) return true;

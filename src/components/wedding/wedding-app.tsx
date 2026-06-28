@@ -33,6 +33,7 @@ import { resetAnnitaFabHiddenForNewSession } from "@/lib/annita-fab-prefs";
 import { theme } from "@/lib/theme";
 import type { AdminUser, AppTab, GuestTier, MainTab, WeddingUser } from "@/types/wedding";
 import { hasOnSiteAppAccess } from "@/lib/on-site-access";
+import { hasGoldCoastAccess } from "@/lib/gold-coast-trip";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
 import type { WeddingFeature } from "@/lib/wedding-event";
 
@@ -218,7 +219,7 @@ export function WeddingApp() {
   }
 
   const displayName = user?.name ?? admin!.name;
-  const isPenthouse = user?.tier === "PENTHOUSE" || canAccessAdmin;
+  const canAccessGoldCoast = hasGoldCoastAccess(user?.tier, { canAccessAdmin });
   const isOnSite = hasOnSiteAccess || canAccessAdmin;
   const showAdminNav = canAccessAdmin;
   const navItems = [
@@ -251,7 +252,7 @@ export function WeddingApp() {
       case "itinerary":
         return (
           <ItineraryScreen
-            isPenthouse={isPenthouse}
+            canAccessGoldCoast={canAccessGoldCoast}
             isOnSite={isOnSite}
             setActiveTab={setActiveTab}
           />
