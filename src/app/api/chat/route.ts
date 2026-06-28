@@ -74,10 +74,17 @@ export async function POST(request: Request) {
     let guestId: string | undefined;
     let profile;
     let guestTier = session.type === "guest" ? session.tier : "ADMIN";
+    let hasGoldCoastTrip = session.type === "admin";
 
     if (session.type === "guest") {
       const fresh = await syncGuestSessionFromDb(session);
       if (fresh) guestTier = fresh.tier;
+
+      const trip = await prisma.goldCoastTrip.findUnique({
+        where: { guestId: session.id },
+        select: { id: true },
+      });
+      hasGoldCoastTrip = Boolean(trip);
 
       const guestContext = await loadGuestContext(session, messages);
       guestId = guestContext.guestId;
@@ -89,6 +96,7 @@ export async function POST(request: Request) {
         ? {
             guestName: session.name,
             guestTier,
+            hasGoldCoastTrip,
             guestId,
             profile,
           }

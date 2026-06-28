@@ -60,8 +60,14 @@ export function wantsInstallGuideHelp(messages: ChatMessage[]): boolean {
   return INSTALL_GUIDE_PATTERNS.some((pattern) => pattern.test(recentUserText(messages)));
 }
 
-export function wantsPenthouseKnowledge(guestTier?: string, messages?: ChatMessage[]): boolean {
-  if (guestTier !== "PENTHOUSE") return false;
+export function wantsPenthouseKnowledge(
+  guestTier?: string,
+  messages?: ChatMessage[],
+  options?: { hasGoldCoastTrip?: boolean },
+): boolean {
+  const canAccess =
+    guestTier === "PENTHOUSE" || Boolean(options?.hasGoldCoastTrip);
+  if (!canAccess) return false;
   if (!messages?.length) return false;
   const text = recentUserText(messages);
   if (PENTHOUSE_PATTERNS.some((pattern) => pattern.test(text))) return true;

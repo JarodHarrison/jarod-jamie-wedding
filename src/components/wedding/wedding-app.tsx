@@ -33,7 +33,7 @@ import { resetAnnitaFabHiddenForNewSession } from "@/lib/annita-fab-prefs";
 import { theme } from "@/lib/theme";
 import type { AdminUser, AppTab, GuestTier, MainTab, WeddingUser } from "@/types/wedding";
 import { hasOnSiteAppAccess } from "@/lib/on-site-access";
-import { hasGoldCoastAccess } from "@/lib/gold-coast-trip";
+import { hasGoldCoastAccess, isPenthouseItineraryGuest } from "@/lib/gold-coast-trip";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
 import type { WeddingFeature } from "@/lib/wedding-event";
 
@@ -68,6 +68,7 @@ export function WeddingApp() {
   const [canViewVendors, setCanViewVendors] = useState(false);
   const [canVerifyBingo, setCanVerifyBingo] = useState(false);
   const [hasOnSiteAccess, setHasOnSiteAccess] = useState(false);
+  const [hasGoldCoastTrip, setHasGoldCoastTrip] = useState(false);
   const [loading, setLoading] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
 
@@ -96,6 +97,7 @@ export function WeddingApp() {
       setCanViewVendors(Boolean(data.canViewVendors));
       setCanVerifyBingo(Boolean(data.canVerifyBingo));
       setHasOnSiteAccess(Boolean(data.hasOnSiteAccess));
+      setHasGoldCoastTrip(Boolean(data.hasGoldCoastTrip));
     } catch {
       setUser(null);
       setAdmin(null);
@@ -103,6 +105,7 @@ export function WeddingApp() {
       setCanViewVendors(false);
       setCanVerifyBingo(false);
       setHasOnSiteAccess(false);
+      setHasGoldCoastTrip(false);
     }
   }, []);
 
@@ -185,6 +188,7 @@ export function WeddingApp() {
     setCanAccessAdmin(false);
     setCanViewVendors(false);
     setCanVerifyBingo(false);
+    setHasGoldCoastTrip(false);
     setActiveTab("home");
   }, []);
 
@@ -219,7 +223,8 @@ export function WeddingApp() {
   }
 
   const displayName = user?.name ?? admin!.name;
-  const canAccessGoldCoast = hasGoldCoastAccess(user?.tier, { canAccessAdmin });
+  const canAccessGoldCoast = hasGoldCoastAccess(user?.tier, { canAccessAdmin, hasGoldCoastTrip });
+  const isPenthouseGuest = isPenthouseItineraryGuest(user?.tier, { canAccessAdmin });
   const isOnSite = hasOnSiteAccess || canAccessAdmin;
   const showAdminNav = canAccessAdmin;
   const navItems = [
@@ -253,6 +258,7 @@ export function WeddingApp() {
         return (
           <ItineraryScreen
             canAccessGoldCoast={canAccessGoldCoast}
+            isPenthouseGuest={isPenthouseGuest}
             isOnSite={isOnSite}
             setActiveTab={setActiveTab}
           />

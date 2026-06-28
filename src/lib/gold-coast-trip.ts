@@ -4,6 +4,15 @@ import type { GuestTier } from "@/types/wedding";
 
 export function hasGoldCoastAccess(
   tier: GuestTier | undefined | null,
+  options?: { canAccessAdmin?: boolean; hasGoldCoastTrip?: boolean },
+): boolean {
+  if (options?.canAccessAdmin) return true;
+  if (options?.hasGoldCoastTrip) return true;
+  return tier === "PENTHOUSE";
+}
+
+export function isPenthouseItineraryGuest(
+  tier: GuestTier | undefined | null,
   options?: { canAccessAdmin?: boolean },
 ): boolean {
   if (options?.canAccessAdmin) return true;
@@ -17,3 +26,6 @@ export const GOLD_COAST_TRIP_INTRO =
 
 export const GOLD_COAST_TRIP_PENTHOUSE_NOTE =
   "Minivan transport between Brisbane, Byron Bay, the Gold Coast, Australia Zoo, and Spicers Clovelly is included. Couples select quantity 2 at Stripe checkout.";
+
+export const GOLD_COAST_TRIP_ULTIMATE_NOTE =
+  "Ultimate Experience guests: we'll book your tickets and included dinners — arrange your own accommodation and transport unless you're staying in the penthouse.";

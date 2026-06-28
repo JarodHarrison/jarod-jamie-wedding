@@ -85,6 +85,7 @@ type GeminiResponse = {
 export type ChatContext = {
   guestName?: string;
   guestTier?: string;
+  hasGoldCoastTrip?: boolean;
   guestId?: string;
   profile?: SerializedGuestProfile;
 };
@@ -271,7 +272,9 @@ function resolveChatConfig(messages: ChatMessage[], context: ChatContext): Resol
   const useWebSearch = wantsLocalDiscoverySearch(trimmedMessages);
   const includeLocalGuide = isLocalDiscoveryQuestion(trimmedMessages);
   const includeInstallGuide = wantsInstallGuideHelp(trimmedMessages);
-  const includePenthouse = wantsPenthouseKnowledge(context.guestTier, trimmedMessages);
+  const includePenthouse = wantsPenthouseKnowledge(context.guestTier, trimmedMessages, {
+    hasGoldCoastTrip: context.hasGoldCoastTrip,
+  });
   const includeTravel = wantsTravelKnowledge(trimmedMessages);
   const formToolsRequested = Boolean(
     context.guestId && context.profile && !useWebSearch && wantsFormTools(trimmedMessages),

@@ -42,7 +42,7 @@ export async function GET() {
 
     const guestFlags = await prisma.guest.findUnique({
       where: { id: fresh.id },
-      select: { isMc: true, assignedRoomName: true },
+      select: { isMc: true, assignedRoomName: true, goldCoastTrip: { select: { id: true } } },
     });
     const canAccessAdmin = await guestHasAdminAccess(fresh.email);
     const canVerifyBingo = await guestIsMcOrAdmin(fresh.email, guestFlags?.isMc ?? false);
@@ -61,6 +61,7 @@ export async function GET() {
       canAccessAdmin,
       canVerifyBingo,
       hasOnSiteAccess,
+      hasGoldCoastTrip: Boolean(guestFlags?.goldCoastTrip),
       canManageVendors: vendorAccess.canManageVendors,
       canViewVendors: vendorAccess.canViewVendors,
       partyRole: vendorAccess.partyRole,
@@ -68,6 +69,12 @@ export async function GET() {
   }
 
   const linkedGuest = await getLinkedGuestForAdmin(session.id);
+  const linkedGuestFlags = linkedGuest
+    ? await prisma.guest.findUnique({
+        where: { id: linkedGuest.id },
+        select: { goldCoastTrip: { select: { id: true } } },
+      })
+    : null;
 
   return NextResponse.json({
     user: linkedGuest ? toWeddingUser(linkedGuest) : null,
@@ -75,6 +82,7 @@ export async function GET() {
     canAccessAdmin: true,
     canVerifyBingo: true,
     hasOnSiteAccess: true,
+    hasGoldCoastTrip: Boolean(linkedGuestFlags?.goldCoastTrip),
     canManageVendors: vendorAccess.canManageVendors,
     canViewVendors: vendorAccess.canViewVendors,
     partyRole: null,

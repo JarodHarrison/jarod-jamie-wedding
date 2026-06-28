@@ -6,12 +6,13 @@ import {
   GOLD_COAST_TRIP_DATES,
   GOLD_COAST_TRIP_INTRO,
   GOLD_COAST_TRIP_PENTHOUSE_NOTE,
+  GOLD_COAST_TRIP_ULTIMATE_NOTE,
 } from "@/lib/gold-coast-trip";
 import { getGoldCoastStripeUrl } from "@/lib/gold-coast-stripe";
 import { STRIPE_CHECKOUT_FOOTER } from "@/lib/stripe-checkout-hints";
 import { theme } from "@/lib/theme";
 
-export function GoldCoastTripHeader() {
+export function GoldCoastTripHeader({ isPenthouseGuest }: { isPenthouseGuest: boolean }) {
   const gcueUrl = getGoldCoastStripeUrl("gcue");
   const penthouseUrl = getGoldCoastStripeUrl("penthouse");
 
@@ -25,7 +26,9 @@ export function GoldCoastTripHeader() {
       </p>
       <h3 className="mt-1 font-serif text-xl text-[#2a2723]">Pre-Wedding Gold Coast Trip</h3>
       <p className="mt-3 text-xs leading-relaxed text-gray-600">{GOLD_COAST_TRIP_INTRO}</p>
-      <p className="mt-3 text-xs leading-relaxed text-gray-500">{GOLD_COAST_TRIP_PENTHOUSE_NOTE}</p>
+      <p className="mt-3 text-xs leading-relaxed text-gray-500">
+        {isPenthouseGuest ? GOLD_COAST_TRIP_PENTHOUSE_NOTE : GOLD_COAST_TRIP_ULTIMATE_NOTE}
+      </p>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         {gcueUrl ? (
@@ -52,7 +55,7 @@ export function GoldCoastTripHeader() {
           </div>
         )}
 
-        {penthouseUrl ? (
+        {isPenthouseGuest && (penthouseUrl ? (
           <a
             href={penthouseUrl}
             target="_blank"
@@ -76,10 +79,10 @@ export function GoldCoastTripHeader() {
           >
             Accommodation only — link coming soon
           </div>
-        )}
+        ))}
       </div>
 
-      {(gcueUrl || penthouseUrl) && (
+      {(gcueUrl || (isPenthouseGuest && penthouseUrl)) && (
         <div className="mt-4 space-y-2 border-t pt-4" style={{ borderColor: theme.border }}>
           <StripeCheckoutHint />
           <p className="text-[10px] text-gray-400">{STRIPE_CHECKOUT_FOOTER}</p>
