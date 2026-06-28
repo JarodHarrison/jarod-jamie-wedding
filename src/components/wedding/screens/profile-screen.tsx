@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AccommodationForm } from "@/components/wedding/forms/accommodation-form";
 import { TransferShareForm } from "@/components/wedding/forms/transfer-share-form";
+import { GiftColourForm } from "@/components/wedding/forms/gift-colour-form";
 import { InterestForm } from "@/components/wedding/forms/interest-form";
 import { useAnnitaFabPrefs } from "@/components/wedding/hooks/use-annita-fab-prefs";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
@@ -119,6 +120,11 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
                   />
                 </div>
               ),
+            },
+            {
+              id: "gift-colours",
+              title: "Colour preferences",
+              content: <GiftColourForm />,
             },
             {
               id: "preferences",

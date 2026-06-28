@@ -55,6 +55,9 @@ export const guestProfileSelect = {
   glowUpInterest: true,
   onSiteServiceInterest: true,
   interestsSubmittedAt: true,
+  giftColourChoice1: true,
+  giftColourChoice2: true,
+  giftColoursSubmittedAt: true,
   profilePhotoMime: true,
   guestOfHost: true,
   guestRelationship: true,
@@ -92,6 +95,7 @@ export function serializeGuestProfile(guest: GuestProfileRecord) {
     roomAllocationImportedAt: guest.roomAllocationImportedAt?.toISOString() ?? null,
     transferSubmittedAt: guest.transferSubmittedAt?.toISOString() ?? null,
     interestsSubmittedAt: guest.interestsSubmittedAt?.toISOString() ?? null,
+    giftColoursSubmittedAt: guest.giftColoursSubmittedAt?.toISOString() ?? null,
     profileUpdatedAt: guest.profileUpdatedAt?.toISOString() ?? null,
     sayiImportedAt: guest.sayiImportedAt?.toISOString() ?? null,
     sayiCustomData:
@@ -140,6 +144,7 @@ export type GuestProfileSection =
   | "accommodation"
   | "transfer"
   | "interests"
+  | "gift-colours"
   | "identity"
   | "companion";
 
@@ -149,6 +154,7 @@ export function isGuestProfileSection(value: string): value is GuestProfileSecti
     value === "accommodation" ||
     value === "transfer" ||
     value === "interests" ||
+    value === "gift-colours" ||
     value === "identity" ||
     value === "companion"
   );

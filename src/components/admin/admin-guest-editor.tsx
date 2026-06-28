@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommodation-property-picker";
 import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
-import { BED_PREFERENCE_OPTIONS } from "@/lib/bed-preference";
+import { GIFT_COLOUR_OPTIONS } from "@/lib/gift-colour-choices";
 import { theme } from "@/lib/theme";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import type { AdminGuest } from "@/types/wedding";
@@ -172,10 +172,16 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
     onSiteServiceInterest: guest.onSiteServiceInterest ?? "",
   });
 
+  const [giftColours, setGiftColours] = useState({
+    giftColourChoice1: guest.giftColourChoice1 ?? "",
+    giftColourChoice2: guest.giftColourChoice2 ?? "",
+  });
+
   const [rsvpState, setRsvpState] = useState<SectionState>(defaultSectionState);
   const [accommodationState, setAccommodationState] = useState<SectionState>(defaultSectionState);
   const [transferState, setTransferState] = useState<SectionState>(defaultSectionState);
   const [interestsState, setInterestsState] = useState<SectionState>(defaultSectionState);
+  const [giftColoursState, setGiftColoursState] = useState<SectionState>(defaultSectionState);
 
   useEffect(() => {
     setPassword("");
@@ -212,6 +218,10 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
     setInterests({
       glowUpInterest: guest.glowUpInterest ?? "",
       onSiteServiceInterest: guest.onSiteServiceInterest ?? "",
+    });
+    setGiftColours({
+      giftColourChoice1: guest.giftColourChoice1 ?? "",
+      giftColourChoice2: guest.giftColourChoice2 ?? "",
     });
   }, [guest]);
 
@@ -768,6 +778,46 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
           </div>
           {interestsState.error && <p className="mt-2 text-[10px] text-red-500">{interestsState.error}</p>}
           <SaveButton saving={interestsState.saving} saved={interestsState.saved} label="Save Interests" />
+        </form>
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Gift colours" submittedAt={guest.giftColoursSubmittedAt}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            void saveSection("gift-colours", giftColours, setGiftColoursState);
+          }}
+        >
+          <div className="space-y-2">
+            <select
+              value={giftColours.giftColourChoice1}
+              onChange={(e) => setGiftColours({ ...giftColours, giftColourChoice1: e.target.value })}
+              className={inputClass}
+              style={fieldStyle}
+            >
+              <option value="">Colour choice 1</option>
+              {GIFT_COLOUR_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id} disabled={option.id === giftColours.giftColourChoice2}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={giftColours.giftColourChoice2}
+              onChange={(e) => setGiftColours({ ...giftColours, giftColourChoice2: e.target.value })}
+              className={inputClass}
+              style={fieldStyle}
+            >
+              <option value="">Colour choice 2</option>
+              {GIFT_COLOUR_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id} disabled={option.id === giftColours.giftColourChoice1}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          {giftColoursState.error && <p className="mt-2 text-[10px] text-red-500">{giftColoursState.error}</p>}
+          <SaveButton saving={giftColoursState.saving} saved={giftColoursState.saved} label="Save Colours" />
         </form>
       </CollapsibleSection>
     </div>

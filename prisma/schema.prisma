@@ -93,6 +93,10 @@ model Guest {
   onSiteServiceInterest String?
   interestsSubmittedAt  DateTime? @db.Timestamptz
 
+  giftColourChoice1     String?
+  giftColourChoice2     String?
+  giftColoursSubmittedAt DateTime? @db.Timestamptz
+
   profilePhotoMime      String?
   profilePhotoData      Bytes?
   guestOfHost           String?

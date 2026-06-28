@@ -93,6 +93,9 @@ export type AdminGuest = {
   glowUpInterest: string | null;
   onSiteServiceInterest: string | null;
   interestsSubmittedAt: string | null;
+  giftColourChoice1: string | null;
+  giftColourChoice2: string | null;
+  giftColoursSubmittedAt: string | null;
   profilePhotoMime: string | null;
   companionPhotoMime: string | null;
   guestOfHost: string | null;
