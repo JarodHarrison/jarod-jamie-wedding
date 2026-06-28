@@ -35,6 +35,7 @@ export const partyJrodFamily: PartyRosterMember[] = [
   { name: "Martin Pobar", role: "Guncle" },
   { name: "Darren Rees", role: "Guncle" },
   { name: "Sam Pobar", role: "Cousin", matchNames: ["Samuel Pobar"] },
+  { name: "Lauren Roberts", role: "Cousin", matchEmails: ["laurenr@iinet.net.au"] },
 ];
 
 export const partyJamoFamily: PartyRosterMember[] = [
