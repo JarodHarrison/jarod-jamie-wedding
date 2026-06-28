@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, MessageCircle, Phone } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { normalizeGuestName } from "@/lib/guest-name";
@@ -12,7 +12,6 @@ const PERSON_PLACEHOLDER = "/party/person-placeholder.svg";
 type PartyMember = {
   name: string;
   role: string;
-  phone?: string;
   imageSrc?: string;
 };
 
@@ -27,8 +26,8 @@ const grooms: PartyMember[] = [
 ];
 
 const weddingParty: PartyMember[] = [
-  { name: "Kirra ten-Hove Smith", role: "J-rod's Best Bitch", phone: "+61400123456" },
-  { name: "Samantha Cooper", role: "Jamo's Best Bitch", phone: "+61400987654" },
+  { name: "Kirra ten-Hove Smith", role: "J-rod's Best Bitch" },
+  { name: "Samantha Cooper", role: "Jamo's Best Bitch" },
 ];
 
 const jrodFamily: PartyMember[] = [
@@ -244,38 +243,16 @@ export function PartyScreen() {
             {weddingParty.map((person) => (
               <div
                 key={person.name}
-                className="flex items-center justify-between gap-3 rounded-2xl border bg-white/80 p-4 shadow-sm"
+                className="flex items-center gap-3 rounded-2xl border bg-white/80 p-4 shadow-sm"
                 style={{ borderColor: theme.border }}
               >
-                <div className="flex min-w-0 items-center gap-3">
-                  <PersonAvatar name={person.name} imageSrc={person.imageSrc} />
-                  <div>
-                    <p className="font-serif text-lg text-[#2a2723]">{person.name}</p>
-                    <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                      {person.role}
-                    </p>
-                  </div>
+                <PersonAvatar name={person.name} imageSrc={person.imageSrc} />
+                <div>
+                  <p className="font-serif text-lg text-[#2a2723]">{person.name}</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                    {person.role}
+                  </p>
                 </div>
-                {person.phone && (
-                  <div className="flex shrink-0 gap-2">
-                    <a
-                      href={`tel:${person.phone}`}
-                      className="rounded-full border bg-gray-50 p-2.5 shadow-sm transition-transform active:scale-90"
-                      style={{ borderColor: theme.border, color: theme.gold }}
-                      aria-label={`Call ${person.name}`}
-                    >
-                      <Phone size={16} />
-                    </a>
-                    <a
-                      href={`sms:${person.phone}`}
-                      className="rounded-full border bg-gray-50 p-2.5 shadow-sm transition-transform active:scale-90"
-                      style={{ borderColor: theme.border, color: theme.gold }}
-                      aria-label={`Message ${person.name}`}
-                    >
-                      <MessageCircle size={16} />
-                    </a>
-                  </div>
-                )}
               </div>
             ))}
           </div>
