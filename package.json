@@ -5,14 +5,14 @@
   "scripts": {
     "dev": "node scripts/prisma-generate.mjs && next dev --hostname 0.0.0.0 -p 3001",
     "build": "node scripts/prisma-generate.mjs && next build",
-    "vercel-build": "node scripts/prisma-generate.mjs && prisma db push && next build",
+    "vercel-build": "node scripts/prisma-generate.mjs && prisma db push --accept-data-loss && next build",
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "eslint",
     "db:generate": "node scripts/prisma-generate.mjs",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:deploy": "prisma db push",
+    "db:deploy": "prisma db push --accept-data-loss",
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio"
   },
