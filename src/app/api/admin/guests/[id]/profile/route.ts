@@ -7,6 +7,8 @@ import {
 } from "@/lib/guest-profile";
 import { buildGuestProfileSectionUpdate } from "@/lib/guest-profile-update";
 import { applyPlusOneLink } from "@/lib/plus-one-link";
+import { syncTransferMatchesForGuest } from "@/lib/transfer-match";
+import { checkTransferCharterAlerts } from "@/lib/transfer-charter-alert";
 import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { prisma } from "@/lib/prisma";
 
@@ -62,6 +64,14 @@ export async function PATCH(request: Request, context: RouteContext) {
       data: result.data,
       select: guestProfileSelect,
     });
+
+    if (section === "transfer") {
+      void syncTransferMatchesForGuest(id)
+        .then(() => checkTransferCharterAlerts())
+        .catch((error) => {
+          console.error("[admin/guest transfer match]", error);
+        });
+    }
 
     return NextResponse.json({ profile: serializeGuestProfile(guest) });
   } catch (error) {

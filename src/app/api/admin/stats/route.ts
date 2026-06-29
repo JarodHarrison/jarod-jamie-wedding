@@ -17,6 +17,9 @@ export async function GET() {
       storiesReported,
       bingoPlaying,
       bingoCompleted,
+      returnShuttleMcy,
+      returnShuttleBne,
+      buddyMatches,
     ] = await Promise.all([
       prisma.guest.count(),
       prisma.guest.count({ where: { rsvpStatus: "ACCEPTED" } }),
@@ -29,12 +32,32 @@ export async function GET() {
         where: { NOT: { checkedItems: { equals: [] } } },
       }),
       prisma.photoboothBingoProgress.count({ where: { completedAt: { not: null } } }),
+      prisma.guest.count({
+        where: {
+          returnShuttleInterest: true,
+          returnShuttleAirport: "MCY",
+          rsvpStatus: "ACCEPTED",
+        },
+      }),
+      prisma.guest.count({
+        where: {
+          returnShuttleInterest: true,
+          returnShuttleAirport: "BNE",
+          rsvpStatus: "ACCEPTED",
+        },
+      }),
+      prisma.transferMatch.count({ where: { status: { not: "DECLINED" } } }),
     ]);
 
     return NextResponse.json({
       guests: { total: totalGuests, rsvpAccepted, rsvpPending, profilePhotos },
       stories: { total: storiesTotal, hidden: storiesHidden, reported: storiesReported },
       bingo: { playing: bingoPlaying, completed: bingoCompleted },
+      transfers: {
+        returnShuttleMcy,
+        returnShuttleBne,
+        buddyMatches,
+      },
     });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {

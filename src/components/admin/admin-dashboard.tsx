@@ -13,6 +13,10 @@ import { AdminGuestStories } from "@/components/admin/admin-guest-stories";
 import { AdminKioskPanel } from "@/components/admin/admin-kiosk-panel";
 import { AdminVendors } from "@/components/admin/admin-vendors";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
+import {
+  AdminTransferOverviewModal,
+  type TransferOverviewModal,
+} from "@/components/admin/admin-transfer-overview-modal";
 import { theme } from "@/lib/theme";
 import type { AdminGuest } from "@/types/wedding";
 
@@ -28,6 +32,7 @@ type CommandStats = {
   guests: { total: number; rsvpAccepted: number; rsvpPending: number; profilePhotos: number };
   stories: { total: number; hidden: number; reported: number };
   bingo: { playing: number; completed: number };
+  transfers: { returnShuttleMcy: number; returnShuttleBne: number; buddyMatches: number };
 };
 
 export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDashboardProps) {
@@ -38,6 +43,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
   const [filter, setFilter] = useState<"all" | "pending-rsvp" | "submitted">("all");
   const [driverLink, setDriverLink] = useState<string | null>(null);
   const [commandStats, setCommandStats] = useState<CommandStats | null>(null);
+  const [transferModal, setTransferModal] = useState<TransferOverviewModal>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const onUnauthorizedRef = useRef(onUnauthorized);
   onUnauthorizedRef.current = onUnauthorized;
@@ -191,6 +197,41 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
             {commandStats && (
               <section className="mb-8 grid grid-cols-2 gap-2">
                 {[
+                  {
+                    label: "Return MCY",
+                    value: commandStats.transfers.returnShuttleMcy,
+                    onClick: () => setTransferModal({ kind: "return-shuttle", airport: "MCY" }),
+                  },
+                  {
+                    label: "Return BNE",
+                    value: commandStats.transfers.returnShuttleBne,
+                    onClick: () => setTransferModal({ kind: "return-shuttle", airport: "BNE" }),
+                  },
+                  {
+                    label: "Buddy matches",
+                    value: commandStats.transfers.buddyMatches,
+                    onClick: () => setTransferModal({ kind: "buddy-matches" }),
+                  },
+                ].map((stat) => (
+                  <button
+                    key={stat.label}
+                    type="button"
+                    onClick={stat.onClick}
+                    className="rounded-xl border bg-white p-3 text-center shadow-sm transition-colors hover:bg-[#faf8f4]"
+                    style={{ borderColor: theme.border }}
+                  >
+                    <p className="text-lg font-bold text-[#2a2723]">{stat.value}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
+                      {stat.label}
+                    </p>
+                  </button>
+                ))}
+              </section>
+            )}
+
+            {commandStats && (
+              <section className="mb-8 grid grid-cols-2 gap-2">
+                {[
                   { label: "Photos", value: commandStats.guests.profilePhotos },
                   { label: "Bingo playing", value: commandStats.bingo.playing },
                   { label: "Bingo done", value: commandStats.bingo.completed },
@@ -310,6 +351,8 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
         {view === "vendors" && <AdminVendors />}
       </div>
+
+      <AdminTransferOverviewModal modal={transferModal} onClose={() => setTransferModal(null)} />
     </div>
   );
 }

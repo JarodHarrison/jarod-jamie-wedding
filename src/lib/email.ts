@@ -18,12 +18,19 @@ const DEFAULT_SENDERS: Record<EmailSender, string> = {
   noreply: `${WEDDING_NAME} <noreply@${DOMAIN}>`,
 };
 
+type EmailAttachment = {
+  filename: string;
+  content: string;
+  contentType?: string;
+};
+
 type SendEmailOptions = {
   to: string | string[];
   subject: string;
   text: string;
   html?: string;
   from?: EmailSender;
+  attachments?: EmailAttachment[];
 };
 
 function getSmtpOptions(): SMTPTransport.Options | null {
@@ -92,6 +99,7 @@ export async function sendEmail({
   text,
   html,
   from = "notifications",
+  attachments = [],
 }: SendEmailOptions): Promise<boolean> {
   const recipients = Array.isArray(to) ? to : [to];
   const fromAddress = getSenderAddress(from);
@@ -103,6 +111,7 @@ export async function sendEmail({
       subject,
       text,
       html,
+      attachments,
     });
     if (ok) return true;
     console.warn("[email] Gmail API send failed, trying SMTP fallback if configured");
@@ -124,6 +133,11 @@ export async function sendEmail({
       subject,
       text,
       html: html ?? textToHtml(text),
+      attachments: attachments.map((attachment) => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        contentType: attachment.contentType ?? "application/octet-stream",
+      })),
     });
     return true;
   } catch (error) {

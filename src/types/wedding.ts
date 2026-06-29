@@ -80,9 +80,11 @@ export type AdminGuest = {
   roomAllocationImportedAt: string | null;
   bedPreference: string | null;
   wantsSharedTransfer: boolean | null;
+  shareTransferContactDetails: boolean | null;
   arrivalAirport: string | null;
   arrivalDate: string | null;
   arrivalTime: string | null;
+  arrivalMaxWait: string | null;
   departureAirport: string | null;
   departureDate: string | null;
   departureTime: string | null;
@@ -90,6 +92,9 @@ export type AdminGuest = {
   passengerCount: number | null;
   transferNotes: string | null;
   transferSubmittedAt: string | null;
+  returnShuttleInterest: boolean | null;
+  returnShuttleAirport: string | null;
+  returnShuttleRegisteredAt: string | null;
   glowUpInterest: string | null;
   onSiteServiceInterest: string | null;
   interestsSubmittedAt: string | null;

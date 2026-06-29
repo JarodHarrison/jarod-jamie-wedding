@@ -51,6 +51,16 @@ export const GUEST_FORM_TOOL = {
             type: "boolean",
             description: "Transfer: interested in sharing airport transport with other guests.",
           },
+          shareTransferContactDetails: {
+            type: "boolean",
+            description:
+              "Transfer: guest consents to sharing email/phone with a matched travel buddy when both agree.",
+          },
+          arrivalMaxWait: {
+            type: "string",
+            description:
+              "Transfer: max wait after landing for travel buddy matching (30, 60, 90, 120, 120_plus).",
+          },
           arrivalAirport: {
             type: "string",
             enum: ["MCY", "BNE", ""],

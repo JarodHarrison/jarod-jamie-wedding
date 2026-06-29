@@ -78,9 +78,11 @@ model Guest {
   bedPreference             String?
 
   wantsSharedTransfer Boolean?
+  shareTransferContactDetails Boolean?
   arrivalAirport      String?
   arrivalDate         String?
   arrivalTime         String?
+  arrivalMaxWait      String?
   departureAirport    String?
   departureDate       String?
   departureTime       String?
@@ -88,6 +90,10 @@ model Guest {
   passengerCount      Int?
   transferNotes       String?
   transferSubmittedAt DateTime? @db.Timestamptz
+
+  returnShuttleInterest   Boolean?
+  returnShuttleAirport    String?
+  returnShuttleRegisteredAt DateTime? @db.Timestamptz
 
   glowUpInterest        String?
   onSiteServiceInterest String?
@@ -121,6 +127,45 @@ model Guest {
   sharedPhotos GuestSharedPhoto[]
   linkedLogins GuestLinkedLogin[]
   linkedAdmin  Admin?
+  transferMatchesLow  TransferMatch[] @relation("TransferMatchLow")
+  transferMatchesHigh TransferMatch[] @relation("TransferMatchHigh")
+}
+
+enum TransferMatchKind {
+  ARRIVAL
+  DEPARTURE
+}
+
+enum TransferMatchStatus {
+  PENDING
+  INTRODUCED
+  DECLINED
+}
+
+model TransferMatch {
+  id               String              @id @default(cuid())
+  guestLowId       String
+  guestHighId      String
+  guestLow         Guest               @relation("TransferMatchLow", fields: [guestLowId], references: [id], onDelete: Cascade)
+  guestHigh        Guest               @relation("TransferMatchHigh", fields: [guestHighId], references: [id], onDelete: Cascade)
+  kind             TransferMatchKind
+  status           TransferMatchStatus @default(PENDING)
+  guestLowConsent  Boolean?
+  guestHighConsent Boolean?
+  notifiedAt       DateTime?           @db.Timestamptz
+  introducedAt     DateTime?           @db.Timestamptz
+  createdAt        DateTime            @default(now()) @db.Timestamptz
+  updatedAt        DateTime            @updatedAt @db.Timestamptz
+
+  @@unique([guestLowId, guestHighId, kind])
+  @@index([guestLowId, status])
+  @@index([guestHighId, status])
+}
+
+model TransferCharterAlert {
+  id       String   @id @default(cuid())
+  alertKey String   @unique
+  sentAt   DateTime @default(now()) @db.Timestamptz
 }
 
 model GuestLinkedLogin {

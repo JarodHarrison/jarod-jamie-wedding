@@ -1,8 +1,10 @@
 import type { RsvpStatus } from "@prisma/client";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import { isBedPreference } from "@/lib/bed-preference";
-import { guestIsOnSiteForAccommodation } from "@/lib/accommodation-form-defaults";
 import { isGiftColourId } from "@/lib/gift-colour-choices";
+import { guestIsOnSiteForAccommodation } from "@/lib/accommodation-form-defaults";
+import { isArrivalMaxWaitId } from "@/lib/transfer-arrival-wait";
+import { isReturnShuttleAirport } from "@/lib/return-shuttle";
 import { isGuestOfHost, isGuestRelationship } from "@/lib/guest-identity";
 
 export type ProfileUpdateResult =
@@ -81,13 +83,34 @@ export function buildGuestProfileSectionUpdate(
   }
 
   if (section === "transfer") {
+    const arrivalMaxWait = trimOrNull(body.arrivalMaxWait);
+    if (arrivalMaxWait && !isArrivalMaxWaitId(arrivalMaxWait)) {
+      return { ok: false, error: "Please choose how long you can wait after arrival.", status: 400 };
+    }
+
+    const returnShuttleInterest = body.returnShuttleInterest === true;
+    let returnShuttleAirport = trimOrNull(body.returnShuttleAirport);
+    if (returnShuttleInterest) {
+      if (!returnShuttleAirport || !isReturnShuttleAirport(returnShuttleAirport)) {
+        return {
+          ok: false,
+          error: "Please choose Sunshine Coast (MCY) or Brisbane (BNE) for the return shuttle.",
+          status: 400,
+        };
+      }
+    } else {
+      returnShuttleAirport = null;
+    }
+
     return {
       ok: true,
       data: {
         wantsSharedTransfer: body.wantsSharedTransfer === true,
+        shareTransferContactDetails: body.shareTransferContactDetails === true,
         arrivalAirport: trimOrNull(body.arrivalAirport),
         arrivalDate: trimOrNull(body.arrivalDate),
         arrivalTime: trimOrNull(body.arrivalTime),
+        arrivalMaxWait,
         departureAirport: trimOrNull(body.departureAirport),
         departureDate: trimOrNull(body.departureDate),
         departureTime: trimOrNull(body.departureTime),
@@ -97,6 +120,9 @@ export function buildGuestProfileSectionUpdate(
             ? null
             : Number(body.passengerCount),
         transferNotes: trimOrNull(body.transferNotes),
+        returnShuttleInterest,
+        returnShuttleAirport: returnShuttleInterest ? returnShuttleAirport : null,
+        returnShuttleRegisteredAt: returnShuttleInterest ? now : null,
         transferSubmittedAt: now,
       },
     };

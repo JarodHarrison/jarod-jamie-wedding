@@ -8,6 +8,8 @@ import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import { requireGuestSession } from "@/lib/auth/session";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { applyPlusOneLink } from "@/lib/plus-one-link";
+import { syncTransferMatchesForGuest } from "@/lib/transfer-match";
+import { checkTransferCharterAlerts } from "@/lib/transfer-charter-alert";
 import { prisma } from "@/lib/prisma";
 import { isVisionModerationEnabled } from "@/lib/google-vision-moderation";
 
@@ -130,6 +132,14 @@ export async function PATCH(request: Request) {
 
     const profile = serializeGuestProfile(guest);
     notifyRegistration(section, profile);
+
+    if (section === "transfer") {
+      void syncTransferMatchesForGuest(session.id)
+        .then(() => checkTransferCharterAlerts())
+        .catch((error) => {
+          console.error("[guest/profile transfer match]", error);
+        });
+    }
 
     return NextResponse.json({ profile, tierUpdated: guest.tier !== session.tier });
   } catch (error) {

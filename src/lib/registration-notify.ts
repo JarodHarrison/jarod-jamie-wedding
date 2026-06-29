@@ -1,5 +1,6 @@
 import type { SerializedGuestProfile } from "@/lib/guest-profile";
 import { giftColourLabel } from "@/lib/gift-colour-choices";
+import { arrivalMaxWaitLabel } from "@/lib/transfer-arrival-wait";
 import { sendNotificationEmail } from "@/lib/email";
 import { adminGuestEventEmailHtml } from "@/lib/email-templates";
 
@@ -78,10 +79,11 @@ function formatTransfer(guest: SerializedGuestProfile) {
   return [
     formatGuestBlock(guest),
     line("Wants shared airport transfer", guest.wantsSharedTransfer ? "Yes" : "No"),
+    line("Happy to share contact for travel buddy match", guest.shareTransferContactDetails ? "Yes" : "No"),
     line(
       "Arrival",
       guest.arrivalAirport
-        ? `${guest.arrivalAirport} ${guest.arrivalDate ?? ""} ${guest.arrivalTime ?? ""}`.trim()
+        ? `${guest.arrivalAirport} ${guest.arrivalDate ?? ""} ${guest.arrivalTime ?? ""}${guest.arrivalMaxWait ? ` (wait up to ${arrivalMaxWaitLabel(guest.arrivalMaxWait) ?? guest.arrivalMaxWait})` : ""}`.trim()
         : null,
     ),
     line(

@@ -6,6 +6,8 @@ import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommod
 import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
 import { BED_PREFERENCE_OPTIONS } from "@/lib/bed-preference";
 import { GIFT_COLOUR_OPTIONS } from "@/lib/gift-colour-choices";
+import { ARRIVAL_MAX_WAIT_OPTIONS } from "@/lib/transfer-arrival-wait";
+import { RETURN_SHUTTLE_AIRPORTS, returnShuttleAirportLabel } from "@/lib/return-shuttle";
 import { theme } from "@/lib/theme";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import type { AdminGuest } from "@/types/wedding";
@@ -157,15 +159,19 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
 
   const [transfer, setTransfer] = useState({
     wantsSharedTransfer: guest.wantsSharedTransfer ?? false,
+    shareTransferContactDetails: guest.shareTransferContactDetails ?? false,
     arrivalAirport: guest.arrivalAirport ?? "",
     arrivalDate: guest.arrivalDate ?? "",
     arrivalTime: guest.arrivalTime ?? "",
+    arrivalMaxWait: guest.arrivalMaxWait ?? "",
     departureAirport: guest.departureAirport ?? "",
     departureDate: guest.departureDate ?? "",
     departureTime: guest.departureTime ?? "",
     flightNumber: guest.flightNumber ?? "",
     passengerCount: guest.passengerCount?.toString() ?? "",
     transferNotes: guest.transferNotes ?? "",
+    returnShuttleInterest: guest.returnShuttleInterest ?? false,
+    returnShuttleAirport: guest.returnShuttleAirport ?? "",
   });
 
   const [interests, setInterests] = useState({
@@ -206,15 +212,19 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
     });
     setTransfer({
       wantsSharedTransfer: guest.wantsSharedTransfer ?? false,
+      shareTransferContactDetails: guest.shareTransferContactDetails ?? false,
       arrivalAirport: guest.arrivalAirport ?? "",
       arrivalDate: guest.arrivalDate ?? "",
       arrivalTime: guest.arrivalTime ?? "",
+      arrivalMaxWait: guest.arrivalMaxWait ?? "",
       departureAirport: guest.departureAirport ?? "",
       departureDate: guest.departureDate ?? "",
       departureTime: guest.departureTime ?? "",
       flightNumber: guest.flightNumber ?? "",
       passengerCount: guest.passengerCount?.toString() ?? "",
       transferNotes: guest.transferNotes ?? "",
+      returnShuttleInterest: guest.returnShuttleInterest ?? false,
+      returnShuttleAirport: guest.returnShuttleAirport ?? "",
     });
     setInterests({
       glowUpInterest: guest.glowUpInterest ?? "",
@@ -645,6 +655,9 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               {
                 ...transfer,
                 passengerCount: transfer.passengerCount ? Number(transfer.passengerCount) : null,
+                returnShuttleAirport: transfer.returnShuttleInterest
+                  ? transfer.returnShuttleAirport
+                  : null,
               },
               setTransferState,
             );
@@ -658,6 +671,16 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
                 onChange={(e) => setTransfer({ ...transfer, wantsSharedTransfer: e.target.checked })}
               />
               Interested in shared airport transport
+            </label>
+            <label className="flex items-center gap-2 text-xs text-gray-600">
+              <input
+                type="checkbox"
+                checked={transfer.shareTransferContactDetails}
+                onChange={(e) =>
+                  setTransfer({ ...transfer, shareTransferContactDetails: e.target.checked })
+                }
+              />
+              Consented to travel buddy contact sharing
             </label>
             <div className="grid grid-cols-2 gap-2">
               <select
@@ -695,6 +718,19 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
                 style={fieldStyle}
               />
             </div>
+            <select
+              value={transfer.arrivalMaxWait}
+              onChange={(e) => setTransfer({ ...transfer, arrivalMaxWait: e.target.value })}
+              className={inputClass}
+              style={fieldStyle}
+            >
+              <option value="">Max wait after arrival</option>
+              {ARRIVAL_MAX_WAIT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             <div className="grid grid-cols-2 gap-2">
               <select
                 value={transfer.departureAirport}
@@ -732,6 +768,35 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
                 style={fieldStyle}
               />
             </div>
+            <label className="flex items-center gap-2 text-xs text-gray-600">
+              <input
+                type="checkbox"
+                checked={transfer.returnShuttleInterest}
+                onChange={(e) =>
+                  setTransfer({
+                    ...transfer,
+                    returnShuttleInterest: e.target.checked,
+                    returnShuttleAirport: e.target.checked ? transfer.returnShuttleAirport : "",
+                  })
+                }
+              />
+              Return shuttle interest (27 Oct, 11:00 am)
+            </label>
+            {transfer.returnShuttleInterest && (
+              <select
+                value={transfer.returnShuttleAirport}
+                onChange={(e) => setTransfer({ ...transfer, returnShuttleAirport: e.target.value })}
+                className={inputClass}
+                style={fieldStyle}
+              >
+                <option value="">Return shuttle airport</option>
+                {RETURN_SHUTTLE_AIRPORTS.map((code) => (
+                  <option key={code} value={code}>
+                    {returnShuttleAirportLabel(code)}
+                  </option>
+                ))}
+              </select>
+            )}
             <textarea
               placeholder="Transfer notes"
               rows={2}
