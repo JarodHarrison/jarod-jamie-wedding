@@ -9,8 +9,10 @@ export function useGuestProfile() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const loadProfile = useCallback(async () => {
-    setLoading(true);
+  const loadProfile = useCallback(async (options?: { silent?: boolean }) => {
+    if (!options?.silent) {
+      setLoading(true);
+    }
     setError("");
     try {
       const res = await fetch("/api/guest/profile");
@@ -26,7 +28,9 @@ export function useGuestProfile() {
       setProfile(data.profile);
       setVisionModerationEnabled(Boolean(data.visionModerationEnabled));
     } finally {
-      setLoading(false);
+      if (!options?.silent) {
+        setLoading(false);
+      }
     }
   }, []);
 

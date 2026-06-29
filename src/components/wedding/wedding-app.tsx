@@ -28,6 +28,7 @@ import { SparkleOverlay } from "@/components/wedding/shared/sparkle-overlay";
 import { InstallAppPopup } from "@/components/wedding/shared/install-app-popup";
 import { OfflineBanner } from "@/components/wedding/shared/offline-banner";
 import { requestInstallGuide } from "@/lib/pwa/install-guide";
+import { checkForAppUpdate, dispatchTabActivated } from "@/lib/pwa-app-update";
 import { ensureNotificationServiceWorker } from "@/lib/os-notifications";
 import { resetAnnitaFabHiddenForNewSession } from "@/lib/annita-fab-prefs";
 import { theme } from "@/lib/theme";
@@ -130,7 +131,10 @@ export function WeddingApp() {
 
     const interval = window.setInterval(() => void refreshSession(), SESSION_REFRESH_MS);
     const onVisible = () => {
-      if (document.visibilityState === "visible") void refreshSession();
+      if (document.visibilityState === "visible") {
+        void refreshSession();
+        void checkForAppUpdate();
+      }
     };
     document.addEventListener("visibilitychange", onVisible);
 
@@ -142,7 +146,9 @@ export function WeddingApp() {
 
   useEffect(() => {
     if (loading || (!user && !admin)) return;
+    dispatchTabActivated(activeTab);
     void refreshSession();
+    void checkForAppUpdate();
   }, [activeTab, loading, user, admin, refreshSession]);
 
   useEffect(() => {

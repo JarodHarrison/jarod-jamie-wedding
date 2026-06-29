@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Users } from "lucide-react";
 import { GuestPhotoLightbox } from "@/components/wedding/shared/guest-photo-lightbox";
+import { useTabRefresh } from "@/components/wedding/hooks/use-tab-refresh";
 import { rosterProfileOverlay } from "@/lib/party-photo-match";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import { theme } from "@/lib/theme";
@@ -23,18 +24,18 @@ export function GuestPhotoWall({ compact = false }: { compact?: boolean }) {
   const [loading, setLoading] = useState(true);
   const [lightbox, setLightbox] = useState<WallLightbox | null>(null);
 
-  useEffect(() => {
-    void (async () => {
-      try {
-        const res = await fetch("/api/guests/wall");
-        if (!res.ok) return;
-        const data = await res.json();
-        setGuests(data.guests ?? []);
-      } finally {
-        setLoading(false);
-      }
-    })();
+  const loadGuests = useCallback(async () => {
+    try {
+      const res = await fetch("/api/guests/wall", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setGuests(data.guests ?? []);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useTabRefresh("party", loadGuests);
 
   if (loading) {
     return <p className="text-center text-xs text-gray-400">Loading guests…</p>;

@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
 import { GuestPhotoLightbox } from "@/components/wedding/shared/guest-photo-lightbox";
+import { useTabRefresh } from "@/components/wedding/hooks/use-tab-refresh";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import {
@@ -244,18 +245,18 @@ export function PartyScreen() {
   const [profilePhotos, setProfilePhotos] = useState<GuestProfilePhoto[]>([]);
   const [lightbox, setLightbox] = useState<PartyPhotoLightbox | null>(null);
 
-  useEffect(() => {
-    void (async () => {
-      try {
-        const res = await fetch("/api/party/photos");
-        if (!res.ok) return;
-        const data = await res.json();
-        setProfilePhotos(data.guests ?? []);
-      } catch {
-        // non-blocking
-      }
-    })();
+  const loadProfilePhotos = useCallback(async () => {
+    try {
+      const res = await fetch("/api/party/photos", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setProfilePhotos(data.guests ?? []);
+    } catch {
+      // non-blocking
+    }
   }, []);
+
+  useTabRefresh("party", loadProfilePhotos);
 
   const groomsWithPhotos = useMemo(
     () => applyPhotosToRoster(partyGrooms, profilePhotos),
