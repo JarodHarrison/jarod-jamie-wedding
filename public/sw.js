@@ -11,6 +11,7 @@ const PRECACHE_URLS = [
   "/glow-up/teeth-whitening-party.png",
   "/glow-up/botox-pump-party.png",
   "/transfers/airport-express-departure.png",
+  "/venue-map.png",
 ];
 
 function isPhotoRequest(url) {

@@ -1,9 +1,10 @@
-import { Bus, Camera, Map, MapPinned, Shirt, Sparkles } from "lucide-react";
+import { Bus, Camera, Map, MapPinned, PlaneTakeoff, Shirt, Sparkles } from "lucide-react";
 import type { AppTab } from "@/types/wedding";
 import { GuideCard, type GuideCardConfig } from "@/components/wedding/shared/guide-card";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
 import { useVenueMapAccess } from "@/components/wedding/hooks/use-venue-map-access";
+import { RETURN_SHUTTLE } from "@/lib/return-shuttle";
 
 const guideCards: GuideCardConfig[] = [
   {
@@ -69,6 +70,19 @@ const guideCards: GuideCardConfig[] = [
     iconClassName: "text-white",
   },
   {
+    id: "departure-transport",
+    title: "Departure Transport",
+    description:
+      `Airport Express coach from Spicers to BNE or MCY on ${RETURN_SHUTTLE.displayDate} — register your interest.`,
+    actionLabel: "View & Register",
+    icon: PlaneTakeoff,
+    className: "bg-gradient-to-br from-[#2d4a3e] via-[#3d6b58] to-[#4d8a6f] text-white shadow-lg shadow-[#2d4a3e]/25",
+    titleClassName: "text-[#d4f0e4]",
+    descriptionClassName: "text-white/85",
+    actionClassName: "text-[#d4f0e4]",
+    iconClassName: "text-[#d4f0e4]",
+  },
+  {
     id: "shuttle",
     title: "Live Wedding Shuttle",
     description:
@@ -90,7 +104,7 @@ export function GuideScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => v
   const visibleCards = guideCards.filter((card) => {
     if (card.id === "venue-map") return showVenueMap;
     if (card.id === "shuttle") return isFeatureVisible("live-shuttle");
-    if (["attractions", "fashion", "glowup", "onsite"].includes(card.id)) {
+    if (["attractions", "fashion", "glowup", "onsite", "departure-transport"].includes(card.id)) {
       return isFeatureVisible("pre-wedding-planning");
     }
     return true;

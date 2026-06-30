@@ -2,6 +2,8 @@ import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { InterestForm } from "@/components/wedding/forms/interest-form";
+import { ReturnShuttleRegistrationForm } from "@/components/wedding/forms/return-shuttle-registration";
+import { RETURN_SHUTTLE } from "@/lib/return-shuttle";
 import { fashionInspirationLinks } from "@/components/wedding/data/fashion-inspiration";
 import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
@@ -148,6 +150,22 @@ export function GlowUpScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => 
         alt="J&J Botox Pump Party flyer"
         onClose={() => setFlyerOpen(null)}
       />
+    </div>
+  );
+}
+
+export function DepartureTransportScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
+  return (
+    <div className="animate-fade-in animate-slide-right pb-10">
+      <SubHeader title="Departure Transport" subtitle="Airport Express" onBack={() => setActiveTab("guide")} />
+      <div className="mt-8 space-y-6 px-6">
+        <p className="text-sm font-light leading-relaxed text-gray-600">
+          Heading home on {RETURN_SHUTTLE.displayDate}? Register for the departure coach from Spicers
+          Clovelly Estate to Brisbane (BNE) or Sunshine Coast (MCY) airports. We&apos;ll confirm
+          bookings and pricing once we have enough interest.
+        </p>
+        <ReturnShuttleRegistrationForm />
+      </div>
     </div>
   );
 }

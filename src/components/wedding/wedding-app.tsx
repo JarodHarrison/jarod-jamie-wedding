@@ -9,7 +9,12 @@ import { NavItem } from "@/components/wedding/shared/nav-item";
 import { AttractionsScreen } from "@/components/wedding/screens/attractions-screen";
 import { FAQScreen, WishingWellScreen } from "@/components/wedding/screens/faq-screen";
 import { GuestShuttleScreen } from "@/components/wedding/screens/guest-shuttle-screen";
-import { GlowUpScreen, FashionInspirationScreen, OnSiteScreen } from "@/components/wedding/screens/guide-sub-screens";
+import {
+  DepartureTransportScreen,
+  GlowUpScreen,
+  FashionInspirationScreen,
+  OnSiteScreen,
+} from "@/components/wedding/screens/guide-sub-screens";
 import { GuideScreen } from "@/components/wedding/screens/guide-screen";
 import { HomeScreen } from "@/components/wedding/screens/home-screen";
 import { ItineraryScreen } from "@/components/wedding/screens/itinerary-screen";
@@ -57,7 +62,7 @@ const PHASE_GATED_TABS: Partial<Record<AppTab, WeddingFeature>> = {
   shuttle: "live-shuttle",
 };
 
-const PLANNING_TABS: AppTab[] = ["attractions", "fashion", "glowup", "onsite"];
+const PLANNING_TABS: AppTab[] = ["attractions", "fashion", "glowup", "onsite", "departure-transport"];
 
 export function WeddingApp() {
   const [activeTab, setActiveTab] = useState<AppTab>("home");
@@ -329,6 +334,8 @@ export function WeddingApp() {
         return <GlowUpScreen setActiveTab={setActiveTab} />;
       case "onsite":
         return <OnSiteScreen setActiveTab={setActiveTab} />;
+      case "departure-transport":
+        return <DepartureTransportScreen setActiveTab={setActiveTab} />;
       default:
         return (
           <HomeScreen

@@ -1,9 +1,10 @@
 import { daysUntilWedding, RECOVERY_DAYS } from "@/lib/wedding-event";
+import { APP_BUILD_ID } from "@/lib/app-build-id";
 
 /** Off-site guests unlock the venue map this many days before the wedding. */
 export const VENUE_MAP_DAYS_BEFORE = 5;
 
-export const VENUE_MAP_IMAGE = "/venue-map.png";
+export const VENUE_MAP_IMAGE = `/venue-map.png?v=${encodeURIComponent(APP_BUILD_ID)}`;
 
 export function canViewVenueMap(
   hasOnSiteAccess: boolean,

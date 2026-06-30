@@ -29,7 +29,8 @@ export type SubTab =
   | "attractions"
   | "fashion"
   | "glowup"
-  | "onsite";
+  | "onsite"
+  | "departure-transport";
 
 export type AppTab = MainTab | SubTab | "admin" | "vendors";
 

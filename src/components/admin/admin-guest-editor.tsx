@@ -780,7 +780,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
                   })
                 }
               />
-              Return shuttle interest (27 Oct, 11:00 am)
+              Return shuttle interest (27 Sep, 11:00 am)
             </label>
             {transfer.returnShuttleInterest && (
               <select

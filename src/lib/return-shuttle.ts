@@ -5,11 +5,11 @@ export type ReturnShuttleAirport = (typeof RETURN_SHUTTLE_AIRPORTS)[number];
 export const RETURN_SHUTTLE_FLYER = "/transfers/airport-express-departure.png";
 
 export const RETURN_SHUTTLE = {
-  date: "2026-10-27",
-  displayDate: "Monday 27 October",
+  date: "2026-09-27",
+  displayDate: "Sunday 27 September",
   title: "Airport Express",
   description:
-    "Departure-only coach from Spicers Clovelly Estate on Monday 27 October — relax, unwind, and we'll get you to the airport in style.",
+    "Departure-only coach from Spicers Clovelly Estate on Sunday 27 September — relax, unwind, and we'll get you to the airport in style.",
 } as const;
 
 export const RETURN_SHUTTLE_AIRPORT_DETAILS: Record<

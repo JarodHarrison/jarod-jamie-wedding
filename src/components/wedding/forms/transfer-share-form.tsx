@@ -1,18 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Image from "next/image";
 import { ChevronRight, Plane } from "lucide-react";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
-import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
+import { ReturnShuttleRegistrationPanel } from "@/components/wedding/forms/return-shuttle-registration";
 import { airportLabel, formatTravelWhen } from "@/lib/transfer-match-labels";
 import { ARRIVAL_MAX_WAIT_OPTIONS, arrivalMaxWaitLabel } from "@/lib/transfer-arrival-wait";
-import {
-  RETURN_SHUTTLE,
-  RETURN_SHUTTLE_AIRPORTS,
-  RETURN_SHUTTLE_FLYER,
-  returnShuttleOptionLabel,
-} from "@/lib/return-shuttle";
 import { theme } from "@/lib/theme";
 
 const inputClass =
@@ -64,7 +57,6 @@ export function TransferShareForm() {
   const [transferNotes, setTransferNotes] = useState("");
   const [returnShuttleInterest, setReturnShuttleInterest] = useState(false);
   const [returnShuttleAirport, setReturnShuttleAirport] = useState("");
-  const [departureFlyerOpen, setDepartureFlyerOpen] = useState(false);
   const [matches, setMatches] = useState<TransferMatch[]>([]);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [respondingId, setRespondingId] = useState<string | null>(null);
@@ -294,66 +286,14 @@ export function TransferShareForm() {
         style={{ borderColor: theme.border }}
       />
 
-      <div
-        className="overflow-hidden rounded-2xl border bg-white"
-        style={{ borderColor: theme.border }}
-      >
-        <button
-          type="button"
-          onClick={() => setDepartureFlyerOpen(true)}
-          className="block w-full cursor-zoom-in"
-          aria-label="View Airport Express departure bus flyer full screen"
-        >
-          <Image
-            src={RETURN_SHUTTLE_FLYER}
-            alt="Airport Express — departure coach from Spicers to BNE and MCY on Monday 27 October"
-            width={1200}
-            height={750}
-            className="h-auto w-full"
-          />
-        </button>
-        <div className="space-y-3 p-4">
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
-              {RETURN_SHUTTLE.title} · Departure bus
-            </p>
-            <p className="mt-2 text-sm text-gray-600">{RETURN_SHUTTLE.description}</p>
-          </div>
-
-          <label
-            className="flex items-start gap-3 rounded-xl border bg-[#faf8f4] px-4 py-3.5 text-sm text-gray-600"
-            style={{ borderColor: theme.border }}
-          >
-            <input
-              type="checkbox"
-              checked={returnShuttleInterest}
-              onChange={(e) => {
-                setReturnShuttleInterest(e.target.checked);
-                if (!e.target.checked) setReturnShuttleAirport("");
-              }}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300"
-            />
-            <span>Register my interest for the departure coach on {RETURN_SHUTTLE.displayDate}</span>
-          </label>
-
-          {returnShuttleInterest && (
-            <select
-              value={returnShuttleAirport}
-              onChange={(e) => setReturnShuttleAirport(e.target.value)}
-              className={inputClass}
-              style={{ borderColor: theme.border }}
-              required
-            >
-              <option value="">Which airport are you flying from?</option>
-              {RETURN_SHUTTLE_AIRPORTS.map((code) => (
-                <option key={code} value={code}>
-                  {returnShuttleOptionLabel(code)}
-                </option>
-              ))}
-            </select>
-          )}
-        </div>
-      </div>
+      <ReturnShuttleRegistrationPanel
+        returnShuttleInterest={returnShuttleInterest}
+        returnShuttleAirport={returnShuttleAirport}
+        onInterestChange={(interest, airport) => {
+          setReturnShuttleInterest(interest);
+          setReturnShuttleAirport(airport);
+        }}
+      />
 
       {(pendingMatches.length > 0 || introducedMatches.length > 0) && (
         <div
@@ -436,12 +376,6 @@ export function TransferShareForm() {
         {submitting ? "Saving..." : "Save Transfer Details"} <ChevronRight size={14} />
       </button>
 
-      <ImageLightbox
-        open={departureFlyerOpen}
-        src={RETURN_SHUTTLE_FLYER}
-        alt="Airport Express departure bus flyer"
-        onClose={() => setDepartureFlyerOpen(false)}
-      />
     </form>
   );
 }
