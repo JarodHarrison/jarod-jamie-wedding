@@ -9,10 +9,12 @@ import { useAnnitaFabPrefs } from "@/components/wedding/hooks/use-annita-fab-pre
 import {
   ANNITA,
   ANNITA_DISGUSTED_LOADING_MESSAGES,
+  ANNITA_GPS_LOCATION_LINES,
   ANNITA_INPUT_PLACEHOLDERS,
   ANNITA_LOADING_MESSAGES,
   pickAnnitaLine,
 } from "@/lib/annita";
+import { isInSunshineCoastHinterland } from "@/lib/guest-geo";
 import { isDisgustingUserMessage } from "@/lib/annita-reactions";
 import { getIncompleteProfileTasks } from "@/lib/guest-profile-checklist";
 import { theme } from "@/lib/theme";
@@ -240,6 +242,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const [inputFocused, setInputFocused] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [folded, setFolded] = useState(false);
+  const [locationNote, setLocationNote] = useState<string | null>(null);
   const { hidden: annitaHidden } = useAnnitaFabPrefs();
 
   const compactHeader = inputFocused || keyboardOpen;
@@ -294,6 +297,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
     if (!open) {
       setInputFocused(false);
       setKeyboardOpen(false);
+      setLocationNote(null);
       stopSpeaking();
       stopSpeechInput();
     }
@@ -304,10 +308,14 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        guestLocationRef.current = {
+        const point = {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         };
+        if (!isInSunshineCoastHinterland(point)) return;
+
+        guestLocationRef.current = point;
+        setLocationNote(pickAnnitaLine(ANNITA_GPS_LOCATION_LINES));
       },
       () => {},
       { enableHighAccuracy: false, maximumAge: 300_000, timeout: 8_000 },
@@ -641,6 +649,15 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
               </button>
             </div>
           </header>
+
+          {locationNote && (
+            <p
+              className="shrink-0 border-b px-5 py-2 text-[10px] leading-relaxed text-pink-600"
+              style={{ borderColor: ANNITA.bubbleBorder, backgroundColor: ANNITA.bubbleBg }}
+            >
+              {locationNote}
+            </p>
+          )}
 
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
             {messages.length <= 1 && !loading && (

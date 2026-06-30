@@ -99,6 +99,62 @@ export function pickAnnitaLine<T extends readonly string[]>(lines: T): T[number]
   return lines[Math.floor(Math.random() * lines.length)]!;
 }
 
+export function fillAnnitaLine(template: string, label: string): string {
+  return template.replaceAll("{label}", label);
+}
+
+/** Shown in chat when GPS is on and the guest is in-region. */
+export const ANNITA_GPS_LOCATION_LINES = [
+  "I've got your location, honey — drive times are from *you*, not the venue fantasy.",
+  "GPS is werk-ing, darling — these distances start where you're standing.",
+  "I see you on the map, babe — I'm not guessing from Spicers.",
+  "Location: served. Distances: personal. You're welcome, icon.",
+  "Your phone told me where you are — I'll do the maths from there.",
+] as const;
+
+export const ANNITA_EAT_OPENERS_GPS = [
+  "Hungry on the Coast? These three are giving *chef's kiss* — I clocked **{label}** and did the maths:",
+  "Darling, dinner realness from **{label}** — three spots that eat, zero crumbs:",
+  "Honey, I'm not sending you to a random servo — from **{label}**, eat here:",
+  "Babe, the range is serving — three picks from **{label}** that actually slap:",
+] as const;
+
+export const ANNITA_EAT_OPENERS_STAY = [
+  "If your stomach's doing choreography, start here from **{label}**:",
+  "From **{label}**, these three are the hinterland holy trinity of yum:",
+  "Honey, based on **{label}**, I'd Uber to one of these and look fabulous:",
+  "Darling, **{label}** → dinner — my top three, no gatekeeping:",
+] as const;
+
+export const ANNITA_EAT_OPENERS_SPICERS = [
+  "You're not on the mountain yet, sweetheart — picture yourself at **Spicers** and eat here:",
+  "Pre-trip? Fine. Once you're at **Spicers Clovelly Estate**, these three are the move:",
+  "Darling, distances below are from **Spicers** — save them for wedding weekend hunger:",
+  "Honey, file these under *when I'm at the estate* — all from **Spicers Clovelly Estate**:",
+] as const;
+
+export const ANNITA_EAT_CLOSERS = [
+  "Ubers up the range are thinner than my patience — book a ride if you're dining out, babe.",
+  "Pre-book transport, honey — the hinterland is stunning and Uber-shy.",
+  "Grab a lift if you're going far — glamour shouldn't include hitchhiking in heels.",
+  "More recs live in **Guide → Explore Montville** if you're still peckish, darling.",
+] as const;
+
+export const ANNITA_LOCAL_OPENERS = {
+  chocolate: [
+    "Artisanal treats near Montville, honey — my chocolate era starts here:",
+    "Sweet tooth emergency? Darling, the hinterland delivers:",
+  ],
+  fromGuest: [
+    "For that hinterland craving from **{label}** — werk:",
+    "Darling, from **{label}**, these picks slap:",
+  ],
+  spicers: [
+    "Not on the mountain yet? From **Spicers Clovelly Estate**, I'd start here:",
+    "Honey, estate-adjacent fabulousness — distances from **Spicers**:",
+  ],
+} as const;
+
 export const ANNITA = {
   name: "Annita Help",
   tagline: "Your fabulous wedding concierge",

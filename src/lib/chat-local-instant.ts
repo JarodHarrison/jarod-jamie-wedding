@@ -5,6 +5,7 @@ import { recentUserText } from "@/lib/chat-intents";
 import type { GuestGeoContext } from "@/lib/guest-geo";
 import { localDiscoveryFallbackReply } from "@/lib/chat-sanitize";
 import { formatPlaceForChat, searchHinterlandPlaces } from "@/lib/hinterland-places";
+import { ANNITA_EAT_CLOSERS, ANNITA_LOCAL_OPENERS, fillAnnitaLine, pickAnnitaLine } from "@/lib/annita";
 
 export function matchLocalDiscoveryInstant(
   messages: ChatMessage[],
@@ -29,14 +30,14 @@ export function matchLocalDiscoveryInstant(
   }
 
   const opener = /\b(chocolate|artisanal|fudge)\b/i.test(query)
-    ? "For artisanal treats and chocolate vibes near Montville, honey, I'd start here:"
+    ? pickAnnitaLine(ANNITA_LOCAL_OPENERS.chocolate)
     : geo?.fromGuest
-      ? `For that hinterland craving, darling — my top picks from **${geo.originLabel}**:`
-      : "For that hinterland craving, darling — my top picks from **Spicers Clovelly Estate**:";
+      ? fillAnnitaLine(pickAnnitaLine(ANNITA_LOCAL_OPENERS.fromGuest), geo.originLabel)
+      : pickAnnitaLine(ANNITA_LOCAL_OPENERS.spicers);
 
   return `${opener}
 
 ${picks.map(formatPlaceForChat).join("\n")}
 
-Ubers are scarce up the range — book transport if you're heading out. More ideas in **Guide → Explore Montville**.`;
+${pickAnnitaLine(ANNITA_EAT_CLOSERS)}`;
 }

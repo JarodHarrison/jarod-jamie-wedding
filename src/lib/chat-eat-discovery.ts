@@ -3,6 +3,14 @@ import { ATTRACTION_COORDINATES } from "@/lib/attraction-coordinates";
 import type { GuestGeoContext } from "@/lib/guest-geo";
 import { estimateDriveMinutes, SPICERS_CLOVELLY_COORDINATES } from "@/lib/guest-geo";
 import {
+  ANNITA_EAT_CLOSERS,
+  ANNITA_EAT_OPENERS_GPS,
+  ANNITA_EAT_OPENERS_SPICERS,
+  ANNITA_EAT_OPENERS_STAY,
+  fillAnnitaLine,
+  pickAnnitaLine,
+} from "@/lib/annita";
+import {
   enrichPlaceFromAttraction,
   formatPlaceWebsiteLink,
   scorePlace,
@@ -74,18 +82,22 @@ export function formatEatPlaceForChat(place: HinterlandPlace, geo: GuestGeoConte
   return `• **${place.title}** (${place.category}, ${distanceLabel}) — ${place.desc}${formatPlaceWebsiteLink(place.websiteUrl)}`;
 }
 
+function buildEatOpener(geo: GuestGeoContext): string {
+  if (!geo.fromGuest) {
+    return fillAnnitaLine(pickAnnitaLine(ANNITA_EAT_OPENERS_SPICERS), geo.originLabel);
+  }
+  if (geo.originLabel === "where you are") {
+    return fillAnnitaLine(pickAnnitaLine(ANNITA_EAT_OPENERS_GPS), geo.originLabel);
+  }
+  return fillAnnitaLine(pickAnnitaLine(ANNITA_EAT_OPENERS_STAY), geo.originLabel);
+}
+
 export function buildEatDiscoveryReply(query: string, geo: GuestGeoContext): string {
   const picks = searchEatPlaces(query, 3);
 
-  const opener = geo.fromGuest
-    ? "Honey, if you're hungry on the Coast, these three are giving *chef's kiss* — distances from **" +
-      geo.originLabel +
-      "**:"
-    : "Darling, you're not on the mountain yet — once you're at the wedding, these are my top three from **Spicers Clovelly Estate**:";
-
-  return `${opener}
+  return `${buildEatOpener(geo)}
 
 ${picks.map((place) => formatEatPlaceForChat(place, geo)).join("\n")}
 
-Ubers are scarce up the range — book a ride if you're heading out for dinner. More inspo in **Guide → Explore Montville**.`;
+${pickAnnitaLine(ANNITA_EAT_CLOSERS)}`;
 }
