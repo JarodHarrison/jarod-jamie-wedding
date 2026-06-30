@@ -9,12 +9,8 @@ import {
   RETURN_SHUTTLE_AIRPORTS,
   RETURN_SHUTTLE_AIRPORT_DETAILS,
   returnShuttleFlyerSrc,
-  returnShuttleOptionLabel,
 } from "@/lib/return-shuttle";
 import { theme } from "@/lib/theme";
-
-const inputClass =
-  "w-full rounded-xl border bg-white px-4 py-3.5 text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#c3a379]";
 
 type ReturnShuttleRegistrationPanelProps = {
   returnShuttleInterest: boolean;
@@ -57,52 +53,61 @@ export function ReturnShuttleRegistrationPanel({
             <p className="mt-2 text-sm text-gray-600">{RETURN_SHUTTLE.description}</p>
           </div>
 
-          <ul className="space-y-2 text-sm text-gray-600">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+              Register for the departure coach
+            </p>
+            <p className="mt-2 text-sm text-gray-600">
+              Choose your airport on {RETURN_SHUTTLE.displayDate} so we can plan coaches to BNE
+              and MCY.
+            </p>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2">
             {RETURN_SHUTTLE_AIRPORTS.map((code) => {
               const details = RETURN_SHUTTLE_AIRPORT_DETAILS[code];
+              const selected = returnShuttleInterest && returnShuttleAirport === code;
               return (
-                <li
+                <button
                   key={code}
-                  className="rounded-xl border bg-[#faf8f4] px-4 py-3"
-                  style={{ borderColor: theme.border }}
+                  type="button"
+                  onClick={() => onInterestChange(true, code)}
+                  className="rounded-xl border px-4 py-3.5 text-left transition-colors"
+                  style={{
+                    borderColor: selected ? theme.gold : theme.border,
+                    backgroundColor: selected ? "#faf8f4" : "white",
+                    boxShadow: selected ? `0 0 0 1px ${theme.gold}` : undefined,
+                  }}
+                  aria-pressed={selected}
                 >
-                  <strong className="text-[#2a2723]">{code}</strong> — leaves Spicers at{" "}
-                  {details.departureTime} ({details.priceGuide})
-                </li>
+                  <p className="text-sm font-semibold text-[#2a2723]">{code}</p>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Leaves Spicers at {details.departureTime} ({details.priceGuide})
+                  </p>
+                  <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+                    {selected ? "Selected" : "Select"}
+                  </p>
+                </button>
               );
             })}
-          </ul>
+          </div>
 
-          <label
-            className="flex items-start gap-3 rounded-xl border bg-[#faf8f4] px-4 py-3.5 text-sm text-gray-600"
-            style={{ borderColor: theme.border }}
-          >
-            <input
-              type="checkbox"
-              checked={returnShuttleInterest}
-              onChange={(e) => {
-                onInterestChange(e.target.checked, e.target.checked ? returnShuttleAirport : "");
-              }}
-              className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300"
-            />
-            <span>Register my interest for the departure coach on {RETURN_SHUTTLE.displayDate}</span>
-          </label>
+          {returnShuttleInterest && returnShuttleAirport && (
+            <p className="text-xs text-gray-500">
+              Flying from{" "}
+              <strong className="text-[#2a2723]">{returnShuttleAirport}</strong> — save below to
+              register.
+            </p>
+          )}
 
           {returnShuttleInterest && (
-            <select
-              value={returnShuttleAirport}
-              onChange={(e) => onInterestChange(true, e.target.value)}
-              className={inputClass}
-              style={{ borderColor: theme.border }}
-              required
+            <button
+              type="button"
+              onClick={() => onInterestChange(false, "")}
+              className="text-[10px] font-bold uppercase tracking-widest text-gray-400 underline-offset-2 hover:text-gray-600 hover:underline"
             >
-              <option value="">Which airport are you flying from?</option>
-              {RETURN_SHUTTLE_AIRPORTS.map((code) => (
-                <option key={code} value={code}>
-                  {returnShuttleOptionLabel(code)}
-                </option>
-              ))}
-            </select>
+              Not taking the departure coach
+            </button>
           )}
         </div>
       </div>
@@ -133,6 +138,11 @@ export function ReturnShuttleRegistrationForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!profile) return;
+
+    if (returnShuttleInterest && !returnShuttleAirport) {
+      setError("Please choose Sunshine Coast (MCY) or Brisbane (BNE).");
+      return;
+    }
 
     setError("");
     setSaved(false);
@@ -178,7 +188,9 @@ export function ReturnShuttleRegistrationForm() {
       {error && <p className="text-[10px] font-bold uppercase tracking-wider text-red-500">{error}</p>}
       {saved && (
         <p className="text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">
-          Departure transport saved — we&apos;ll be in touch with coach details.
+          {returnShuttleInterest && returnShuttleAirport
+            ? `Registered for ${returnShuttleAirport} — we'll be in touch with coach details.`
+            : "Departure transport saved — we'll be in touch with coach details."}
         </p>
       )}
 
