@@ -34,6 +34,7 @@ import {
 import { buildProfileStatusSummary } from "@/lib/guest-profile-checklist";
 import type { SerializedGuestProfile } from "@/lib/guest-profile";
 import { buildChatSystemPrompt } from "@/lib/wedding-knowledge";
+import type { GuestGeoContext } from "@/lib/guest-geo";
 
 export type ChatMessage = {
   role: "user" | "assistant";
@@ -97,6 +98,7 @@ export type ChatContext = {
   hasGoldCoastTrip?: boolean;
   guestId?: string;
   profile?: SerializedGuestProfile;
+  guestGeo?: GuestGeoContext;
 };
 
 const API_MESSAGE_LIMIT = 8;
@@ -241,10 +243,10 @@ function tryInstantFaq(messages: ChatMessage[]): string | null {
   return matchInstantFaq(messages);
 }
 
-function tryInstantReply(messages: ChatMessage[]): string | null {
+function tryInstantReply(messages: ChatMessage[], geo?: GuestGeoContext): string | null {
   const faq = tryInstantFaq(messages);
   if (faq) return faq;
-  return matchLocalDiscoveryInstant(messages);
+  return matchLocalDiscoveryInstant(messages, geo);
 }
 
 function extractStreamDelta(assembled: string, chunk: string): string {
@@ -771,7 +773,7 @@ export async function generateChatReply(
   messages: ChatMessage[],
   context: ChatContext,
 ): Promise<ChatReply> {
-  const instant = tryInstantReply(messages);
+  const instant = tryInstantReply(messages, context.guestGeo);
   if (instant) {
     return { reply: instant, sources: [] };
   }
@@ -791,7 +793,7 @@ export async function generateChatReply(
   } catch (error) {
     if (isLocalDiscoveryQuestion(messages)) {
       return {
-        reply: matchLocalDiscoveryInstant(messages) ?? localDiscoveryFallbackReply(),
+        reply: matchLocalDiscoveryInstant(messages, context.guestGeo) ?? localDiscoveryFallbackReply(),
         sources: [],
       };
     }
@@ -817,7 +819,7 @@ export function createChatReplyStream(
       try {
         send(controller, { type: "started" });
 
-        const instant = tryInstantReply(messages);
+        const instant = tryInstantReply(messages, context.guestGeo);
         if (instant) {
           send(controller, { type: "done", reply: instant, sources: [] });
           controller.close();
@@ -869,7 +871,7 @@ export function createChatReplyStream(
           if (isLocalDiscoveryQuestion(messages)) {
             send(controller, {
               type: "done",
-              reply: matchLocalDiscoveryInstant(messages) ?? localDiscoveryFallbackReply(),
+              reply: matchLocalDiscoveryInstant(messages, context.guestGeo) ?? localDiscoveryFallbackReply(),
               sources: [],
             });
             controller.close();
@@ -894,7 +896,7 @@ export function createChatReplyStream(
         if (isLocalDiscoveryQuestion(messages)) {
           send(controller, {
             type: "done",
-            reply: matchLocalDiscoveryInstant(messages) ?? localDiscoveryFallbackReply(),
+            reply: matchLocalDiscoveryInstant(messages, context.guestGeo) ?? localDiscoveryFallbackReply(),
             sources: [],
           });
           controller.close();

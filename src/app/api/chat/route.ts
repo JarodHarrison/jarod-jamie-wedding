@@ -10,6 +10,7 @@ import { matchInstantFaq } from "@/lib/chat-faq";
 import { matchLocalDiscoveryInstant } from "@/lib/chat-local-instant";
 import { wantsFormTools } from "@/lib/chat-intents";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
+import { resolveGuestGeoContext } from "@/lib/guest-geo";
 import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
@@ -34,6 +35,39 @@ function sanitizeMessages(raw: unknown): ChatMessage[] {
     }))
     .filter((m) => m.content.length > 0)
     .slice(-MAX_MESSAGES);
+}
+
+async function loadGuestGeo(
+  session: Extract<Awaited<ReturnType<typeof getSession>>, { type: "guest" }>,
+  body: Record<string, unknown>,
+  guestTier: string,
+) {
+  const rawLocation = body.guestLocation;
+  const clientLatitude =
+    rawLocation &&
+    typeof rawLocation === "object" &&
+    typeof (rawLocation as { latitude?: unknown }).latitude === "number"
+      ? (rawLocation as { latitude: number }).latitude
+      : null;
+  const clientLongitude =
+    rawLocation &&
+    typeof rawLocation === "object" &&
+    typeof (rawLocation as { longitude?: unknown }).longitude === "number"
+      ? (rawLocation as { longitude: number }).longitude
+      : null;
+
+  const guest = await prisma.guest.findUnique({
+    where: { id: session.id },
+    select: { accommodationAddress: true, accommodationName: true },
+  });
+
+  return resolveGuestGeoContext({
+    clientLatitude,
+    clientLongitude,
+    accommodationAddress: guest?.accommodationAddress ?? null,
+    accommodationName: guest?.accommodationName ?? null,
+    guestTier,
+  });
 }
 
 async function loadGuestContext(
@@ -73,6 +107,7 @@ export async function POST(request: Request) {
 
     let guestId: string | undefined;
     let profile;
+    let guestGeo;
     let guestTier = session.type === "guest" ? session.tier : "ADMIN";
     let hasGoldCoastTrip = session.type === "admin";
 
@@ -80,15 +115,18 @@ export async function POST(request: Request) {
       const fresh = await syncGuestSessionFromDb(session);
       if (fresh) guestTier = fresh.tier;
 
-      const trip = await prisma.goldCoastTrip.findUnique({
-        where: { guestId: session.id },
-        select: { id: true },
-      });
+      const [trip, guestContext, geo] = await Promise.all([
+        prisma.goldCoastTrip.findUnique({
+          where: { guestId: session.id },
+          select: { id: true },
+        }),
+        loadGuestContext(session, messages),
+        loadGuestGeo(session, body as Record<string, unknown>, guestTier),
+      ]);
       hasGoldCoastTrip = Boolean(trip);
-
-      const guestContext = await loadGuestContext(session, messages);
       guestId = guestContext.guestId;
       profile = guestContext.profile;
+      guestGeo = geo;
     }
 
     const context =
@@ -99,6 +137,7 @@ export async function POST(request: Request) {
             hasGoldCoastTrip,
             guestId,
             profile,
+            guestGeo,
           }
         : { guestName: session.name, guestTier: "ADMIN" };
 

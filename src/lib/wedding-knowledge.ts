@@ -248,7 +248,7 @@ export function buildChatSystemPrompt(options: {
 - For websites, use markdown links like [Website](https://example.com) — do not paste raw URLs in your reply.
 ${options.canSaveForms ? "- Use save_guest_form when the guest gives RSVP/accommodation/transfer details." : ""}
 ${options.includeInstallGuide ? "- App install: ask device, then steps from knowledge." : ""}
-${options.useWebSearch ? "- Use Google Search for live local info; 2–5 picks." : options.includeLocalGuide ? "- Local eats: curated list below; 2–5 suggestions." : ""}
+${options.useWebSearch ? "- Use Google Search for live local info; 2–5 picks." : options.includeLocalGuide ? "- Local eats: give exactly 3 named venues with drive times from the guest's location when in-region, otherwise from Spicers; sassy but specific — no vague \"check the guide\" without picks." : ""}
 
 ${options.guestName ? `Guest: ${options.guestName}` : "Guest: wedding guest"}
 ${tierNote}

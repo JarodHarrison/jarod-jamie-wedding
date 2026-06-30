@@ -236,6 +236,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
   const panelRef = useRef<HTMLDivElement>(null);
   const streamRafRef = useRef<number | null>(null);
   const streamPendingRef = useRef("");
+  const guestLocationRef = useRef<{ latitude: number; longitude: number } | null>(null);
   const [inputFocused, setInputFocused] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   const [folded, setFolded] = useState(false);
@@ -297,6 +298,21 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       stopSpeechInput();
     }
   }, [open, stopSpeechInput, stopSpeaking]);
+
+  useEffect(() => {
+    if (!open || guestLocationRef.current || !navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        guestLocationRef.current = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        };
+      },
+      () => {},
+      { enableHighAccuracy: false, maximumAge: 300_000, timeout: 8_000 },
+    );
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -376,6 +392,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
         body: JSON.stringify({
           messages: nextMessages.map(({ role, content }) => ({ role, content })),
           stream: true,
+          guestLocation: guestLocationRef.current,
         }),
       });
 

@@ -24,14 +24,14 @@ export function parseDriveMinutes(distance: string): number {
   return match ? Number(match[1]) : 999;
 }
 
-function enrichPlace(attraction: Attraction): HinterlandPlace {
+export function enrichPlaceFromAttraction(attraction: Attraction): HinterlandPlace {
   return {
     ...attraction,
     driveMinutes: parseDriveMinutes(attraction.distance),
   };
 }
 
-const ALL_PLACES = ALL_ATTRACTIONS.map(enrichPlace);
+const ALL_PLACES = ALL_ATTRACTIONS.map(enrichPlaceFromAttraction);
 
 /** Curated spots within ~35 minutes of Spicers Clovelly Estate — Annita's fast local index. */
 export const HINTERLAND_PLACES_WITHIN_35_MIN = ALL_PLACES.filter(
@@ -65,7 +65,7 @@ const TOPIC_BOOSTS: Array<{ pattern: RegExp; titles: string[] }> = [
   },
 ];
 
-function scorePlace(place: HinterlandPlace, query: string): number {
+export function scorePlace(place: HinterlandPlace, query: string): number {
   const haystack = `${place.title} ${place.category} ${place.desc}`.toLowerCase();
   let score = 0;
 
