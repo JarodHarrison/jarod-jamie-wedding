@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
 import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
@@ -9,7 +8,7 @@ import {
   RETURN_SHUTTLE,
   RETURN_SHUTTLE_AIRPORTS,
   RETURN_SHUTTLE_AIRPORT_DETAILS,
-  RETURN_SHUTTLE_FLYER,
+  returnShuttleFlyerSrc,
   returnShuttleOptionLabel,
 } from "@/lib/return-shuttle";
 import { theme } from "@/lib/theme";
@@ -42,12 +41,12 @@ export function ReturnShuttleRegistrationPanel({
           className="block w-full cursor-zoom-in"
           aria-label="View Airport Express departure bus flyer full screen"
         >
-          <Image
-            src={RETURN_SHUTTLE_FLYER}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={returnShuttleFlyerSrc()}
             alt={`Airport Express — departure coach from Spicers to BNE and MCY on ${RETURN_SHUTTLE.displayDate}`}
-            width={1200}
-            height={750}
             className="h-auto w-full"
+            draggable={false}
           />
         </button>
         <div className="space-y-3 p-4">
@@ -110,7 +109,7 @@ export function ReturnShuttleRegistrationPanel({
 
       <ImageLightbox
         open={flyerOpen}
-        src={RETURN_SHUTTLE_FLYER}
+        src={returnShuttleFlyerSrc()}
         alt="Airport Express departure bus flyer"
         onClose={() => setFlyerOpen(false)}
       />

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import Image from "next/image";
 import { X } from "lucide-react";
 
 type ImageLightboxProps = {
@@ -53,7 +52,8 @@ export function ImageLightbox({ open, src, alt, onClose }: ImageLightboxProps) {
         className="relative min-h-0 flex-1 p-4"
         onClick={(event) => event.stopPropagation()}
       >
-        <Image src={src} alt={alt} fill className="object-contain" sizes="100vw" priority />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={src} alt={alt} className="mx-auto h-full max-h-full w-full object-contain" />
       </div>
     </div>
   );

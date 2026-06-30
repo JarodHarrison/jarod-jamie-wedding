@@ -4,7 +4,12 @@ export const RETURN_SHUTTLE_AIRPORTS = ["MCY", "BNE"] as const;
 
 export type ReturnShuttleAirport = (typeof RETURN_SHUTTLE_AIRPORTS)[number];
 
-export const RETURN_SHUTTLE_FLYER = `/transfers/airport-express-departure.png?v=${encodeURIComponent(APP_BUILD_ID)}`;
+export const RETURN_SHUTTLE_FLYER_PATH = "/transfers/airport-express-departure.png";
+
+/** Cache-busted src for static flyer assets — use with native <img>, not next/image. */
+export function returnShuttleFlyerSrc(): string {
+  return `${RETURN_SHUTTLE_FLYER_PATH}?v=${encodeURIComponent(APP_BUILD_ID)}`;
+}
 
 export const RETURN_SHUTTLE = {
   date: "2026-09-27",
