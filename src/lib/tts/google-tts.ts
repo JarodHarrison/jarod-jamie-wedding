@@ -1,3 +1,5 @@
+import { annitaSpeechRate } from "@/lib/tts/speech-rate";
+
 export async function synthesizeGoogleTTS(text: string): Promise<Buffer | null> {
   const key = process.env.GOOGLE_API_KEY?.trim();
   if (!key) return null;
@@ -15,7 +17,7 @@ export async function synthesizeGoogleTTS(text: string): Promise<Buffer | null> 
         voice: { languageCode, name: voiceName },
         audioConfig: {
           audioEncoding: "MP3",
-          speakingRate: 1.05,
+          speakingRate: annitaSpeechRate(),
           pitch: 2,
         },
       }),

@@ -7,6 +7,10 @@ import {
 } from "@/lib/chat-intents";
 import { isLocalDiscoveryQuestion, wantsLocalDiscoverySearch } from "@/lib/chat-discovery";
 import { matchInstantFaq } from "@/lib/chat-faq";
+import {
+  findCachedKnowledgeAnswer,
+  recordAnnitaKnowledgeExchange,
+} from "@/lib/chat-knowledge-cache";
 import { matchLocalDiscoveryInstant } from "@/lib/chat-local-instant";
 import { GUEST_FORM_TOOL, executeGuestFormSave } from "@/lib/chat-form-tools";
 import {
@@ -166,6 +170,69 @@ function buildGenerationConfig(useWebSearch: boolean, hasTools: boolean, quick =
     temperature: useWebSearch ? 0.5 : quick ? 0.55 : 0.65,
     maxOutputTokens: useWebSearch ? 1536 : hasTools ? 1024 : quick ? 320 : 768,
   };
+}
+
+function lastUserMessage(messages: ChatMessage[]): string {
+  return [...messages].reverse().find((message) => message.role === "user")?.content.trim() ?? "";
+}
+
+function shouldLearnFromChat(config: ResolvedChatConfig): boolean {
+  return !config.useWebSearch && !config.tools?.length;
+}
+
+function scheduleKnowledgeLearning(
+  messages: ChatMessage[],
+  context: ChatContext,
+  reply: string,
+  config: ResolvedChatConfig,
+): void {
+  if (!shouldLearnFromChat(config)) return;
+  const question = lastUserMessage(messages);
+  if (!question) return;
+
+  void recordAnnitaKnowledgeExchange({
+    question,
+    reply,
+    guestId: context.guestId,
+    learn: true,
+  }).catch((error) => {
+    console.warn("[chat/knowledge] failed to record exchange", error);
+  });
+}
+
+async function tryCachedKnowledge(messages: ChatMessage[]): Promise<{
+  reply: string;
+  entryId: string;
+} | null> {
+  const question = lastUserMessage(messages);
+  if (!question) return null;
+
+  try {
+    return await findCachedKnowledgeAnswer(question);
+  } catch (error) {
+    console.warn("[chat/knowledge] cache lookup failed", error);
+    return null;
+  }
+}
+
+function scheduleCachedKnowledgeLog(
+  messages: ChatMessage[],
+  context: ChatContext,
+  cached: { reply: string; entryId: string },
+): void {
+  const question = lastUserMessage(messages);
+  if (!question) return;
+
+  void recordAnnitaKnowledgeExchange({
+    question,
+    reply: cached.reply,
+    guestId: context.guestId,
+    fromCache: true,
+    entryId: cached.entryId,
+    learn: false,
+  }).catch((error) => {
+    console.warn("[chat/knowledge] failed to log cache hit", error);
+  });
 }
 
 function tryInstantFaq(messages: ChatMessage[]): string | null {
@@ -709,10 +776,18 @@ export async function generateChatReply(
     return { reply: instant, sources: [] };
   }
 
+  const cachedKnowledge = await tryCachedKnowledge(messages);
+  if (cachedKnowledge) {
+    scheduleCachedKnowledgeLog(messages, context, cachedKnowledge);
+    return { reply: cachedKnowledge.reply, sources: [] };
+  }
+
   const config = resolveChatConfig(messages, context);
 
   try {
-    return await runToolLoop(config);
+    const result = await runToolLoop(config);
+    scheduleKnowledgeLearning(messages, context, result.reply, config);
+    return result;
   } catch (error) {
     if (isLocalDiscoveryQuestion(messages)) {
       return {
@@ -749,10 +824,23 @@ export function createChatReplyStream(
           return;
         }
 
+        const cachedKnowledge = await tryCachedKnowledge(messages);
+        if (cachedKnowledge) {
+          scheduleCachedKnowledgeLog(messages, context, cachedKnowledge);
+          send(controller, {
+            type: "done",
+            reply: cachedKnowledge.reply,
+            sources: [],
+          });
+          controller.close();
+          return;
+        }
+
         const config = resolveChatConfig(messages, context);
 
         if (config.tools?.length) {
           const result = await runToolLoop(config);
+          scheduleKnowledgeLearning(messages, context, result.reply, config);
           send(controller, {
             type: "done",
             reply: result.reply,
@@ -795,6 +883,12 @@ export function createChatReplyStream(
           reply: reply.length >= rawReply.trim().length ? reply : rawReply.trim(),
           sources: [],
         });
+        scheduleKnowledgeLearning(
+          messages,
+          context,
+          reply.length >= rawReply.trim().length ? reply : rawReply.trim(),
+          config,
+        );
         controller.close();
       } catch (error) {
         if (isLocalDiscoveryQuestion(messages)) {

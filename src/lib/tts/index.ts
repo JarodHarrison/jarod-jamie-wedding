@@ -1,6 +1,7 @@
 export { isElevenLabsConfigured, synthesizeElevenLabsTTS } from "@/lib/tts/elevenlabs-tts";
 import { synthesizeElevenLabsTTS, isElevenLabsConfigured } from "@/lib/tts/elevenlabs-tts";
 import { synthesizeGoogleTTS } from "@/lib/tts/google-tts";
+import { readCachedTtsAudio, ttsTextHash, writeCachedTtsAudio } from "@/lib/tts/tts-cache";
 
 export type TtsProvider = "elevenlabs" | "google" | "browser";
 
@@ -14,11 +15,26 @@ export function getConfiguredTtsProviders(): TtsProvider[] {
 export async function synthesizeAnnitaSpeech(
   text: string,
 ): Promise<{ audio: Buffer; provider: Exclude<TtsProvider, "browser"> } | null> {
+  const hash = ttsTextHash(text);
+  const cached = await readCachedTtsAudio(hash);
+  if (cached) {
+    return {
+      audio: cached.audio,
+      provider: cached.provider as Exclude<TtsProvider, "browser">,
+    };
+  }
+
   const eleven = await synthesizeElevenLabsTTS(text);
-  if (eleven) return { audio: eleven, provider: "elevenlabs" };
+  if (eleven) {
+    await writeCachedTtsAudio(hash, eleven, "elevenlabs");
+    return { audio: eleven, provider: "elevenlabs" };
+  }
 
   const google = await synthesizeGoogleTTS(text);
-  if (google) return { audio: google, provider: "google" };
+  if (google) {
+    await writeCachedTtsAudio(hash, google, "google");
+    return { audio: google, provider: "google" };
+  }
 
   return null;
 }

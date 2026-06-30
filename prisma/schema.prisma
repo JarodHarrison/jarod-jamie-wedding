@@ -129,6 +129,7 @@ model Guest {
   linkedAdmin  Admin?
   transferMatchesLow  TransferMatch[] @relation("TransferMatchLow")
   transferMatchesHigh TransferMatch[] @relation("TransferMatchHigh")
+  annitaQuestionLogs  AnnitaQuestionLog[]
 }
 
 enum TransferMatchKind {
@@ -430,4 +431,43 @@ model ShuttleStopStatus {
   departedAt DateTime?             @db.Timestamptz
 
   @@unique([sessionId, stopId])
+}
+
+model AnnitaKnowledgeEntry {
+  id             String   @id @default(cuid())
+  fingerprint    String   @unique
+  sampleQuestion String
+  reply          String   @db.Text
+  source         String   @default("learned")
+  askCount       Int      @default(1)
+  promoted       Boolean  @default(false)
+  createdAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt      DateTime @updatedAt @db.Timestamptz
+
+  logs AnnitaQuestionLog[]
+
+  @@index([promoted, askCount])
+}
+
+model AnnitaQuestionLog {
+  id          String   @id @default(cuid())
+  guestId     String?
+  guest       Guest?   @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  fingerprint String
+  question    String   @db.Text
+  reply       String?  @db.Text
+  fromCache   Boolean  @default(false)
+  entryId     String?
+  entry       AnnitaKnowledgeEntry? @relation(fields: [entryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  @@index([fingerprint])
+  @@index([createdAt])
+}
+
+model AnnitaTtsCache {
+  textHash  String   @id
+  audio     Bytes
+  provider  String
+  createdAt DateTime @default(now()) @db.Timestamptz
 }

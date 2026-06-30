@@ -131,6 +131,15 @@ const INSTANT_FAQ: FaqEntry[] = [
       "Install the wedding app to your home screen for offline itinerary access. On iPhone: Safari → Share → Add to Home Screen. On Android: Chrome → Install app. Profile → App preferences also has tips, darling.",
   },
   {
+    patterns: [
+      /\b(departure|return).*(coach|shuttle|bus|airport express)\b/i,
+      /\bairport express\b/i,
+      /\b(departure transport|leaving spicers)\b/i,
+    ],
+    reply:
+      "Airport Express departure coach on **Sunday 27 September** from Spicers to **BNE** (11am, ~$40) or **MCY** (10:45am, $20–$30). Register in **Guide → Departure Transport** and pick your airport so we can plan headcounts, honey.",
+  },
+  {
     patterns: [/\b(emergency|urgent|help).*(day|wedding)\b/i, /\bwho (do|can) i call\b/i],
     reply:
       "On wedding day, check the **Home** tab for emergency contacts. For logistics (shuttle, dress code, times), I'm your girl — just ask!",

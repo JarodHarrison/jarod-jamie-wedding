@@ -1,3 +1,5 @@
+import { annitaSpeechRate } from "@/lib/tts/speech-rate";
+
 export function isElevenLabsConfigured() {
   return Boolean(process.env.ELEVENLABS_API_KEY?.trim() && process.env.ELEVENLABS_VOICE_ID?.trim());
 }
@@ -19,6 +21,7 @@ export async function synthesizeElevenLabsTTS(text: string): Promise<Buffer | nu
     body: JSON.stringify({
       text,
       model_id: modelId,
+      speed: annitaSpeechRate(),
       voice_settings: {
         stability: 0.35,
         similarity_boost: 0.8,

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { plainTextForSpeech } from "@/lib/speech/plain-text";
+import { CLIENT_ANNITA_SPEECH_RATE } from "@/lib/tts/speech-rate";
 
 const SPEAK_PREF_KEY = "annita-speak";
 
@@ -27,7 +28,7 @@ function speakWithBrowser(text: string) {
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "en-AU";
-  utterance.rate = 1.05;
+  utterance.rate = CLIENT_ANNITA_SPEECH_RATE;
   utterance.pitch = 1.08;
 
   const voice = pickBrowserVoice();
