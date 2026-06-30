@@ -1,8 +1,10 @@
+import { APP_BUILD_ID } from "@/lib/app-build-id";
+
 export const RETURN_SHUTTLE_AIRPORTS = ["MCY", "BNE"] as const;
 
 export type ReturnShuttleAirport = (typeof RETURN_SHUTTLE_AIRPORTS)[number];
 
-export const RETURN_SHUTTLE_FLYER = "/transfers/airport-express-departure.png";
+export const RETURN_SHUTTLE_FLYER = `/transfers/airport-express-departure.png?v=${encodeURIComponent(APP_BUILD_ID)}`;
 
 export const RETURN_SHUTTLE = {
   date: "2026-09-27",
