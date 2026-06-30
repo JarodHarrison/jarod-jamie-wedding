@@ -1,6 +1,9 @@
 import { APP_BUILD_ID } from "@/lib/app-build-id";
 
 let reloading = false;
+let lastUpdateCheckAt = 0;
+
+const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000;
 
 export function dispatchTabActivated(tab: string): void {
   if (typeof window === "undefined") return;
@@ -8,8 +11,12 @@ export function dispatchTabActivated(tab: string): void {
 }
 
 /** If a new deploy is live, reload so the installed PWA picks up fresh JS/CSS. */
-export async function checkForAppUpdate(): Promise<void> {
+export async function checkForAppUpdate(force = false): Promise<void> {
   if (reloading || typeof window === "undefined") return;
+
+  const now = Date.now();
+  if (!force && now - lastUpdateCheckAt < UPDATE_CHECK_INTERVAL_MS) return;
+  lastUpdateCheckAt = now;
 
   try {
     const res = await fetch("/api/app-version", { cache: "no-store" });

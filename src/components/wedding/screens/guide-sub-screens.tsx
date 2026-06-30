@@ -9,6 +9,9 @@ import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 
 const TEETH_WHITENING_FLYER = "/glow-up/teeth-whitening-party.png";
+const BOTOX_PUMP_PARTY_FLYER = "/glow-up/botox-pump-party.png";
+
+type GlowUpFlyer = "teeth" | "botox";
 
 export function FashionInspirationScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
   return (
@@ -60,7 +63,7 @@ export function FashionInspirationScreen({ setActiveTab }: { setActiveTab: (tab:
 }
 
 export function GlowUpScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
-  const [flyerOpen, setFlyerOpen] = useState(false);
+  const [flyerOpen, setFlyerOpen] = useState<GlowUpFlyer | null>(null);
 
   return (
     <div className="animate-fade-in animate-slide-right pb-10">
@@ -72,7 +75,7 @@ export function GlowUpScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => 
         >
           <button
             type="button"
-            onClick={() => setFlyerOpen(true)}
+            onClick={() => setFlyerOpen("teeth")}
             className="block w-full cursor-zoom-in"
             aria-label="View Teeth-Whitening Party flyer full screen"
           >
@@ -94,10 +97,35 @@ export function GlowUpScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => 
           </div>
         </div>
 
-        <p className="text-sm font-light leading-relaxed text-gray-600">
-          <strong className="font-bold text-[#2a2723]">Botox Pump Party:</strong> Freeze time and look absolutely
-          snatched. We don&apos;t do stress wrinkles here, darlings! 💉💋
-        </p>
+        <div
+          className="overflow-hidden rounded-3xl border bg-white/80 shadow-sm"
+          style={{ borderColor: theme.border }}
+        >
+          <button
+            type="button"
+            onClick={() => setFlyerOpen("botox")}
+            className="block w-full cursor-zoom-in"
+            aria-label="View Botox Pump Party flyer full screen"
+          >
+            <Image
+              src={BOTOX_PUMP_PARTY_FLYER}
+              alt="J&J Botox Pump Party — tox from $3.75 per unit, filler $375 per ml, plus teeth whitening on the day"
+              width={1200}
+              height={750}
+              className="h-auto w-full"
+            />
+          </button>
+          <div className="p-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">Botox Pump Party</p>
+            <h3 className="mt-1 font-serif text-xl text-[#2a2723]">Snatch. Glow. Celebrate love.</h3>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">
+              Join us for a luxe pre-wedding beauty party — tox from <strong className="text-[#2a2723]">$3.75 per unit</strong>,
+              filler <strong className="text-[#2a2723]">$375 per ml</strong>, with our teeth-whitening clinic running
+              on the day too. Come get snatched, glowing, and celebration-ready before the big day.
+            </p>
+          </div>
+        </div>
+
         <InterestForm
           field="glowUpInterest"
           options={[
@@ -109,10 +137,16 @@ export function GlowUpScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => 
       </div>
 
       <ImageLightbox
-        open={flyerOpen}
+        open={flyerOpen === "teeth"}
         src={TEETH_WHITENING_FLYER}
         alt="J&J Teeth-Whitening Party flyer"
-        onClose={() => setFlyerOpen(false)}
+        onClose={() => setFlyerOpen(null)}
+      />
+      <ImageLightbox
+        open={flyerOpen === "botox"}
+        src={BOTOX_PUMP_PARTY_FLYER}
+        alt="J&J Botox Pump Party flyer"
+        onClose={() => setFlyerOpen(null)}
       />
     </div>
   );

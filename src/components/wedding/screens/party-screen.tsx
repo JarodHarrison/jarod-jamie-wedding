@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { GuestPhotoWall } from "@/components/wedding/shared/guest-photo-wall";
 import { GuestPhotoLightbox } from "@/components/wedding/shared/guest-photo-lightbox";
 import { useTabRefresh } from "@/components/wedding/hooks/use-tab-refresh";
+import { fetchJsonWithClientCache, readClientCache } from "@/lib/client-data-cache";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import {
@@ -46,6 +47,8 @@ function PersonAvatar({
         src={imageSrc ?? PERSON_PLACEHOLDER}
         alt={name}
         className="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
       />
     </>
   );
@@ -242,18 +245,18 @@ function GroomCard({
 }
 
 export function PartyScreen() {
-  const [profilePhotos, setProfilePhotos] = useState<GuestProfilePhoto[]>([]);
+  const [profilePhotos, setProfilePhotos] = useState<GuestProfilePhoto[]>(
+    () => readClientCache<GuestProfilePhoto[]>("party-photos") ?? [],
+  );
   const [lightbox, setLightbox] = useState<PartyPhotoLightbox | null>(null);
 
   const loadProfilePhotos = useCallback(async () => {
-    try {
-      const res = await fetch("/api/party/photos", { cache: "no-store" });
-      if (!res.ok) return;
-      const data = await res.json();
-      setProfilePhotos(data.guests ?? []);
-    } catch {
-      // non-blocking
-    }
+    const guests = await fetchJsonWithClientCache(
+      "party-photos",
+      "/api/party/photos",
+      (json) => (json.guests as GuestProfilePhoto[] | undefined) ?? [],
+    );
+    setProfilePhotos(guests);
   }, []);
 
   useTabRefresh("party", loadProfilePhotos);

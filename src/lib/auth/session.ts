@@ -1,5 +1,6 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { resolveLinkedGuestSession } from "@/lib/auth/linked-guest";
 import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import type { GuestTier } from "@/types/wedding";
@@ -79,7 +80,13 @@ export function applySessionCookie(
 
 export async function clearSessionCookie(): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  cookieStore.set(COOKIE_NAME, "", { ...sessionCookieOptions(), maxAge: 0 });
+}
+
+/** Clear the session cookie on a route response (reliable for fetch-based logout). */
+export function clearSessionOnResponse(response: NextResponse): NextResponse {
+  response.cookies.set(COOKIE_NAME, "", { ...sessionCookieOptions(), maxAge: 0 });
+  return response;
 }
 
 export async function getSession(): Promise<SessionPayload | null> {

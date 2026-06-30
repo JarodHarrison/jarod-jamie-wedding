@@ -2,14 +2,23 @@ export const RETURN_SHUTTLE_AIRPORTS = ["MCY", "BNE"] as const;
 
 export type ReturnShuttleAirport = (typeof RETURN_SHUTTLE_AIRPORTS)[number];
 
+export const RETURN_SHUTTLE_FLYER = "/transfers/airport-express-departure.png";
+
 export const RETURN_SHUTTLE = {
   date: "2026-10-27",
-  time: "11:00",
   displayDate: "Monday 27 October",
-  displayTime: "11:00 am",
+  title: "Airport Express",
   description:
-    "We're organising a return coach leaving Spicers at 11:00 am on Monday 27 October, with drop-offs at Sunshine Coast (MCY) and Brisbane (BNE) airports.",
+    "Departure-only coach from Spicers Clovelly Estate on Monday 27 October — relax, unwind, and we'll get you to the airport in style.",
 } as const;
+
+export const RETURN_SHUTTLE_AIRPORT_DETAILS: Record<
+  ReturnShuttleAirport,
+  { departureTime: string; priceGuide: string }
+> = {
+  BNE: { departureTime: "11:00 am", priceGuide: "around $40 per person" },
+  MCY: { departureTime: "10:45 am", priceGuide: "$20–$30 per person" },
+};
 
 export const CHARTER_GUEST_THRESHOLD = 6;
 
@@ -21,4 +30,9 @@ export function returnShuttleAirportLabel(code: string | null | undefined): stri
   if (code === "MCY") return "Sunshine Coast (MCY)";
   if (code === "BNE") return "Brisbane (BNE)";
   return code ?? "Unknown";
+}
+
+export function returnShuttleOptionLabel(code: ReturnShuttleAirport): string {
+  const details = RETURN_SHUTTLE_AIRPORT_DETAILS[code];
+  return `${returnShuttleAirportLabel(code)} — departs ${details.departureTime} (${details.priceGuide})`;
 }

@@ -25,17 +25,20 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({
-      guests: guests.map((guest) => ({
-        name: guest.name,
-        email: guest.email,
-        guestOfHost: guest.guestOfHost,
-        guestRelationship: guest.guestRelationship,
-        guestRelationshipNote: guest.guestRelationshipNote,
-        plusOneName: guest.plusOneGuest?.name ?? guest.plusOneName,
-        photoUrl: `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`,
-      })),
-    });
+    return NextResponse.json(
+      {
+        guests: guests.map((guest) => ({
+          name: guest.name,
+          email: guest.email,
+          guestOfHost: guest.guestOfHost,
+          guestRelationship: guest.guestRelationship,
+          guestRelationshipNote: guest.guestRelationshipNote,
+          plusOneName: guest.plusOneGuest?.name ?? guest.plusOneName,
+          photoUrl: `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`,
+        })),
+      },
+      { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" } },
+    );
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonError("Unauthorized", 401);

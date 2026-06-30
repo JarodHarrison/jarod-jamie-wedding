@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { RETURN_SHUTTLE } from "@/lib/return-shuttle";
+import {
+  RETURN_SHUTTLE,
+  RETURN_SHUTTLE_AIRPORT_DETAILS,
+  returnShuttleAirportLabel,
+} from "@/lib/return-shuttle";
 import { theme } from "@/lib/theme";
 
 type TransferOverviewModal =
@@ -102,7 +106,8 @@ export function AdminTransferOverviewModal({ modal, onClose }: AdminTransferOver
             </h2>
             {modal.kind === "return-shuttle" && (
               <p className="mt-1 text-xs text-gray-500">
-                {RETURN_SHUTTLE.displayDate} · leaves {RETURN_SHUTTLE.displayTime}
+                {RETURN_SHUTTLE.displayDate} · departs{" "}
+                {RETURN_SHUTTLE_AIRPORT_DETAILS[modal.airport].departureTime}
               </p>
             )}
           </div>

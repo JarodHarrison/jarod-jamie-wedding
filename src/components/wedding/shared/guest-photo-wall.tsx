@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Users } from "lucide-react";
 import { GuestPhotoLightbox } from "@/components/wedding/shared/guest-photo-lightbox";
 import { useTabRefresh } from "@/components/wedding/hooks/use-tab-refresh";
+import { fetchJsonWithClientCache, readClientCache } from "@/lib/client-data-cache";
 import { rosterProfileOverlay } from "@/lib/party-photo-match";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import { theme } from "@/lib/theme";
@@ -20,19 +21,19 @@ type WallLightbox = {
 };
 
 export function GuestPhotoWall({ compact = false }: { compact?: boolean }) {
-  const [guests, setGuests] = useState<WallGuest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cachedGuests = readClientCache<WallGuest[]>("guest-wall");
+  const [guests, setGuests] = useState<WallGuest[]>(cachedGuests ?? []);
+  const [loading, setLoading] = useState(!cachedGuests?.length);
   const [lightbox, setLightbox] = useState<WallLightbox | null>(null);
 
   const loadGuests = useCallback(async () => {
-    try {
-      const res = await fetch("/api/guests/wall", { cache: "no-store" });
-      if (!res.ok) return;
-      const data = await res.json();
-      setGuests(data.guests ?? []);
-    } finally {
-      setLoading(false);
-    }
+    const nextGuests = await fetchJsonWithClientCache(
+      "guest-wall",
+      "/api/guests/wall",
+      (json) => (json.guests as WallGuest[] | undefined) ?? [],
+    );
+    setGuests(nextGuests);
+    setLoading(false);
   }, []);
 
   useTabRefresh("party", loadGuests);
@@ -92,7 +93,13 @@ export function GuestPhotoWall({ compact = false }: { compact?: boolean }) {
               aria-label={`View ${guest.name} full screen`}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={guest.photoUrl} alt={guest.name} className="h-full w-full object-cover" />
+              <img
+                src={guest.photoUrl}
+                alt={guest.name}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
             </button>
             {!compact && (
               <p className="truncate text-[10px] font-medium text-[var(--wedding-text-dark)]">{guest.name}</p>

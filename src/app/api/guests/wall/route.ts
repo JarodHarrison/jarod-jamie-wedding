@@ -29,18 +29,21 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json({
-      guests: guests.map((guest) => ({
-        id: guest.id,
-        name: guest.name,
-        guestOfHost: guest.guestOfHost,
-        guestRelationship: guest.guestRelationship,
-        guestRelationshipNote: guest.guestRelationshipNote,
-        plusOneName: guest.plusOneGuest?.name ?? guest.plusOneName,
-        photoUrl: `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`,
-      })),
-      total: guests.length,
-    });
+    return NextResponse.json(
+      {
+        guests: guests.map((guest) => ({
+          id: guest.id,
+          name: guest.name,
+          guestOfHost: guest.guestOfHost,
+          guestRelationship: guest.guestRelationship,
+          guestRelationshipNote: guest.guestRelationshipNote,
+          plusOneName: guest.plusOneGuest?.name ?? guest.plusOneName,
+          photoUrl: `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`,
+        })),
+        total: guests.length,
+      },
+      { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" } },
+    );
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonError("Unauthorized", 401);

@@ -5,6 +5,7 @@ import {
   APP_NOTIFICATION_ICON,
   isGameOrAnnitaNotification,
 } from "@/lib/notification-branding";
+import { APP_BUILD_ID } from "@/lib/app-build-id";
 
 type OsNotificationPayload = {
   title: string;
@@ -21,7 +22,8 @@ export async function ensureNotificationServiceWorker(): Promise<ServiceWorkerRe
   if (!("serviceWorker" in navigator)) return null;
 
   try {
-    return await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+    const build = encodeURIComponent(APP_BUILD_ID);
+    return await navigator.serviceWorker.register(`/sw.js?build=${build}`, { scope: "/" });
   } catch {
     return null;
   }

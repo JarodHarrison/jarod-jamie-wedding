@@ -3,6 +3,7 @@ import { adminGuestEventEmailHtml } from "@/lib/email-templates";
 import {
   CHARTER_GUEST_THRESHOLD,
   RETURN_SHUTTLE,
+  RETURN_SHUTTLE_AIRPORT_DETAILS,
   returnShuttleAirportLabel,
 } from "@/lib/return-shuttle";
 import { airportLabel } from "@/lib/transfer-match-labels";
@@ -43,12 +44,13 @@ export async function checkReturnShuttleCharterAlerts(): Promise<void> {
 
     const alertKey = `return-shuttle-${airport}`;
     const airportName = returnShuttleAirportLabel(airport);
+    const details = RETURN_SHUTTLE_AIRPORT_DETAILS[airport];
     await sendCharterAlertOnce(
       alertKey,
       `Private charter opportunity — ${guests.length} guests on return shuttle (${airport})`,
       [
-        `${guests.length} guests have registered for the return coach to ${airportName}.`,
-        `Departure: ${RETURN_SHUTTLE.displayDate} at ${RETURN_SHUTTLE.displayTime} from Spicers Clovelly.`,
+        `${guests.length} guests have registered for the departure coach to ${airportName}.`,
+        `Departure: ${RETURN_SHUTTLE.displayDate} at ${details.departureTime} from Spicers Clovelly (${details.priceGuide}).`,
         `Airport: ${airportName}`,
         `Guests: ${guests.map((g) => g.name).join(", ")}`,
         "This may be worth exploring as a private charter or larger coach.",

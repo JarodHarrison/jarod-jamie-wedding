@@ -72,24 +72,30 @@ export function WeddingApp() {
   const [hasGoldCoastTrip, setHasGoldCoastTrip] = useState(false);
   const [loading, setLoading] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
+  const sessionGenerationRef = useRef(0);
+  const loggingOutRef = useRef(false);
 
   useEffect(() => {
     resetAnnitaFabHiddenForNewSession();
-  }, []);
-
-  useEffect(() => {
-    if (!user) return;
     void ensureNotificationServiceWorker();
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     mainRef.current?.scrollTo({ top: 0, left: 0 });
   }, [activeTab]);
 
   const refreshSession = useCallback(async () => {
+    if (loggingOutRef.current) return;
+
+    const generation = sessionGenerationRef.current;
+
     try {
-      const res = await fetch("/api/auth/me");
+      const res = await fetch("/api/auth/me", { cache: "no-store" });
+      if (generation !== sessionGenerationRef.current || loggingOutRef.current) return;
+
       const data = await res.json();
+      if (generation !== sessionGenerationRef.current || loggingOutRef.current) return;
+
       if (data.user) setUser(data.user);
       else setUser(null);
       if (data.admin) setAdmin(data.admin);
@@ -100,6 +106,8 @@ export function WeddingApp() {
       setHasOnSiteAccess(Boolean(data.hasOnSiteAccess));
       setHasGoldCoastTrip(Boolean(data.hasGoldCoastTrip));
     } catch {
+      if (generation !== sessionGenerationRef.current || loggingOutRef.current) return;
+
       setUser(null);
       setAdmin(null);
       setCanAccessAdmin(false);
@@ -133,7 +141,7 @@ export function WeddingApp() {
     const onVisible = () => {
       if (document.visibilityState === "visible") {
         void refreshSession();
-        void checkForAppUpdate();
+        void checkForAppUpdate(true);
       }
     };
     document.addEventListener("visibilitychange", onVisible);
@@ -147,9 +155,8 @@ export function WeddingApp() {
   useEffect(() => {
     if (loading || (!user && !admin)) return;
     dispatchTabActivated(activeTab);
-    void refreshSession();
     void checkForAppUpdate();
-  }, [activeTab, loading, user, admin, refreshSession]);
+  }, [activeTab, loading, user, admin]);
 
   useEffect(() => {
     const feature = PHASE_GATED_TABS[activeTab];
@@ -179,6 +186,8 @@ export function WeddingApp() {
     canViewVendors?: boolean;
     canVerifyBingo?: boolean;
   }) => {
+    loggingOutRef.current = false;
+    sessionGenerationRef.current += 1;
     setUser(data.user ?? null);
     setAdmin(data.admin ?? null);
     setCanAccessAdmin(Boolean(data.canAccessAdmin));
@@ -188,14 +197,24 @@ export function WeddingApp() {
   };
 
   const handleLogout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    loggingOutRef.current = true;
+    sessionGenerationRef.current += 1;
+
     setUser(null);
     setAdmin(null);
     setCanAccessAdmin(false);
     setCanViewVendors(false);
     setCanVerifyBingo(false);
+    setHasOnSiteAccess(false);
     setHasGoldCoastTrip(false);
+    setChatOpen(false);
     setActiveTab("home");
+
+    try {
+      await fetch("/api/auth/logout", { method: "POST", cache: "no-store" });
+    } finally {
+      loggingOutRef.current = false;
+    }
   }, []);
 
   if (loading) {

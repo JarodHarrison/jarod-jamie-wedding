@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       if (!target?.profilePhotoData || !target.profilePhotoMime || target.rsvpStatus !== "ACCEPTED") {
         return new NextResponse(null, { status: 404 });
       }
-      return binaryPhotoResponse(target.profilePhotoData, target.profilePhotoMime, "public, max-age=86400");
+      return binaryPhotoResponse(target.profilePhotoData, target.profilePhotoMime, "public, max-age=604800, stale-while-revalidate=86400");
     }
 
     const guest = await prisma.guest.findUnique({
