@@ -1,3 +1,5 @@
+import { googleMapsServerApiKey } from "@/lib/google-maps-api-key";
+
 type LatLng = { latitude: number; longitude: number };
 
 type EtaResult = {
@@ -10,7 +12,7 @@ export async function getDrivingEta(
   origin: LatLng,
   destination: LatLng,
 ): Promise<EtaResult | null> {
-  const apiKey = process.env.GOOGLE_API_KEY;
+  const apiKey = googleMapsServerApiKey();
   if (!apiKey) return null;
 
   const params = new URLSearchParams({

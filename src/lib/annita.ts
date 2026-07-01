@@ -155,6 +155,12 @@ export const ANNITA_LOCAL_OPENERS = {
   ],
 } as const;
 
+export const ANNITA_LOCAL_CLOSERS = [
+  "More gems in **Guide → Explore Montville** if you're still wandering, darling.",
+  "Honey, the hinterland rewards the curious — check **Guide → Explore Montville** for the full tea.",
+  "That's my starter pack — **Guide → Explore Montville** has the rest of the lore.",
+] as const;
+
 export const ANNITA = {
   name: "Annita Help",
   tagline: "Your fabulous wedding concierge",

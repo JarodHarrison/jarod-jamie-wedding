@@ -471,3 +471,43 @@ model AnnitaTtsCache {
   provider  String
   createdAt DateTime @default(now()) @db.Timestamptz
 }
+
+/** Cached restaurants, cafes, bars within ~20km of Spicers — synced from Google Places. */
+model HinterlandEatery {
+  id           String   @id @default(cuid())
+  googlePlaceId String? @unique
+  name         String
+  latitude     Float
+  longitude    Float
+  category     String
+  cuisineTags  String[] @default([])
+  description  String   @default("")
+  websiteUrl   String?
+  address      String?
+  rating       Float?
+  cachedAt     DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  @@index([latitude, longitude])
+}
+
+/** Cached top-rated attractions within ~35km of Spicers — synced from Google Places. */
+model HinterlandAttraction {
+  id            String   @id @default(cuid())
+  googlePlaceId String?  @unique
+  name          String
+  latitude      Float
+  longitude     Float
+  category      String
+  topicTags     String[] @default([])
+  description   String   @default("")
+  websiteUrl    String?
+  address       String?
+  rating        Float?
+  reviewCount   Int?
+  cachedAt      DateTime @default(now()) @db.Timestamptz
+  updatedAt     DateTime @updatedAt @db.Timestamptz
+
+  @@index([latitude, longitude])
+  @@index([rating, reviewCount])
+}

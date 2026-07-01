@@ -5,6 +5,8 @@ import {
   oddityAttractions,
   type Attraction,
 } from "@/components/wedding/data/attractions";
+import { attractionCoordinates } from "@/lib/attraction-coordinates";
+import { buildMapsDirectionsUrl } from "@/lib/maps-directions";
 
 export const MAX_DRIVE_MINUTES_FROM_MONTVILLE = 35;
 
@@ -99,9 +101,33 @@ export function formatPlaceWebsiteLink(websiteUrl: string | undefined): string {
   return ` [Website](${websiteUrl})`;
 }
 
+export function formatPlaceNavigateLink(args: {
+  name: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}): string {
+  const url = buildMapsDirectionsUrl(args);
+  return ` [Navigate](${url})`;
+}
+
+export function formatPlaceChatLinks(args: {
+  name: string;
+  websiteUrl?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+}): string {
+  return `${formatPlaceWebsiteLink(args.websiteUrl)}${formatPlaceNavigateLink(args)}`;
+}
+
 /** Chat line with a clickable website link (not a raw URL Annita would read aloud). */
 export function formatPlaceForChat(place: HinterlandPlace): string {
-  return `• **${place.title}** (${place.category}, ${driveMinutesLabel(place.driveMinutes)}): ${place.desc}${formatPlaceWebsiteLink(place.websiteUrl)}`;
+  const coords = attractionCoordinates(place.title);
+  return `• **${place.title}** (${place.category}, ${driveMinutesLabel(place.driveMinutes)}): ${place.desc}${formatPlaceChatLinks({
+    name: place.title,
+    websiteUrl: place.websiteUrl,
+    latitude: coords?.latitude,
+    longitude: coords?.longitude,
+  })}`;
 }
 
 export function searchHinterlandPlaces(

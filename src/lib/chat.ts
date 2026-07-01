@@ -243,7 +243,7 @@ function tryInstantFaq(messages: ChatMessage[]): string | null {
   return matchInstantFaq(messages);
 }
 
-function tryInstantReply(messages: ChatMessage[], geo?: GuestGeoContext): string | null {
+async function tryInstantReply(messages: ChatMessage[], geo?: GuestGeoContext): Promise<string | null> {
   const faq = tryInstantFaq(messages);
   if (faq) return faq;
   return matchLocalDiscoveryInstant(messages, geo);
@@ -773,7 +773,7 @@ export async function generateChatReply(
   messages: ChatMessage[],
   context: ChatContext,
 ): Promise<ChatReply> {
-  const instant = tryInstantReply(messages, context.guestGeo);
+  const instant = await tryInstantReply(messages, context.guestGeo);
   if (instant) {
     return { reply: instant, sources: [] };
   }
@@ -793,7 +793,8 @@ export async function generateChatReply(
   } catch (error) {
     if (isLocalDiscoveryQuestion(messages)) {
       return {
-        reply: matchLocalDiscoveryInstant(messages, context.guestGeo) ?? localDiscoveryFallbackReply(),
+        reply:
+          (await matchLocalDiscoveryInstant(messages, context.guestGeo)) ?? localDiscoveryFallbackReply(),
         sources: [],
       };
     }
@@ -819,7 +820,7 @@ export function createChatReplyStream(
       try {
         send(controller, { type: "started" });
 
-        const instant = tryInstantReply(messages, context.guestGeo);
+        const instant = await tryInstantReply(messages, context.guestGeo);
         if (instant) {
           send(controller, { type: "done", reply: instant, sources: [] });
           controller.close();
@@ -871,7 +872,9 @@ export function createChatReplyStream(
           if (isLocalDiscoveryQuestion(messages)) {
             send(controller, {
               type: "done",
-              reply: matchLocalDiscoveryInstant(messages, context.guestGeo) ?? localDiscoveryFallbackReply(),
+              reply:
+                (await matchLocalDiscoveryInstant(messages, context.guestGeo)) ??
+                localDiscoveryFallbackReply(),
               sources: [],
             });
             controller.close();
@@ -896,7 +899,9 @@ export function createChatReplyStream(
         if (isLocalDiscoveryQuestion(messages)) {
           send(controller, {
             type: "done",
-            reply: matchLocalDiscoveryInstant(messages, context.guestGeo) ?? localDiscoveryFallbackReply(),
+            reply:
+              (await matchLocalDiscoveryInstant(messages, context.guestGeo)) ??
+              localDiscoveryFallbackReply(),
             sources: [],
           });
           controller.close();

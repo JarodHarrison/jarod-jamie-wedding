@@ -165,7 +165,7 @@ export async function POST(request: Request) {
     if (instant) {
       return NextResponse.json({ reply: instant, sources: [] });
     }
-    const localInstant = messages.length > 0 ? matchLocalDiscoveryInstant(messages) : null;
+    const localInstant = messages.length > 0 ? await matchLocalDiscoveryInstant(messages) : null;
     if (localInstant) {
       return NextResponse.json({ reply: localInstant, sources: [] });
     }

@@ -1,4 +1,5 @@
-import { ExternalLink, MapPin } from "lucide-react";
+import { ExternalLink, Navigation } from "lucide-react";
+import { directionsUrlForAttraction } from "@/lib/attraction-coordinates";
 import { theme } from "@/lib/theme";
 
 type AttractionCardProps = {
@@ -18,6 +19,8 @@ export function AttractionCard({
   imageUrl,
   websiteUrl,
 }: AttractionCardProps) {
+  const directionsUrl = directionsUrlForAttraction(title);
+
   return (
     <div
       className="flex flex-col overflow-hidden rounded-2xl border bg-white/60 shadow-sm"
@@ -44,23 +47,34 @@ export function AttractionCard({
             className="flex shrink-0 items-center gap-1 rounded-md border bg-[#f7f4ee] px-2 py-1 text-[10px] font-bold tracking-wider"
             style={{ color: theme.textDark, borderColor: theme.border }}
           >
-            <MapPin size={10} style={{ color: theme.gold }} /> {distance}
+            {distance}
           </span>
         </div>
         <p className="mb-4 mt-2 flex-1 text-sm font-light leading-relaxed text-gray-600">
           {desc}
         </p>
-        {websiteUrl && (
+        <div className="mt-auto flex gap-2">
           <a
-            href={websiteUrl}
+            href={directionsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-auto flex w-full items-center justify-center gap-2 rounded-xl border bg-white py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-sm transition-transform active:scale-95"
-            style={{ borderColor: theme.border, color: theme.textDark }}
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl border py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-sm transition-transform active:scale-95"
+            style={{ borderColor: theme.border, backgroundColor: theme.gold, color: "#fff" }}
           >
-            Visit Website <ExternalLink size={12} />
+            Directions <Navigation size={12} />
           </a>
-        )}
+          {websiteUrl && (
+            <a
+              href={websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border bg-white py-2.5 text-[10px] font-bold uppercase tracking-widest shadow-sm transition-transform active:scale-95"
+              style={{ borderColor: theme.border, color: theme.textDark }}
+            >
+              Website <ExternalLink size={12} />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

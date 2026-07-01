@@ -14,6 +14,8 @@
     "db:push": "prisma db push",
     "db:deploy": "prisma db push --accept-data-loss",
     "db:seed": "tsx prisma/seed.ts",
+    "db:sync-eateries": "node -r dotenv/config ./node_modules/tsx/dist/cli.mjs scripts/sync-hinterland-eateries.ts",
+    "db:sync-attractions": "node -r dotenv/config ./node_modules/tsx/dist/cli.mjs scripts/sync-hinterland-attractions.ts",
     "db:studio": "prisma studio"
   },
   "dependencies": {

@@ -7,6 +7,8 @@ export function plainTextForSpeech(content: string): string {
   return content
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[Website\]\([^)]+\)/gi, " ")
+    .replace(/\[Navigate\]\([^)]+\)/gi, " ")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(URL_PATTERN, " ")
     .replace(/\b(\d+)\s*mins?\b/gi, "$1 minutes")

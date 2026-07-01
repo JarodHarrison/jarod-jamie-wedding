@@ -30,14 +30,43 @@ export function sanitizeChatReply(text: string): string {
     .trim();
 }
 
+import {
+  adventureAttractions,
+  doAttractions,
+  eatAttractions,
+  oddityAttractions,
+} from "@/components/wedding/data/attractions";
+import {
+  enrichPlaceFromAttraction,
+  formatPlaceForChat,
+} from "@/lib/hinterland-places";
+import { pickAnnitaLine, ANNITA_EAT_CLOSERS } from "@/lib/annita";
+
+const FALLBACK_ATTRACTION_TITLES = [
+  "Montville Artisan Village",
+  "Nutworks",
+  "The Long Apron",
+  "Flame Hill Vineyard",
+  "Brouhaha Brewery",
+];
+
+function fallbackAttractionLines(): string {
+  const all = [...eatAttractions, ...doAttractions, ...adventureAttractions, ...oddityAttractions];
+  return FALLBACK_ATTRACTION_TITLES.map((title) => {
+    const attraction = all.find((item) => item.title === title);
+    if (!attraction) return null;
+    return formatPlaceForChat(enrichPlaceFromAttraction(attraction));
+  })
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function localDiscoveryFallbackReply(): string {
   return `Honey, Montville and Maleny are absolutely eating — here's where I'd send you first:
 
-• **Montville Artisan Village** — Main Street boutiques and famous Montville fudge (~5 minutes)
-• **Nutworks** — chocolate making and macadamia tastings in Yandina (~35 minutes)
-• **The Long Apron** — right at Spicers (on-site fine dining; très chic)
-• **Flame Hill Vineyard** — lunch with vineyard views (~8 minutes)
-• **Brouhaha Brewery** — craft beer and great food in Maleny (~15 minutes)
+${fallbackAttractionLines()}
 
-Ubers are scarce in the hinterland, so book transport before dinner, darling. For the full curated list, hit **Guide → Explore Montville** in the app.`;
+${pickAnnitaLine(ANNITA_EAT_CLOSERS)}
+
+For the full curated list, hit **Guide → Explore Montville** in the app.`;
 }

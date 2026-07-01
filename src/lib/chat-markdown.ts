@@ -9,10 +9,20 @@ function escapeHtml(text: string): string {
 const LINK_CLASS =
   "font-medium text-pink-600 underline decoration-pink-300 underline-offset-2 hover:text-pink-700";
 
+const NAV_LINK_CLASS =
+  "inline-flex align-middle ml-1.5 rounded-full p-0.5 text-pink-600 hover:bg-pink-50 hover:text-pink-700";
+
+const NAV_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>`;
+
 function linkHtml(label: string, url: string) {
   const safeUrl = escapeHtml(url);
   const safeLabel = escapeHtml(label);
   return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="${LINK_CLASS}">${safeLabel}</a>`;
+}
+
+function navigateLinkHtml(url: string) {
+  const safeUrl = escapeHtml(url);
+  return `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer" class="${NAV_LINK_CLASS}" aria-label="Get directions" title="Get directions">${NAV_ICON_SVG}</a>`;
 }
 
 function protectLinks(text: string): { text: string; links: string[] } {
@@ -21,7 +31,12 @@ function protectLinks(text: string): { text: string; links: string[] } {
 
   working = working.replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, (_match, label, url) => {
     const token = `@@LINK${links.length}@@`;
-    links.push(linkHtml(String(label), String(url)));
+    const labelText = String(label);
+    if (labelText === "Navigate") {
+      links.push(navigateLinkHtml(String(url)));
+    } else {
+      links.push(linkHtml(labelText, String(url)));
+    }
     return token;
   });
 

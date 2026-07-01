@@ -3,6 +3,10 @@ import { hashPassword } from "../src/lib/auth/password";
 import { JAROD_ADMIN_EMAIL, JAROD_GUEST_EMAIL, JAMIE_ADMIN_EMAIL, JAMIE_GUEST_EMAIL } from "../src/lib/auth/account-roles";
 
 import { SHUTTLE_STOPS } from "../src/lib/shuttle/stops";
+import { upsertEateryBatch } from "../src/lib/eatery-store";
+import { SEED_EATERIES } from "../src/lib/eatery-seed";
+import { upsertAttractionBatch } from "../src/lib/attraction-store";
+import { SEED_ATTRACTIONS } from "../src/lib/attraction-seed";
 
 const ADMINS = [
   {
@@ -166,6 +170,12 @@ async function main() {
       pinHash: await hashPassword(driverPin),
     },
   });
+
+  console.log("Seeding hinterland eateries…");
+  await upsertEateryBatch(SEED_EATERIES);
+
+  console.log("Seeding hinterland attractions…");
+  await upsertAttractionBatch(SEED_ATTRACTIONS);
 
   console.log("Seed complete.");
   console.log("Shuttle driver PIN:", driverPin, "(override with SHUTTLE_DRIVER_PIN)");
