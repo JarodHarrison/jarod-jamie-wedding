@@ -36,6 +36,21 @@ enum PartyRole {
   BEST_BITCH
 }
 
+enum SeatingTableKey {
+  LEFT
+  CENTRE
+  RIGHT
+  BRIDAL
+}
+
+model SeatingTable {
+  key       SeatingTableKey @id
+  label     String
+  maxGuests Int             @default(20)
+  sortOrder Int
+  isBridal  Boolean         @default(false)
+}
+
 model Guest {
   id           String     @id @default(cuid())
   name         String
@@ -116,6 +131,9 @@ model Guest {
   mailingAddress        String?
   sayiImportedAt        DateTime? @db.Timestamptz
   sayiCustomData        Json?
+
+  seatingTableKey  SeatingTableKey?
+  seatingSortOrder Int?
 
   goldCoastTrip GoldCoastTrip?
   passwordResetTokens GuestPasswordResetToken[]

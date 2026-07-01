@@ -17,7 +17,8 @@ export type WeddingFeature =
   | "weekend-checklist"
   | "rsvp-hero"
   | "guest-wall"
-  | "emergency-contacts";
+  | "emergency-contacts"
+  | "seating-chart";
 
 const DAY_SCHEDULE = [
   { time: "3:00pm", label: "Ceremony", detail: "Garden ceremony at Spicers" },
@@ -42,6 +43,7 @@ const FEATURE_PHASES: Record<WeddingFeature, readonly WeddingPhase[]> = {
   "rsvp-hero": ["before", "week"],
   "guest-wall": ["before", "week", "recovery"],
   "emergency-contacts": ["day"],
+  "seating-chart": ["week", "day"],
 };
 
 /** Live shuttle map: wedding eve through Sunday (courtesy bus weekend). */
@@ -96,6 +98,11 @@ export function isWeddingFeatureVisible(feature: WeddingFeature, now = new Date(
   if (feature === "guest-pic") {
     if (process.env.GUEST_PIC_FORCE_VISIBLE === "true") return true;
     if (process.env.GUEST_PIC_FORCE_VISIBLE === "false") return false;
+  }
+
+  if (feature === "seating-chart") {
+    if (process.env.SEATING_CHART_FORCE_VISIBLE === "true") return true;
+    if (process.env.SEATING_CHART_FORCE_VISIBLE === "false") return false;
   }
 
   return FEATURE_PHASES[feature].includes(phase);

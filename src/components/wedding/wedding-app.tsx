@@ -27,6 +27,7 @@ import { PartyScreen } from "@/components/wedding/screens/party-screen";
 import { RSVPScreen } from "@/components/wedding/screens/rsvp-screen";
 import { JarodJamieScreen } from "@/components/wedding/screens/jarod-jamie-screen";
 import { VendorsScreen } from "@/components/wedding/screens/vendors-screen";
+import { SeatingChartScreen } from "@/components/wedding/screens/seating-chart-screen";
 import { TravelScreen } from "@/components/wedding/screens/travel-screen";
 import { WeddingChatbot } from "@/components/wedding/chat/wedding-chatbot";
 import { SparkleOverlay } from "@/components/wedding/shared/sparkle-overlay";
@@ -60,6 +61,7 @@ const SESSION_REFRESH_MS = 30_000;
 const PHASE_GATED_TABS: Partial<Record<AppTab, WeddingFeature>> = {
   bingo: "photobooth-bingo",
   shuttle: "live-shuttle",
+  seating: "seating-chart",
 };
 
 const PLANNING_TABS: AppTab[] = ["attractions", "fashion", "glowup", "onsite", "departure-transport"];
@@ -336,6 +338,8 @@ export function WeddingApp() {
         return <OnSiteScreen setActiveTab={setActiveTab} />;
       case "departure-transport":
         return <DepartureTransportScreen setActiveTab={setActiveTab} />;
+      case "seating":
+        return <SeatingChartScreen setActiveTab={setActiveTab} />;
       default:
         return (
           <HomeScreen

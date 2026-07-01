@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Bus, Camera, Heart, LogOut, Mail, Store, Users } from "lucide-react";
+import { ArrowLeft, Bus, Camera, Heart, LayoutGrid, LogOut, Mail, Store, Users } from "lucide-react";
 import { AdminBroadcastEmail } from "@/components/admin/admin-broadcast-email";
 import { AdminBroadcastPush } from "@/components/admin/admin-broadcast-push";
 import { AdminDriveConnect } from "@/components/admin/admin-drive-connect";
@@ -11,6 +11,7 @@ import { AdminGuestList } from "@/components/admin/admin-guest-list";
 import { AdminGuestPhotos } from "@/components/admin/admin-guest-photos";
 import { AdminGuestStories } from "@/components/admin/admin-guest-stories";
 import { AdminKioskPanel } from "@/components/admin/admin-kiosk-panel";
+import { AdminSeatingChart } from "@/components/admin/admin-seating-chart";
 import { AdminVendors } from "@/components/admin/admin-vendors";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import {
@@ -30,7 +31,7 @@ type AdminDashboardProps = {
   onUnauthorized?: () => void;
 };
 
-type AdminView = "hub" | "guests" | "shuttle" | "updates" | "stories" | "photos" | "vendors";
+type AdminView = "hub" | "guests" | "seating" | "shuttle" | "updates" | "stories" | "photos" | "vendors";
 
 type CommandStats = {
   guests: { total: number; rsvpAccepted: number; rsvpPending: number; profilePhotos: number };
@@ -116,6 +117,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
   const subViewTitle: Record<Exclude<AdminView, "hub">, string> = {
     guests: "Guest List",
+    seating: "Seating Chart",
     shuttle: "Shuttle Driver",
     updates: "Guest Updates",
     stories: "Story Moderation",
@@ -290,6 +292,13 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
                 onClick={() => setView("guests")}
               />
               <AdminSectionCard
+                title="Seating Chart"
+                description="Assign guests to Left, Centre, Right, or the grooms' bridal table."
+                actionLabel="Manage Seating"
+                icon={LayoutGrid}
+                onClick={() => setView("seating")}
+              />
+              <AdminSectionCard
                 title="Vendors"
                 description="Upload supplier contacts, contracts, and notes for the wedding party."
                 actionLabel="Manage Vendors"
@@ -340,6 +349,8 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
             onGuestsChange={setGuests}
           />
         )}
+
+        {view === "seating" && <AdminSeatingChart onMessage={setMessage} />}
 
         {view === "shuttle" && (
           <section className="rounded-2xl border bg-white p-5 shadow-sm" style={{ borderColor: theme.border }}>

@@ -11,15 +11,20 @@ import { saveOfflineBundle } from "@/lib/offline-cache";
 import { theme } from "@/lib/theme";
 import type { AppTab } from "@/types/wedding";
 import { useVenueMapAccess } from "@/components/wedding/hooks/use-venue-map-access";
+import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
 
 function WeddingSchedule({
   isOnSite,
   onOpenVenueMap,
   showVenueMapLink,
+  onOpenSeating,
+  showSeatingLink,
 }: {
   isOnSite: boolean;
   onOpenVenueMap?: () => void;
   showVenueMapLink?: boolean;
+  onOpenSeating?: () => void;
+  showSeatingLink?: boolean;
 }) {
   return (
     <div className="relative space-y-6 before:absolute before:inset-0 before:ml-6 before:h-full before:w-0.5 before:-translate-x-px before:bg-gradient-to-b before:from-[#e2d5c4]/0 before:via-[#e2d5c4] before:to-[#e2d5c4]/0">
@@ -73,6 +78,20 @@ function WeddingSchedule({
         loc="The Pavilion"
         desc="Celebrate with amazing food, drinks, and dance."
       />
+      {showSeatingLink && onOpenSeating && (
+        <button
+          type="button"
+          onClick={onOpenSeating}
+          className="ml-12 flex w-[calc(100%-3rem)] items-center justify-between gap-3 rounded-2xl border bg-white/80 px-4 py-3 text-left shadow-sm active:scale-[0.99]"
+          style={{ borderColor: theme.border }}
+        >
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">Seating chart</p>
+            <p className="text-sm text-[#2a2723]">Find your table in The Pavilion</p>
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Open</span>
+        </button>
+      )}
       <ScheduleNode
         date="27.09"
         title="Family Breakfast"
@@ -216,6 +235,8 @@ export function ItineraryScreen({
   setActiveTab?: (tab: AppTab) => void;
 }) {
   const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
+  const { isFeatureVisible } = useWeddingPhase();
+  const showSeating = isFeatureVisible("seating-chart");
   const [view, setView] = useState<"wedding" | "goldcoast">("wedding");
   const topRef = useRef<HTMLDivElement>(null);
 
@@ -286,6 +307,8 @@ export function ItineraryScreen({
             isOnSite={isOnSite}
             showVenueMapLink={showVenueMap}
             onOpenVenueMap={setActiveTab ? () => setActiveTab("venue-map") : undefined}
+            showSeatingLink={showSeating}
+            onOpenSeating={setActiveTab ? () => setActiveTab("seating") : undefined}
           />
         )}
       </div>
