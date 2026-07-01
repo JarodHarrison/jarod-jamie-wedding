@@ -14,6 +14,10 @@ import { AdminKioskPanel } from "@/components/admin/admin-kiosk-panel";
 import { AdminVendors } from "@/components/admin/admin-vendors";
 import { AdminSectionCard } from "@/components/admin/admin-section-card";
 import {
+  AdminGuestStatModal,
+  type GuestStatCategory,
+} from "@/components/admin/admin-guest-stat-modal";
+import {
   AdminTransferOverviewModal,
   type TransferOverviewModal,
 } from "@/components/admin/admin-transfer-overview-modal";
@@ -44,6 +48,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
   const [driverLink, setDriverLink] = useState<string | null>(null);
   const [commandStats, setCommandStats] = useState<CommandStats | null>(null);
   const [transferModal, setTransferModal] = useState<TransferOverviewModal>(null);
+  const [guestStatModal, setGuestStatModal] = useState<GuestStatCategory | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const onUnauthorizedRef = useRef(onUnauthorized);
   onUnauthorizedRef.current = onUnauthorized;
@@ -175,22 +180,26 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
         {view === "hub" && (
           <>
             <section className="mb-8 grid grid-cols-2 gap-2">
-              {[
-                { label: "RSVP In", value: stats.rsvpIn },
-                { label: "On-site", value: stats.onSite },
-                { label: "Off-site", value: stats.offSite },
-                { label: "Transfers", value: stats.transfers },
-              ].map((stat) => (
-                <div
+              {(
+                [
+                  { label: "RSVP In", value: stats.rsvpIn, category: "rsvp-in" as const },
+                  { label: "On-site", value: stats.onSite, category: "on-site" as const },
+                  { label: "Off-site", value: stats.offSite, category: "off-site" as const },
+                  { label: "Transfers", value: stats.transfers, category: "transfers" as const },
+                ] as const
+              ).map((stat) => (
+                <button
                   key={stat.label}
-                  className="rounded-xl border bg-white p-3 text-center shadow-sm"
+                  type="button"
+                  onClick={() => setGuestStatModal(stat.category)}
+                  className="rounded-xl border bg-white p-3 text-center shadow-sm transition-colors hover:bg-[#faf8f4]"
                   style={{ borderColor: theme.border }}
                 >
                   <p className="text-lg font-bold text-[#2a2723]">{stat.value}</p>
                   <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
                     {stat.label}
                   </p>
-                </div>
+                </button>
               ))}
             </section>
 
@@ -231,22 +240,42 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
             {commandStats && (
               <section className="mb-8 grid grid-cols-2 gap-2">
-                {[
-                  { label: "Photos", value: commandStats.guests.profilePhotos },
-                  { label: "Bingo playing", value: commandStats.bingo.playing },
-                  { label: "Bingo done", value: commandStats.bingo.completed },
-                  { label: "Stories", value: commandStats.stories.total },
-                ].map((stat) => (
-                  <div
+                {(
+                  [
+                    {
+                      label: "Photos",
+                      value: commandStats.guests.profilePhotos,
+                      category: "photos" as const,
+                    },
+                    {
+                      label: "Bingo playing",
+                      value: commandStats.bingo.playing,
+                      category: "bingo-playing" as const,
+                    },
+                    {
+                      label: "Bingo done",
+                      value: commandStats.bingo.completed,
+                      category: "bingo-done" as const,
+                    },
+                    {
+                      label: "Stories",
+                      value: commandStats.stories.total,
+                      category: "story-authors" as const,
+                    },
+                  ] as const
+                ).map((stat) => (
+                  <button
                     key={stat.label}
-                    className="rounded-xl border bg-[#f7f4ee] p-3 text-center"
+                    type="button"
+                    onClick={() => setGuestStatModal(stat.category)}
+                    className="rounded-xl border bg-[#f7f4ee] p-3 text-center transition-colors hover:bg-[#f0ebe3]"
                     style={{ borderColor: theme.border }}
                   >
                     <p className="text-lg font-bold text-[#2a2723]">{stat.value}</p>
                     <p className="text-[9px] font-bold uppercase tracking-wider text-gray-400">
                       {stat.label}
                     </p>
-                  </div>
+                  </button>
                 ))}
               </section>
             )}
@@ -353,6 +382,11 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
       </div>
 
       <AdminTransferOverviewModal modal={transferModal} onClose={() => setTransferModal(null)} />
+      <AdminGuestStatModal
+        category={guestStatModal}
+        guests={guests}
+        onClose={() => setGuestStatModal(null)}
+      />
     </div>
   );
 }
