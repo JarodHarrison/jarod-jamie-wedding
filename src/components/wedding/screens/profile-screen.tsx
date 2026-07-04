@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AccommodationForm } from "@/components/wedding/forms/accommodation-form";
 import { TransferShareForm } from "@/components/wedding/forms/transfer-share-form";
 import { GiftColourForm } from "@/components/wedding/forms/gift-colour-form";
+import { GoldCoastTicketsSection } from "@/components/wedding/profile/gold-coast-tickets-section";
 import { InterestForm } from "@/components/wedding/forms/interest-form";
 import { useAnnitaFabPrefs } from "@/components/wedding/hooks/use-annita-fab-prefs";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
@@ -116,6 +117,15 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
                 title: "Gift colour preference",
                 content: <GiftColourForm />,
               },
+              ...(profile.tier === "PENTHOUSE"
+                ? [
+                    {
+                      id: "gold-coast-tickets",
+                      title: "Gold Coast tickets",
+                      content: <GoldCoastTicketsSection />,
+                    },
+                  ]
+                : []),
               {
                 id: "preferences",
                 title: "App preferences",

@@ -76,6 +76,43 @@ function buildGuestUpdateData(row: GuestSpreadsheetRow) {
   return data;
 }
 
+function buildPartialGuestUpdateData(
+  row: GuestSpreadsheetRow,
+  existingSayiCustomData: Record<string, string> | null,
+): Prisma.GuestUpdateInput {
+  const now = new Date();
+  const data: Prisma.GuestUpdateInput = {
+    name: row.name,
+    sayiImportedAt: now,
+  };
+
+  if (row.tier !== "OFF_SITE") data.tier = row.tier;
+  if (row.phone) data.phone = row.phone;
+  if (row.plusOneName) data.plusOneName = row.plusOneName;
+  if (row.dietaryNotes) data.dietaryNotes = row.dietaryNotes;
+  if (row.songRequest) data.songRequest = row.songRequest;
+  if (row.guestOfHost) data.guestOfHost = row.guestOfHost;
+  if (row.guestRelationship) data.guestRelationship = row.guestRelationship;
+  if (row.guestRelationshipNote) data.guestRelationshipNote = row.guestRelationshipNote;
+  if (row.mailingAddress) data.mailingAddress = row.mailingAddress;
+  if (row.sayiPartyName) data.sayiPartyName = row.sayiPartyName;
+  if (row.sayiLink) data.sayiLink = row.sayiLink;
+  if (row.sayiPlusOneAllowed !== null) data.sayiPlusOneAllowed = row.sayiPlusOneAllowed;
+
+  if (row.sayiCustomData) {
+    data.sayiCustomData = { ...(existingSayiCustomData ?? {}), ...row.sayiCustomData };
+  }
+
+  const hasRsvpAnswer =
+    row.rsvpStatus !== "PENDING" ||
+    Boolean(row.phone || row.plusOneName || row.dietaryNotes || row.songRequest);
+
+  if (row.rsvpStatus !== "PENDING") data.rsvpStatus = row.rsvpStatus;
+  if (hasRsvpAnswer) data.rsvpSubmittedAt = now;
+
+  return data;
+}
+
 export async function GET() {
   try {
     await requireAdminAccess();
@@ -114,8 +151,12 @@ export async function POST(request: Request) {
     let generatedEmailCount: number;
     let extraColumns: string[];
     let mergeStats: { matched: number; attendingOnly: number; rsvpOnly: number } | undefined;
+    let partialSayiUpdate = false;
 
-    if (attendingFile instanceof File && rsvpFile instanceof File) {
+    const hasAttendingFile = attendingFile instanceof File;
+    const hasRsvpFile = rsvpFile instanceof File;
+
+    if (hasAttendingFile && hasRsvpFile) {
       const merged = mergeSayiGuestExports(await attendingFile.text(), await rsvpFile.text());
       rows = merged.rows;
       parseErrors = merged.errors;
@@ -123,6 +164,24 @@ export async function POST(request: Request) {
       generatedEmailCount = merged.generatedEmailCount;
       extraColumns = merged.extraColumns;
       mergeStats = merged.mergeStats;
+    } else if (hasAttendingFile) {
+      const parsed = parseGuestSpreadsheet(await attendingFile.text());
+      rows = parsed.rows;
+      parseErrors = parsed.errors;
+      format = parsed.format;
+      generatedEmailCount = parsed.generatedEmailCount;
+      extraColumns = parsed.extraColumns;
+      partialSayiUpdate = parsed.format === "sayi";
+      mergeStats = { matched: 0, attendingOnly: parsed.rows.length, rsvpOnly: 0 };
+    } else if (hasRsvpFile) {
+      const parsed = parseGuestSpreadsheet(await rsvpFile.text());
+      rows = parsed.rows;
+      parseErrors = parsed.errors;
+      format = parsed.format;
+      generatedEmailCount = parsed.generatedEmailCount;
+      extraColumns = parsed.extraColumns;
+      partialSayiUpdate = parsed.format === "sayi";
+      mergeStats = { matched: 0, attendingOnly: 0, rsvpOnly: parsed.rows.length };
     } else if (file instanceof File) {
       const parsed = parseGuestSpreadsheet(await file.text());
       rows = parsed.rows;
@@ -131,7 +190,10 @@ export async function POST(request: Request) {
       generatedEmailCount = parsed.generatedEmailCount;
       extraColumns = parsed.extraColumns;
     } else {
-      return jsonError("Upload a CSV file, or both Sayi attending + RSVP CSV files.", 400);
+      return jsonError(
+        "Upload a CSV file, or at least one Sayi guest list / RSVP responses export.",
+        400,
+      );
     }
 
     if (rows.length === 0) {
@@ -166,7 +228,23 @@ export async function POST(request: Request) {
             continue;
           }
 
-          const updateData = buildGuestUpdateData(row);
+          const existingGuest = partialSayiUpdate
+            ? await prisma.guest.findUnique({
+                where: { id: existing.id },
+                select: { sayiCustomData: true },
+              })
+            : null;
+
+          const existingSayiCustomData =
+            existingGuest?.sayiCustomData &&
+            typeof existingGuest.sayiCustomData === "object" &&
+            !Array.isArray(existingGuest.sayiCustomData)
+              ? (existingGuest.sayiCustomData as Record<string, string>)
+              : null;
+
+          const updateData = partialSayiUpdate
+            ? buildPartialGuestUpdateData(row, existingSayiCustomData)
+            : buildGuestUpdateData(row);
 
           if (row.password) {
             const passwordFields = await buildPasswordFields(row.password);

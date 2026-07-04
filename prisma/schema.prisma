@@ -136,6 +136,7 @@ model Guest {
   seatingSortOrder Int?
 
   goldCoastTrip GoldCoastTrip?
+  goldCoastTickets GuestAttractionTicket[]
   passwordResetTokens GuestPasswordResetToken[]
   passkeyCredentials PasskeyCredential[]
   notifications InAppNotification[]
@@ -308,6 +309,22 @@ model GoldCoastTrip {
   balanceDue Decimal  @default(0) @db.Decimal(10, 2)
   createdAt  DateTime @default(now()) @db.Timestamptz
   updatedAt  DateTime @updatedAt @db.Timestamptz
+}
+
+model GuestAttractionTicket {
+  id           String    @id @default(cuid())
+  guestId      String
+  guest        Guest     @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  attractionId String
+  fileName     String?
+  ticketMime   String?
+  ticketData   Bytes?
+  uploadedAt   DateTime? @db.Timestamptz
+  createdAt    DateTime  @default(now()) @db.Timestamptz
+  updatedAt    DateTime  @updatedAt @db.Timestamptz
+
+  @@unique([guestId, attractionId])
+  @@index([guestId])
 }
 
 model Vendor {

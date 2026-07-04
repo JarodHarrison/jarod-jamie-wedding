@@ -37,11 +37,12 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
   const handleImport = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    const attending = attendingFileRef.current?.files?.[0];
+    const rsvp = rsvpFileRef.current?.files?.[0];
+
     if (importMode === "sayi-dual") {
-      const attending = attendingFileRef.current?.files?.[0];
-      const rsvp = rsvpFileRef.current?.files?.[0];
-      if (!attending || !rsvp) {
-        onMessage("Choose both the Sayi attending CSV and RSVP CSV.");
+      if (!attending && !rsvp) {
+        onMessage("Choose at least one Sayi export — guest list and/or RSVP responses.");
         return;
       }
     } else {
@@ -59,8 +60,8 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
     try {
       const formData = new FormData();
       if (importMode === "sayi-dual") {
-        formData.append("attendingFile", attendingFileRef.current!.files![0]);
-        formData.append("rsvpFile", rsvpFileRef.current!.files![0]);
+        if (attending) formData.append("attendingFile", attending);
+        if (rsvp) formData.append("rsvpFile", rsvp);
       } else {
         formData.append("file", fileRef.current!.files![0]);
       }
@@ -81,7 +82,13 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
       setLastResult(data as ImportResult);
       const imported = data.created + data.updated;
       const mergeNote = data.mergeStats
-        ? ` Merged ${data.mergeStats.matched} guests from both files (${data.mergeStats.attendingOnly} attending-only, ${data.mergeStats.rsvpOnly} RSVP-only).`
+        ? data.mergeStats.matched > 0
+          ? ` Merged ${data.mergeStats.matched} guests from both files (${data.mergeStats.attendingOnly} attending-only, ${data.mergeStats.rsvpOnly} RSVP-only).`
+          : data.mergeStats.attendingOnly > 0
+            ? ` Imported ${data.mergeStats.attendingOnly} guests from the guest list.`
+            : data.mergeStats.rsvpOnly > 0
+              ? ` Imported ${data.mergeStats.rsvpOnly} RSVP responses — existing guests were updated where matched.`
+              : ""
         : "";
       const formatNote =
         data.format === "sayi"
@@ -133,16 +140,17 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
           style={{ borderColor: theme.border }}
         >
           <p className="text-sm leading-relaxed text-gray-600">
-            Upload a single CSV, or merge two <strong className="font-medium">Sayi.do</strong> exports
-            (attending list + RSVP responses) for full guest profiles — party, attendance, dietary,
-            phone, song requests, and custom questions.
+            Upload a single CSV, or import <strong className="font-medium">Sayi.do</strong> exports
+            separately — guest list first, then RSVP responses when they come in (or both together).
+            Use <strong className="font-medium">Update existing + create new</strong> when adding RSVP
+            data to guests you already imported.
           </p>
 
           <div className="flex flex-wrap gap-2">
             {(
               [
                 ["single", "Single CSV"],
-                ["sayi-dual", "Sayi: Attending + RSVP"],
+                ["sayi-dual", "Sayi.do exports"],
               ] as const
             ).map(([key, label]) => (
               <button
@@ -202,6 +210,10 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
 
           {importMode === "sayi-dual" && (
             <div className="space-y-3">
+              <p className="text-[11px] leading-relaxed text-gray-500">
+                Upload one or both files. You can import the guest list now and upload RSVP responses
+                later — matching guests by name and party.
+              </p>
               <label className="block text-xs font-medium text-gray-600">
                 Sayi guest list — all invitees
                 <span className="mt-1 block text-[11px] font-normal text-gray-500">

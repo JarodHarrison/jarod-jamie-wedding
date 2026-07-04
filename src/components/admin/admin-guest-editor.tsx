@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
+import { AdminGoldCoastTickets } from "@/components/admin/admin-gold-coast-tickets";
 import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommodation-property-picker";
 import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
 import { BED_PREFERENCE_OPTIONS } from "@/lib/bed-preference";
-import { GIFT_COLOUR_OPTIONS } from "@/lib/gift-colour-choices";
+import { GIFT_COLOUR_CHOICE_1_OPTIONS, GIFT_COLOUR_CHOICE_2_OPTIONS } from "@/lib/gift-colour-choices";
 import { ARRIVAL_MAX_WAIT_OPTIONS } from "@/lib/transfer-arrival-wait";
 import { RETURN_SHUTTLE_AIRPORTS, returnShuttleAirportLabel } from "@/lib/return-shuttle";
 import { theme } from "@/lib/theme";
@@ -862,8 +863,8 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               style={fieldStyle}
             >
               <option value="">Colour choice 1</option>
-              {GIFT_COLOUR_OPTIONS.map((option) => (
-                <option key={option.id} value={option.id} disabled={option.id === giftColours.giftColourChoice2}>
+              {GIFT_COLOUR_CHOICE_1_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
                   {option.label}
                 </option>
               ))}
@@ -875,8 +876,8 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               style={fieldStyle}
             >
               <option value="">Colour choice 2</option>
-              {GIFT_COLOUR_OPTIONS.map((option) => (
-                <option key={option.id} value={option.id} disabled={option.id === giftColours.giftColourChoice1}>
+              {GIFT_COLOUR_CHOICE_2_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
                   {option.label}
                 </option>
               ))}
@@ -886,6 +887,12 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
           <SaveButton saving={giftColoursState.saving} saved={giftColoursState.saved} label="Save Colours" />
         </form>
       </CollapsibleSection>
+
+      {guest.tier === "PENTHOUSE" && (
+        <CollapsibleSection title="Gold Coast tickets">
+          <AdminGoldCoastTickets guestId={guest.id} onError={onError} />
+        </CollapsibleSection>
+      )}
     </div>
   );
 }

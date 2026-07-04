@@ -1,7 +1,7 @@
 import type { RsvpStatus } from "@prisma/client";
 import type { GuestProfileSection } from "@/lib/guest-profile";
 import { isBedPreference } from "@/lib/bed-preference";
-import { isGiftColourId } from "@/lib/gift-colour-choices";
+import { isGiftColourChoice1Id, isGiftColourChoice2Id } from "@/lib/gift-colour-choices";
 import { guestIsOnSiteForAccommodation } from "@/lib/accommodation-form-defaults";
 import { isArrivalMaxWaitId } from "@/lib/transfer-arrival-wait";
 import { isReturnShuttleAirport } from "@/lib/return-shuttle";
@@ -164,11 +164,8 @@ export function buildGuestProfileSectionUpdate(
     if (!giftColourChoice1 || !giftColourChoice2) {
       return { ok: false, error: "Please choose both colour options.", status: 400 };
     }
-    if (!isGiftColourId(giftColourChoice1) || !isGiftColourId(giftColourChoice2)) {
+    if (!isGiftColourChoice1Id(giftColourChoice1) || !isGiftColourChoice2Id(giftColourChoice2)) {
       return { ok: false, error: "Please choose valid colours from the list.", status: 400 };
-    }
-    if (giftColourChoice1 === giftColourChoice2) {
-      return { ok: false, error: "Please pick two different colours.", status: 400 };
     }
 
     return {
