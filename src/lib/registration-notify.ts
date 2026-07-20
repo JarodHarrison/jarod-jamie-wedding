@@ -12,7 +12,8 @@ export type RegistrationEvent =
   | "interests"
   | "gift-colours"
   | "identity"
-  | "companion";
+  | "companion"
+  | "party-bio";
 
 const EVENT_TITLES: Record<RegistrationEvent, string> = {
   signup: "New guest account created",
@@ -23,6 +24,7 @@ const EVENT_TITLES: Record<RegistrationEvent, string> = {
   "gift-colours": "Gift colour preferences updated",
   identity: "Guest profile details updated",
   companion: "Plus-one / companion details updated",
+  "party-bio": "Celebrant / MC party bio updated",
 };
 
 const GLOW_UP_LABELS: Record<string, string> = {
@@ -151,6 +153,18 @@ function formatGiftColours(guest: SerializedGuestProfile) {
     .join("\n");
 }
 
+function formatPartyBio(guest: SerializedGuestProfile) {
+  return [
+    formatGuestBlock(guest),
+    line("Celebrant", guest.isCelebrant ? "Yes" : null),
+    line("MC", guest.isMc ? "Yes" : null),
+    line("Dietary", guest.dietaryNotes),
+    line("Party bio", guest.partyBio),
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export function notifyRegistration(event: RegistrationEvent, guest: SerializedGuestProfile) {
   const title = EVENT_TITLES[event];
   let body = formatGuestBlock(guest);
@@ -162,6 +176,7 @@ export function notifyRegistration(event: RegistrationEvent, guest: SerializedGu
   if (event === "gift-colours") body = formatGiftColours(guest);
   if (event === "identity") body = formatIdentity(guest);
   if (event === "companion") body = formatCompanion(guest);
+  if (event === "party-bio") body = formatPartyBio(guest);
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://jarodandjamiewedding.com";
   const detailLines = body.split("\n").filter(Boolean);

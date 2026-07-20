@@ -152,6 +152,7 @@ export async function executeGuestFormSave(
     "gift-colours": "gift colour preferences",
     identity: "guest profile details",
     companion: "plus-one details",
+    "party-bio": "celebrant / MC party bio",
   };
 
   return {
