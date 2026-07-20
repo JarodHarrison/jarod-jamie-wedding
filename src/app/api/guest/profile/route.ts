@@ -8,6 +8,7 @@ import { syncGuestSessionFromDb } from "@/lib/auth/sync-guest-session";
 import { requireGuestSession } from "@/lib/auth/session";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { applyPlusOneLink } from "@/lib/plus-one-link";
+import { ensurePlusOneGuestFromName } from "@/lib/guest-party";
 import { syncTransferMatchesForGuest } from "@/lib/transfer-match";
 import { checkTransferCharterAlerts } from "@/lib/transfer-charter-alert";
 import { prisma } from "@/lib/prisma";
@@ -89,14 +90,11 @@ export async function PATCH(request: Request) {
         if (plusOneGuestId) {
           await applyPlusOneLink(session.id, plusOneGuestId);
         } else {
-          await applyPlusOneLink(session.id, null);
-          await prisma.guest.update({
-            where: { id: session.id },
-            data: {
-              plusOneName: (updateData.plusOneName as string | null) ?? null,
-              profileUpdatedAt: new Date(),
-            },
-          });
+          // Name-only companion: create/link a real guest so they appear on the Guest List
+          await ensurePlusOneGuestFromName(
+            session.id,
+            (updateData.plusOneName as string | null) ?? null,
+          );
         }
       } catch (linkError) {
         const message = linkError instanceof Error ? linkError.message : "Failed to link plus-one.";
@@ -124,17 +122,38 @@ export async function PATCH(request: Request) {
       }
     }
 
+    // RSVP plus-one name is expanded into a real Guest after the main update
+    const rsvpPlusOneName =
+      section === "rsvp" ? ((updateData.plusOneName as string | null) ?? null) : undefined;
+
     const guest = await prisma.guest.update({
       where: { id: session.id },
       data: updateData,
       select: guestProfileSelect,
     });
 
-    if (guest.tier !== session.tier) {
+    if (section === "rsvp") {
+      try {
+        await ensurePlusOneGuestFromName(session.id, rsvpPlusOneName ?? null);
+      } catch (linkError) {
+        console.error("[guest/profile rsvp plus-one]", linkError);
+      }
+    }
+
+    const refreshed =
+      section === "rsvp"
+        ? await prisma.guest.findUnique({
+            where: { id: session.id },
+            select: guestProfileSelect,
+          })
+        : guest;
+    if (!refreshed) return jsonError("Guest not found.", 404);
+
+    if (refreshed.tier !== session.tier) {
       await syncGuestSessionFromDb(session);
     }
 
-    const profile = serializeGuestProfile(guest);
+    const profile = serializeGuestProfile(refreshed);
     notifyRegistration(section, profile);
 
     if (section === "transfer") {
@@ -145,7 +164,7 @@ export async function PATCH(request: Request) {
         });
     }
 
-    return NextResponse.json({ profile, tierUpdated: guest.tier !== session.tier });
+    return NextResponse.json({ profile, tierUpdated: refreshed.tier !== session.tier });
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonError("Unauthorized", 401);

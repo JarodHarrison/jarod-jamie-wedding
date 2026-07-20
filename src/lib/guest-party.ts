@@ -423,3 +423,56 @@ export async function clearGuestManagementOnClaim(guestId: string) {
     data: { managedByGuestId: null },
   });
 }
+
+/**
+ * Turn a typed plus-one name into a real Guest row + bidirectional link.
+ * Skips when already linked to someone with the same normalised name.
+ */
+export async function ensurePlusOneGuestFromName(managerId: string, plusOneName: string | null) {
+  const name = plusOneName?.trim() || null;
+
+  const manager = await prisma.guest.findUnique({
+    where: { id: managerId },
+    select: {
+      id: true,
+      plusOneGuestId: true,
+      plusOneGuest: { select: { id: true, name: true } },
+    },
+  });
+  if (!manager) throw new Error("Guest not found.");
+
+  if (!name) {
+    if (manager.plusOneGuestId) {
+      await applyPlusOneLink(managerId, null);
+    } else {
+      await prisma.guest.update({
+        where: { id: managerId },
+        data: { plusOneName: null, profileUpdatedAt: new Date() },
+      });
+    }
+    return null;
+  }
+
+  if (
+    manager.plusOneGuest &&
+    normalizeGuestName(manager.plusOneGuest.name) === normalizeGuestName(name)
+  ) {
+    await prisma.guest.update({
+      where: { id: managerId },
+      data: { plusOneName: manager.plusOneGuest.name, profileUpdatedAt: new Date() },
+    });
+    return manager.plusOneGuest.id;
+  }
+
+  await createPartyMember(managerId, {
+    name,
+    linkAsPlusOne: true,
+    rsvpStatus: "ACCEPTED",
+  });
+
+  const updated = await prisma.guest.findUnique({
+    where: { id: managerId },
+    select: { plusOneGuestId: true },
+  });
+  return updated?.plusOneGuestId ?? null;
+}
