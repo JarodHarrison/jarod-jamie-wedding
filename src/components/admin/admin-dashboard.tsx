@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Bus, Camera, Heart, LayoutGrid, LogOut, Mail, Store, Users } from "lucide-react";
+import { ArrowLeft, Bus, Camera, Heart, LayoutGrid, LogOut, Mail, PartyPopper, Sparkles, Store, Users } from "lucide-react";
 import { AdminBroadcastEmail } from "@/components/admin/admin-broadcast-email";
 import { AdminBroadcastPush } from "@/components/admin/admin-broadcast-push";
+import { AdminBucksParty } from "@/components/admin/admin-bucks-party";
+import { AdminGlowUpParty } from "@/components/admin/admin-glow-up-party";
 import { AdminDriveConnect } from "@/components/admin/admin-drive-connect";
 import { AdminVisionStatus } from "@/components/admin/admin-vision-status";
 import { AdminGmailConnect } from "@/components/admin/admin-gmail-connect";
@@ -31,7 +33,17 @@ type AdminDashboardProps = {
   onUnauthorized?: () => void;
 };
 
-type AdminView = "hub" | "guests" | "seating" | "shuttle" | "updates" | "stories" | "photos" | "vendors";
+type AdminView =
+  | "hub"
+  | "guests"
+  | "seating"
+  | "shuttle"
+  | "updates"
+  | "stories"
+  | "photos"
+  | "vendors"
+  | "bucks"
+  | "glowup";
 
 type CommandStats = {
   guests: { total: number; rsvpAccepted: number; rsvpPending: number; profilePhotos: number };
@@ -112,10 +124,12 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
       return;
     }
     setDriverLink(data.url);
-    setMessage("Driver magic link created — valid for 1 hour.");
+    setMessage("Driver magic link created: valid for 1 hour.");
   };
 
   const subViewTitle: Record<Exclude<AdminView, "hub">, string> = {
+    bucks: "Bucks Party",
+    glowup: "Pump Party",
     guests: "Guest List",
     seating: "Seating Chart",
     shuttle: "Shuttle Driver",
@@ -169,8 +183,11 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
         )}
       </header>
 
-      <div ref={contentRef} className="flex-1 overflow-y-auto scroll-smooth px-6 py-6 pb-6">
-        {message && (
+      <div
+        ref={contentRef}
+        className={`flex-1 overflow-y-auto scroll-smooth pb-6 ${view === "bucks" ? "" : "px-6 py-6"}`}
+      >
+        {message && view !== "bucks" && (
           <div
             className="mb-6 rounded-2xl border bg-white p-4 shadow-sm"
             style={{ borderColor: theme.border }}
@@ -284,6 +301,22 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
 
             <div className="space-y-4">
               <AdminSectionCard
+                title="Bucks Party"
+                description="Public RSVPs, prepaid tracking, budget votes, organisers, and CSV export."
+                actionLabel="Open Bucks HQ"
+                icon={PartyPopper}
+                variant="gold"
+                onClick={() => setView("bucks")}
+              />
+              <AdminSectionCard
+                title="Pump Party"
+                description="Glow-up interests, whitening packages, botox/filler units, guest linking, and CSV."
+                actionLabel="Open Pump Party HQ"
+                icon={Sparkles}
+                variant="gold"
+                onClick={() => setView("glowup")}
+              />
+              <AdminSectionCard
                 title="Guest List"
                 description="Add guests, edit RSVPs, accommodation, transfers, and admin access."
                 actionLabel="Manage Guests"
@@ -329,7 +362,7 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
               />
               <AdminSectionCard
                 title="Story Wall"
-                description="Moderate guest stories — hide, approve, or delete reported content."
+                description="Moderate guest stories: hide, approve, or delete reported content."
                 actionLabel="Moderate Stories"
                 icon={Heart}
                 onClick={() => setView("stories")}
@@ -337,6 +370,10 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
             </div>
           </>
         )}
+
+        {view === "bucks" && <AdminBucksParty onBack={() => setView("hub")} />}
+
+        {view === "glowup" && <AdminGlowUpParty onBack={() => setView("hub")} />}
 
         {view === "guests" && (
           <AdminGuestList

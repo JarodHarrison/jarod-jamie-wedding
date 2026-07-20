@@ -164,7 +164,7 @@ export function RSVPScreen() {
         )}
         {saved && (
           <p className="text-center text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">
-            RSVP saved — thank you!
+            RSVP saved: thank you!
           </p>
         )}
 

@@ -40,7 +40,7 @@ export function ReturnShuttleRegistrationPanel({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={returnShuttleFlyerSrc()}
-            alt={`Airport Express — departure coach from Spicers to BNE and MCY on ${RETURN_SHUTTLE.displayDate}`}
+            alt={`Airport Express: departure coach from Spicers to BNE and MCY on ${RETURN_SHUTTLE.displayDate}`}
             className="h-auto w-full"
             draggable={false}
           />
@@ -95,7 +95,7 @@ export function ReturnShuttleRegistrationPanel({
           {returnShuttleInterest && returnShuttleAirport && (
             <p className="text-xs text-gray-500">
               Flying from{" "}
-              <strong className="text-[#2a2723]">{returnShuttleAirport}</strong> — save below to
+              <strong className="text-[#2a2723]">{returnShuttleAirport}</strong>: save below to
               register.
             </p>
           )}
@@ -189,8 +189,8 @@ export function ReturnShuttleRegistrationForm() {
       {saved && (
         <p className="text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">
           {returnShuttleInterest && returnShuttleAirport
-            ? `Registered for ${returnShuttleAirport} — we'll be in touch with coach details.`
-            : "Departure transport saved — we'll be in touch with coach details."}
+            ? `Registered for ${returnShuttleAirport}. We'll be in touch with coach details.`
+            : "Departure transport saved. We'll be in touch with coach details."}
         </p>
       )}
 

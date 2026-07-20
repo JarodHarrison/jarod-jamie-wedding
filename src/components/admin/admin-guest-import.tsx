@@ -42,7 +42,7 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
 
     if (importMode === "sayi-dual") {
       if (!attending && !rsvp) {
-        onMessage("Choose at least one Sayi export — guest list and/or RSVP responses.");
+        onMessage("Choose at least one Sayi export: guest list and/or RSVP responses.");
         return;
       }
     } else {
@@ -87,12 +87,12 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
           : data.mergeStats.attendingOnly > 0
             ? ` Imported ${data.mergeStats.attendingOnly} guests from the guest list.`
             : data.mergeStats.rsvpOnly > 0
-              ? ` Imported ${data.mergeStats.rsvpOnly} RSVP responses — existing guests were updated where matched.`
+              ? ` Imported ${data.mergeStats.rsvpOnly} RSVP responses: existing guests were updated where matched.`
               : ""
         : "";
       const formatNote =
         data.format === "sayi"
-          ? ` Sayi.do format — ${data.generatedEmailCount ?? 0} placeholder emails, RSVP linked for ${imported} guests.${
+          ? ` Sayi.do format: ${data.generatedEmailCount ?? 0} placeholder emails, RSVP linked for ${imported} guests.${
               data.extraColumns?.length
                 ? ` Extra columns: ${data.extraColumns.slice(0, 4).join(", ")}${data.extraColumns.length > 4 ? "…" : ""}.`
                 : ""
@@ -101,13 +101,13 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
 
       if (imported === 0 && data.errors.length > 0) {
         onMessage(
-          `Import failed — no guests were saved. ${data.errors.length} row error${data.errors.length === 1 ? "" : "s"} (see below). Try uploading again.`,
+          `Import failed: no guests were saved. ${data.errors.length} row error${data.errors.length === 1 ? "" : "s"} (see below). Try uploading again.`,
         );
       } else if (imported === 0) {
         onMessage("Import finished but no guests were created or updated. Check your spreadsheet format.");
       } else {
         onMessage(
-          `Import complete — ${data.created} created, ${data.updated} updated, ${data.skipped} skipped.${formatNote}`,
+          `Import complete: ${data.created} created, ${data.updated} updated, ${data.skipped} skipped.${formatNote}`,
         );
       }
       if (fileRef.current) fileRef.current.value = "";
@@ -141,7 +141,7 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
         >
           <p className="text-sm leading-relaxed text-gray-600">
             Upload a single CSV, or import <strong className="font-medium">Sayi.do</strong> exports
-            separately — guest list first, then RSVP responses when they come in (or both together).
+            separately: guest list first, then RSVP responses when they come in (or both together).
             Use <strong className="font-medium">Update existing + create new</strong> when adding RSVP
             data to guests you already imported.
           </p>
@@ -196,7 +196,7 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
                 className="h-4 w-4"
               />
               <span className="text-sm text-[#2a2723]">
-                Email invite to newly created guests (real emails only — not Sayi placeholders)
+                Email invite to newly created guests (real emails only: not Sayi placeholders)
               </span>
             </label>
           </div>
@@ -212,10 +212,10 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
             <div className="space-y-3">
               <p className="text-[11px] leading-relaxed text-gray-500">
                 Upload one or both files. You can import the guest list now and upload RSVP responses
-                later — matching guests by name and party.
+                later: matching guests by name and party.
               </p>
               <label className="block text-xs font-medium text-gray-600">
-                Sayi guest list — all invitees
+                Sayi guest list: all invitees
                 <span className="mt-1 block text-[11px] font-normal text-gray-500">
                   Guest List → cog → Download Guest List ({`guestlist_all_*.csv`})
                 </span>
@@ -227,7 +227,7 @@ export function AdminGuestImport({ onMessage, onImported }: AdminGuestImportProp
                 />
               </label>
               <label className="block text-xs font-medium text-gray-600">
-                Sayi attendees — RSVP responses
+                Sayi attendees: RSVP responses
                 <span className="mt-1 block text-[11px] font-normal text-gray-500">
                   Guest List → cog → Download Attendees List ({`guestlist_attendees_*.csv`})
                 </span>

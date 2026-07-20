@@ -16,7 +16,7 @@ export function VenueMapViewer({ compact = false }: VenueMapViewerProps) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={VENUE_MAP_IMAGE}
-      alt="Jarod and Jamie venue map — Spicers Clovelly Estate"
+      alt="Jarod and Jamie venue map: Spicers Clovelly Estate"
       className={`block ${compact ? "min-w-[520px]" : "min-w-[640px]"} w-max max-w-none`}
       draggable={false}
     />

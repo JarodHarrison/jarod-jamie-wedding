@@ -5,7 +5,7 @@ type FaqEntry = {
   reply: string;
 };
 
-/** Instant answers for common wedding FAQs — skips Gemini entirely (<50ms). */
+/** Instant answers for common wedding FAQs: skips Gemini entirely (<50ms). */
 const INSTANT_FAQ: FaqEntry[] = [
   {
     patterns: [
@@ -14,7 +14,7 @@ const INSTANT_FAQ: FaqEntry[] = [
       /\bwedding\b.*\b(time|start)\b/i,
     ],
     reply:
-      "The main event, darling! Ceremony is **3:00pm** on Saturday 26 September 2026 at Spicers Clovelly Estate. Colourful cocktail attire — and the ceremony is adults-only, honey.",
+      "The main event, darling! Ceremony is **3:00pm** on Saturday 26 September 2026 at Spicers Clovelly Estate. Colourful cocktail attire, and the ceremony is adults-only, honey.",
   },
   {
     patterns: [
@@ -22,12 +22,12 @@ const INSTANT_FAQ: FaqEntry[] = [
       /\breception\b.*\b(time|start|when)\b/i,
     ],
     reply:
-      "Reception kicks off at **6:00pm** in The Pavilion, babe — food, drinks, and dancing after the garden party. Adults-only for the reception dinner.",
+      "Reception kicks off at **6:00pm** in The Pavilion, babe: food, drinks, and dancing after the garden party. Adults-only for the reception dinner.",
   },
   {
     patterns: [/\bgarden party\b/i, /\b(what time|when).*(garden|canap[eé])\b/i],
     reply:
-      "Garden Party is **4:30pm** on the Upper Lawn after the ceremony — canapés, drinks, face painter, and glitter bar. Fabulous.",
+      "Garden Party is **4:30pm** on the Upper Lawn after the ceremony: canapés, drinks, face painter, and glitter bar. Fabulous.",
   },
   {
     patterns: [
@@ -45,7 +45,7 @@ const INSTANT_FAQ: FaqEntry[] = [
       /\bspicers\b/i,
     ],
     reply:
-      "Spicers Clovelly Estate in **Montville, Queensland** — Sunshine Coast hinterland. Ceremony and reception are both there, darling.",
+      "Spicers Clovelly Estate in **Montville, Queensland**: Sunshine Coast hinterland. Ceremony and reception are both there, darling.",
   },
   {
     patterns: [/\bdress code\b/i, /\bwhat (should|do) i wear\b/i, /\bwhat to wear\b/i],
@@ -55,12 +55,12 @@ const INSTANT_FAQ: FaqEntry[] = [
   {
     patterns: [/\b(children|kids|babies|child policy)\b/i, /\bcan i bring\b.*\b(kids|children)\b/i],
     reply:
-      "Reception is **adults-only**, honey — a professional nanny will be on-site during the reception, but little ones won't be at the dinner itself.",
+      "Reception is **adults-only**, honey. A professional nanny will be on-site during the reception, but little ones won't be at the dinner itself.",
   },
   {
     patterns: [/\brsvp\b/i, /\bhow (do|can) i (rsvp|respond)\b/i],
     reply:
-      "RSVP in the app's **RSVP tab** — attending, phone, plus-one, dietary, song request. Late RSVPs are still being accepted if there's space, babe.",
+      "RSVP in the app's **RSVP tab**: attending, phone, plus-one, dietary, song request. Late RSVPs are still being accepted if there's space, babe.",
   },
   {
     patterns: [/\bhashtag\b/i, /\b#j-rod/i],
@@ -69,16 +69,16 @@ const INSTANT_FAQ: FaqEntry[] = [
   {
     patterns: [/\b(friday|meet.?&.?greet|welcome drinks)\b/i],
     reply:
-      "Friday **6:00pm** Lakeside Meet & Greet for **on-site guests** — smart casual, welcome drinks, cheese & charcuterie, gourmet BBQ, then firepit. On-site only.",
+      "Friday **6:00pm** Lakeside Meet & Greet for **on-site guests**: smart casual, welcome drinks, cheese & charcuterie, gourmet BBQ, then firepit. On-site only.",
   },
   {
     patterns: [/\b(sunday|family breakfast)\b/i],
-    reply: "Sunday **9:00am** Family Breakfast at Spicers Clovelly Estate. Casual — sunglasses probably required.",
+    reply: "Sunday **9:00am** Family Breakfast at Spicers Clovelly Estate. Casual, sunglasses probably required.",
   },
   {
     patterns: [/\bshuttle\b/i, /\bcourtesy (bus|transport)\b/i],
     reply:
-      "Courtesy shuttle for Montville-area guests — collects before ceremony, runs during the ceremony/reception break, and several return trips at night. Submit your accommodation in the app so we can plan stops, honey.",
+      "Courtesy shuttle for Montville-area guests: collects before ceremony, runs during the ceremony/reception break, and several return trips at night. Submit your accommodation in the app so we can plan stops, honey.",
   },
   {
     patterns: [/\bon[- ]site\b.*\b(room|accommodation|book)\b/i, /\brooms?\b.*\b(spicers|on[- ]site)\b/i],
@@ -95,7 +95,7 @@ const INSTANT_FAQ: FaqEntry[] = [
       /\bhow (do|can) i get\b.*\b(brisbane|bne)\b/i,
     ],
     reply:
-      "Brisbane Airport (BNE) is about **90 minutes** (~100km) from the venue. Cheapest route is Airtrain to Landsborough + taxi up the range; direct Uber/taxi $150–$350+. Pre-book return trips — Ubers out of Montville are scarce.",
+      "Brisbane Airport (BNE) is about **90 minutes** (~100km) from the venue. Cheapest route is Airtrain to Landsborough + taxi up the range; direct Uber/taxi $150–$350+. Pre-book return trips: Ubers out of Montville are scarce.",
   },
   {
     patterns: [
@@ -103,27 +103,27 @@ const INSTANT_FAQ: FaqEntry[] = [
       /\bhow (do|can) i get\b.*\b(sunshine coast|mcy)\b/i,
     ],
     reply:
-      "Sunshine Coast Airport (MCY) is closest — about **35 minutes** (~30km) to the venue. Uber/rideshare roughly $50–$80; pre-book return transport from Montville.",
+      "Sunshine Coast Airport (MCY) is closest: about **35 minutes** (~30km) to the venue. Uber/rideshare roughly $50–$80; pre-book return transport from Montville.",
   },
   {
     patterns: [/\bwishing well\b/i, /\bgift\b/i, /\bpresent\b/i],
     reply:
-      "Wishing well: open **Home → Wishing Well** in the app for our honeymoon poem and secure **Stripe** checkout — your presence is the present, honey.",
+      "Wishing well: open **Home → Wishing Well** in the app for our honeymoon poem and secure **Stripe** checkout: your presence is the present, honey.",
   },
   {
     patterns: [/\b(bingo|photobooth bingo)\b/i],
     reply:
-      "Photobooth Bingo lives under **Photos → Photobooth Bingo** in the app. Tick off booth shots as you nail them — first to finish triggers a celebration for everyone. Check the leaderboard while you play!",
+      "Photobooth Bingo lives under **Photos → Photobooth Bingo** in the app. Tick off booth shots as you nail them: first to finish triggers a celebration for everyone. Check the leaderboard while you play!",
   },
   {
     patterns: [/\b(story wall|guest stor|share a stor|jarod.?&.?jamie stor)\b/i],
     reply:
-      "Share your J&J memory on the **Stories** tab — funny, heartfelt, or chaotic. It flashes on the wall for everyone (or post anonymously). Up to 3 stories per guest.",
+      "Share your J&J memory on the **Stories** tab: funny, heartfelt, or chaotic. It flashes on the wall for everyone (or post anonymously). Up to 3 stories per guest.",
   },
   {
     patterns: [/\b(profile photo|guest wall|who.?s coming)\b/i],
     reply:
-      "Upload your photo in the **Profile** tab — it'll show on the guest wall so everyone can see who's coming. RSVP accepted guests only, babe.",
+      "Upload your photo in the **Profile** tab. It'll show on the guest wall so everyone can see who's coming. RSVP accepted guests only, babe.",
   },
   {
     patterns: [/\b(install|add to home|home screen)\b.*\b(app|phone)\b/i, /\bhow (do|can) i install\b/i],
@@ -142,7 +142,7 @@ const INSTANT_FAQ: FaqEntry[] = [
   {
     patterns: [/\b(emergency|urgent|help).*(day|wedding)\b/i, /\bwho (do|can) i call\b/i],
     reply:
-      "On wedding day, check the **Home** tab for emergency contacts. For logistics (shuttle, dress code, times), I'm your girl — just ask!",
+      "On wedding day, check the **Home** tab for emergency contacts. For logistics (shuttle, dress code, times), I'm your girl: just ask!",
   },
 ];
 

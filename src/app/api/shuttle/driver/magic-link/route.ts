@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       data: { driverId: driver.id, token, expiresAt },
     });
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001";
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const url = `${baseUrl}/driver?token=${token}`;
 
     return NextResponse.json({ url, expiresAt: expiresAt.toISOString() });

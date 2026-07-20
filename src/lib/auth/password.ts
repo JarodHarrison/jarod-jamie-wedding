@@ -34,7 +34,7 @@ export async function buildPasswordFields(password: string) {
   };
 }
 
-/** Random hash with no stored plaintext — guest must sign up to claim the account. */
+/** Random hash with no stored plaintext: guest must sign up to claim the account. */
 export async function createUnclaimedPasswordFields() {
   return {
     passwordHash: await hashPassword(randomBytes(32).toString("hex")),

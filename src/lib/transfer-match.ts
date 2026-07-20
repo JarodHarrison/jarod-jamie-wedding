@@ -89,9 +89,9 @@ function matchNotificationBody(
   if (kind === "ARRIVAL") {
     const waitLabel = arrivalMaxWaitLabel(other.arrivalMaxWait);
     const waitNote = waitLabel ? ` (happy to wait up to ${waitLabel})` : "";
-    return `${otherName} is arriving at ${airportLabel(other.arrivalAirport)} on ${formatTravelWhen(other.arrivalDate, other.arrivalTime)}${waitNote} — your schedules overlap. Open Profile → Flights & shared transfers to connect if you'd like.`;
+    return `${otherName} is arriving at ${airportLabel(other.arrivalAirport)} on ${formatTravelWhen(other.arrivalDate, other.arrivalTime)}${waitNote}. Your schedules overlap. Open Profile → Flights & shared transfers to connect if you'd like.`;
   }
-  return `${otherName} is departing from ${airportLabel(other.departureAirport)} on ${formatTravelWhen(other.departureDate, other.departureTime)} — close to your plans. Open Profile → Flights & shared transfers to connect if you'd like.`;
+  return `${otherName} is departing from ${airportLabel(other.departureAirport)} on ${formatTravelWhen(other.departureDate, other.departureTime)}. Their schedule is close to yours. Open Profile → Flights & shared transfers to connect if you'd like.`;
 }
 
 async function notifyNewMatch(

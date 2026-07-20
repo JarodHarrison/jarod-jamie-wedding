@@ -209,7 +209,7 @@ export async function getMontvilleWeddingWeather(): Promise<WeddingWeatherPayloa
   const typical = await fetchTypicalLateSeptember();
   const daysUntilNote =
     daysOut > FORECAST_HORIZON_DAYS
-      ? `Live forecast from ${FORECAST_HORIZON_DAYS} days before the wedding — showing typical late-September weather for now`
+      ? `Live forecast from ${FORECAST_HORIZON_DAYS} days before the wedding: showing typical late-September weather for now`
       : daysOut < 0
         ? "Hope you had the most fabulous day!"
         : null;

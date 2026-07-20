@@ -73,7 +73,7 @@ export function TableCardsPrintClient() {
               </p>
               <h2 className="mt-2 font-serif text-2xl">Share your photos</h2>
               <p className="mt-2 max-w-[14rem] text-xs leading-relaxed text-gray-600">
-                Scan to upload a moment from our wedding — it may appear on the live photo wall.
+                Scan to upload a moment from our wedding: it may appear on the live photo wall.
               </p>
               {qrDataUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element

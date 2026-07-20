@@ -47,7 +47,7 @@ export async function checkReturnShuttleCharterAlerts(): Promise<void> {
     const details = RETURN_SHUTTLE_AIRPORT_DETAILS[airport];
     await sendCharterAlertOnce(
       alertKey,
-      `Private charter opportunity — ${guests.length} guests on return shuttle (${airport})`,
+      `Private charter opportunity: ${guests.length} guests on return shuttle (${airport})`,
       [
         `${guests.length} guests have registered for the departure coach to ${airportName}.`,
         `Departure: ${RETURN_SHUTTLE.displayDate} at ${details.departureTime} from Spicers Clovelly (${details.priceGuide}).`,
@@ -96,7 +96,7 @@ export async function checkArrivalClusterCharterAlerts(): Promise<void> {
     const alertKey = `arrival-cluster-${key}`;
     await sendCharterAlertOnce(
       alertKey,
-      `Private charter opportunity — ${cluster.names.length} guests arriving ${cluster.airport} on ${cluster.date}`,
+      `Private charter opportunity: ${cluster.names.length} guests arriving ${cluster.airport} on ${cluster.date}`,
       [
         `${cluster.names.length} guests are interested in shared airport transport with similar arrival plans.`,
         `Airport: ${airportLabel(cluster.airport)}`,

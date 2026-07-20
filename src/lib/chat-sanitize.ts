@@ -62,7 +62,7 @@ function fallbackAttractionLines(): string {
 }
 
 export function localDiscoveryFallbackReply(): string {
-  return `Honey, Montville and Maleny are absolutely eating — here's where I'd send you first:
+  return `Honey, Montville and Maleny are absolutely eating: here's where I'd send you first:
 
 ${fallbackAttractionLines()}
 

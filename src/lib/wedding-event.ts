@@ -22,8 +22,8 @@ export type WeddingFeature =
 
 const DAY_SCHEDULE = [
   { time: "3:00pm", label: "Ceremony", detail: "Garden ceremony at Spicers" },
-  { time: "4:30pm", label: "Garden Party", detail: "Upper Lawn — canapés & drinks" },
-  { time: "6:00pm", label: "Reception", detail: "The Pavilion — dinner & dancing" },
+  { time: "4:30pm", label: "Garden Party", detail: "Upper Lawn: canapés & drinks" },
+  { time: "6:00pm", label: "Reception", detail: "The Pavilion: dinner & dancing" },
 ] as const;
 
 export const EMERGENCY_CONTACTS = [

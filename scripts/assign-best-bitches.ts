@@ -11,7 +11,7 @@ async function main() {
     });
 
     if (!guest) {
-      console.warn(`No guest found for "${name}" — create their account or import them first.`);
+      console.warn(`No guest found for "${name}": create their account or import them first.`);
       continue;
     }
 

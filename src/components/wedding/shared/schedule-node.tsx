@@ -179,7 +179,7 @@ export function ScheduleNode({
                       {booking.btn} <ChevronRight size={12} />
                     </a>
                     {booking.btn === "Pay with Stripe" && (
-                      <StripeCheckoutHint className="mt-2" />
+                      <StripeCheckoutHint className="mt-2" includeProcessingFee />
                     )}
                   </>
                 ) : (

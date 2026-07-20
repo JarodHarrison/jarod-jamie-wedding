@@ -16,13 +16,13 @@ import type { AppTab } from "@/types/wedding";
 const taxiContacts = [
   {
     name: "Hinterland Transfers",
-    note: "Montville-based — airport, restaurant & event transfers",
+    note: "Montville-based: airport, restaurant & event transfers",
     websiteUrl: "https://www.facebook.com/profile.php?id=61558019309165",
     phones: [{ display: "0449 549 022", href: "tel:+61449549022" }],
   },
   {
     name: "MAGS Private Chauffeur",
-    note: "Hinterland wedding & event transfers — pre-book essential",
+    note: "Hinterland wedding & event transfers: pre-book essential",
     websiteUrl: "https://magnoliaco.au/",
     phones: [
       { display: "1300 626 656", href: "tel:1300626656" },
@@ -31,7 +31,7 @@ const taxiContacts = [
   },
   {
     name: "Suncoast Cabs",
-    note: "Sunshine Coast taxi service — book ahead for hinterland trips",
+    note: "Sunshine Coast taxi service: book ahead for hinterland trips",
     websiteUrl: "https://suncoastcabs.com.au/",
     phones: [{ display: "131 008", href: "tel:131008" }],
   },
@@ -102,7 +102,7 @@ export function TravelScreen({ setActiveTab }: TravelScreenProps) {
                         <span className="font-medium text-[#2a2723]">
                           On-site at Spicers Clovelly Estate
                         </span>{" "}
-                        if you have a confirmed room — you&apos;ll unlock on-site events in the
+                        if you have a confirmed room: you&apos;ll unlock on-site events in the
                         itinerary, including Friday&apos;s lakeside welcome.
                       </p>
                     </>
@@ -195,7 +195,7 @@ export function TravelScreen({ setActiveTab }: TravelScreenProps) {
                       Please Note
                     </span>
                     <br />
-                    Ubers and taxis are very limited in the area — please pre-book transport in advance.
+                    Ubers and taxis are very limited in the area. Please pre-book transport in advance.
                   </div>
                   <h5 className="mb-3 font-serif text-lg text-[#2a2723]">Pre-Book Local Transport</h5>
                   <p className="mb-4 text-sm font-light leading-relaxed text-gray-600">

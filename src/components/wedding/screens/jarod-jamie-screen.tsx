@@ -85,7 +85,7 @@ function StoryFlashWall({
           </p>
         </div>
         <p className="mt-6 text-sm font-medium text-gray-500">
-          — {story.displayName ?? "Anonymous guest"}
+         : {story.displayName ?? "Anonymous guest"}
         </p>
         {!story.isMine && (
           <button
@@ -183,7 +183,7 @@ export function JarodJamieScreen({ setActiveTab }: { setActiveTab: (tab: AppTab)
         return;
       }
       setStories((current) => current.filter((item) => item.id !== storyId));
-      setReportMessage("Thanks — we'll review that story.");
+      setReportMessage("Thanks. We'll review that story.");
     } catch {
       setReportMessage("Could not report story.");
     }
@@ -195,7 +195,7 @@ export function JarodJamieScreen({ setActiveTab }: { setActiveTab: (tab: AppTab)
 
       <div className="mt-6 space-y-6 px-6">
         <p className="text-center text-sm font-light leading-relaxed text-gray-600">
-          Their love story keeps growing — and you&apos;re part of it. Share something funny, heartfelt,
+          Their love story keeps growing, and you&apos;re part of it. Share something funny, heartfelt,
           or gloriously chaotic. Stories flash up here for everyone, with your name or anonymously.
         </p>
 
@@ -218,7 +218,7 @@ export function JarodJamieScreen({ setActiveTab }: { setActiveTab: (tab: AppTab)
                 <form className="space-y-4" onSubmit={handleSubmit}>
                   {error && <p className="text-xs text-red-500">{error}</p>}
                   {saved && (
-                    <p className="text-xs text-emerald-600">Story shared — it&apos;s on the wall!</p>
+                    <p className="text-xs text-emerald-600">Story shared. It&apos;s on the wall!</p>
                   )}
 
                   <div>
@@ -297,8 +297,7 @@ export function JarodJamieScreen({ setActiveTab }: { setActiveTab: (tab: AppTab)
                     was time to change that.
                   </p>
                   <p>
-                    From there it was rom-com montage energy — travel, hidden gems, hand in hand —
-                    and eventually their gorgeous daughter Brie. Now Montville, and you, are the next
+                    From there it was rom-com montage energy: travel, hidden gems, hand in hand:                     and eventually their gorgeous daughter Brie. Now Montville, and you, are the next
                     chapter.
                   </p>
                   <div className="flex items-center justify-center gap-2 pt-2 text-pink-400">

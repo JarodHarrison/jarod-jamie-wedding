@@ -16,7 +16,7 @@ export function writeClientCache<T>(key: string, data: T): void {
   try {
     localStorage.setItem(`${CACHE_PREFIX}${key}`, JSON.stringify(data));
   } catch {
-    // Storage full or private mode — ignore.
+    // Storage full or private mode: ignore.
   }
 }
 

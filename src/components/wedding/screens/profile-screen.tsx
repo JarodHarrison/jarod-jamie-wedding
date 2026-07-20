@@ -6,10 +6,14 @@ import { TransferShareForm } from "@/components/wedding/forms/transfer-share-for
 import { GiftColourForm } from "@/components/wedding/forms/gift-colour-form";
 import { GoldCoastTicketsSection } from "@/components/wedding/profile/gold-coast-tickets-section";
 import { InterestForm } from "@/components/wedding/forms/interest-form";
+import { GLOW_UP_PARTY_PUBLIC_PATH } from "@/lib/glow-up-party";
+import { ExternalLink } from "lucide-react";
 import { useAnnitaFabPrefs } from "@/components/wedding/hooks/use-annita-fab-prefs";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
+import { PartyBioForm } from "@/components/wedding/profile/party-bio-form";
 import { ProfilePhotoSection } from "@/components/wedding/profile/profile-photo-section";
 import { CompanionSection } from "@/components/wedding/profile/companion-section";
+import { MyPartySection } from "@/components/wedding/profile/my-party-section";
 import { RsvpProfileForm } from "@/components/wedding/profile/rsvp-profile-form";
 import { PasskeySettings, GoogleLinkSettings } from "@/components/wedding/auth/social-auth";
 import { ContentAccordion } from "@/components/wedding/shared/content-accordion";
@@ -74,10 +78,32 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
             defaultOpenId="rsvp"
             items={[
               {
+                id: "my-party",
+                title: "My party",
+                content: <MyPartySection onError={setError} />,
+              },
+              {
                 id: "rsvp",
                 title: "RSVP & celebration details",
                 content: <RsvpProfileForm />,
               },
+              ...(profile.isMc || profile.isCelebrant
+                ? [
+                    {
+                      id: "party-bio",
+                      title: profile.isCelebrant
+                        ? "Celebrant & MC details"
+                        : "MC details",
+                      content: (
+                        <PartyBioForm
+                          profile={profile}
+                          onProfileChange={setProfile}
+                          onError={setError}
+                        />
+                      ),
+                    },
+                  ]
+                : []),
               {
                 id: "accommodation",
                 title: "Accommodation & shuttle",
@@ -93,14 +119,21 @@ export function ProfileScreen({ setActiveTab, onLogout }: ProfileScreenProps) {
                 title: "Pre-wedding experiences",
                 content: (
                   <div className="space-y-6">
-                    <InterestForm
-                      field="glowUpInterest"
-                      options={[
-                        { value: "teeth", label: "Teeth Whitening" },
-                        { value: "botox", label: "Botox Pump Party" },
-                        { value: "both", label: "Hit me with both!" },
-                      ]}
-                    />
+                    <a
+                      href={GLOW_UP_PARTY_PUBLIC_PATH}
+                      className="flex min-h-11 items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-3 shadow-sm"
+                      style={{ borderColor: theme.border }}
+                    >
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+                          Pre-Wedding Glow-Up
+                        </p>
+                        <p className="text-sm text-[#2a2723]">
+                          Teeth whitening &amp; Botox Pump Party: RSVP on the Glow-Up page
+                        </p>
+                      </div>
+                      <ExternalLink size={14} className="shrink-0 text-gray-400" />
+                    </a>
                     <InterestForm
                       field="onSiteServiceInterest"
                       options={[

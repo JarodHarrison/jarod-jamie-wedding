@@ -124,7 +124,7 @@ export function transferIntroductionEmailHtml({
 }): string {
   return weddingEmailShell(`
     <p style="margin:0 0 16px;">Hi ${escapeHtml(recipientName)},</p>
-    <p style="margin:0 0 16px;">Good news — we've matched you with another guest travelling on a similar schedule.</p>
+    <p style="margin:0 0 16px;">Good news: we've matched you with another guest travelling on a similar schedule.</p>
     <p style="margin:0 0 16px;"><strong>${escapeHtml(buddyName)}</strong> is ${escapeHtml(buddySummary)}. If you'd like to coordinate a lift or share a ride, we've attached their contact card so you can reach out directly.</p>
     <p style="margin:0 0 16px;font-size:14px;color:#8a8278;">We only shared details because you both agreed to connect through the wedding app.</p>
     <p style="margin:0;color:#8a8278;font-size:14px;">Safe travels,<br/>Jarod &amp; Jamie</p>

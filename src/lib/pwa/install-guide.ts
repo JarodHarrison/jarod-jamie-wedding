@@ -104,7 +104,7 @@ const GUIDE_CONTENT: Record<InstallGuideVariant, Omit<InstallGuideContent, "vari
     subtitle: `Install ${APP_TITLE} like an app for quick access on wedding weekend.`,
     steps: [
       "Make sure you're on jarodandjamiewedding.com in Safari (not another browser).",
-      "Tap the Share button — the square with an arrow pointing up (bottom centre on iPhone, top bar on iPad).",
+      "Tap the Share button: the square with an arrow pointing up (bottom centre on iPhone, top bar on iPad).",
       "Scroll the share menu and tap Add to Home Screen.",
       "Tap Add in the top corner, then open the new icon from your home screen.",
     ],
@@ -114,12 +114,12 @@ const GUIDE_CONTENT: Record<InstallGuideVariant, Omit<InstallGuideContent, "vari
     platformLabel: "iPhone / iPad",
     browserLabel: "Chrome",
     title: "Add to Home Screen",
-    subtitle: `Install ${APP_TITLE} for one-tap access — Safari steps work in Chrome too.`,
+    subtitle: `Install ${APP_TITLE} for one-tap access: Safari steps work in Chrome too.`,
     steps: [
       "Tap the Share button in Chrome (to the right of the address bar, or via the ⋮ menu).",
       "Tap Add to Home Screen (you may need to scroll the menu).",
       "Confirm the name and tap Add.",
-      "Launch the app from your home screen icon — not from the browser tab.",
+      "Launch the app from your home screen icon: not from the browser tab.",
     ],
     tip: "If Add to Home Screen is missing, open jarodandjamiewedding.com in Safari and use Share → Add to Home Screen there.",
   },
@@ -145,9 +145,9 @@ const GUIDE_CONTENT: Record<InstallGuideVariant, Omit<InstallGuideContent, "vari
       "Open jarodandjamiewedding.com in Chrome.",
       "Tap the menu (⋮) in the top-right, or look for Install app / Add to Home screen in the address bar.",
       "Tap Install app or Add to Home screen, then confirm.",
-      "Open it from your home screen or app drawer — it runs like a native app.",
+      "Open it from your home screen or app drawer: it runs like a native app.",
     ],
-    tip: "Some phones show a banner at the bottom saying Install — tap that if you see it.",
+    tip: "Some phones show a banner at the bottom saying Install: tap that if you see it.",
   },
   "android-samsung": {
     platformLabel: "Android (Samsung)",
@@ -160,7 +160,7 @@ const GUIDE_CONTENT: Record<InstallGuideVariant, Omit<InstallGuideContent, "vari
       "Tap Add page to → Home screen (wording may say Add to Home screen).",
       "Confirm, then open the icon from your home screen.",
     ],
-    tip: "You can also try Chrome on Samsung — menu → Install app or Add to Home screen.",
+    tip: "You can also try Chrome on Samsung: menu → Install app or Add to Home screen.",
   },
   "android-firefox": {
     platformLabel: "Android",
@@ -192,12 +192,12 @@ const GUIDE_CONTENT: Record<InstallGuideVariant, Omit<InstallGuideContent, "vari
     title: "Add to Home screen",
     subtitle: `Install ${APP_TITLE} for full-screen wedding access.`,
     steps: [
-      "Open jarodandjamiewedding.com in Chrome if you can — it's the easiest on Android.",
+      "Open jarodandjamiewedding.com in Chrome if you can: it's the easiest on Android.",
       "Open the browser menu (usually ⋮).",
       "Look for Install app, Add to Home screen, or Add page to.",
       "Confirm, then open the new home screen icon.",
     ],
-    tip: "Chrome on Android is the most reliable — try that if your browser doesn't show an install option.",
+    tip: "Chrome on Android is the most reliable: try that if your browser doesn't show an install option.",
   },
   "desktop-chrome": {
     platformLabel: "Computer",
@@ -234,7 +234,7 @@ const GUIDE_CONTENT: Record<InstallGuideVariant, Omit<InstallGuideContent, "vari
       "Or use Share → Add to Dock if you see it.",
       "Launch from your Dock like any other app.",
     ],
-    tip: "On iPhone, use Safari on the phone itself — Mac steps won't install to your phone.",
+    tip: "On iPhone, use Safari on the phone itself: Mac steps won't install to your phone.",
   },
   generic: {
     platformLabel: "Your device",
@@ -245,9 +245,9 @@ const GUIDE_CONTENT: Record<InstallGuideVariant, Omit<InstallGuideContent, "vari
       "Visit jarodandjamiewedding.com in your browser.",
       "On iPhone/iPad (Safari): Share → Add to Home Screen.",
       "On Android (Chrome): Menu → Install app or Add to Home screen.",
-      "Open the home screen icon — not a browser bookmark tab.",
+      "Open the home screen icon: not a browser bookmark tab.",
     ],
-    tip: "Ask Annita Help in the app if you get stuck — she knows the steps for your phone.",
+    tip: "Ask Annita Help in the app if you get stuck: she knows the steps for your phone.",
   },
 };
 
@@ -261,17 +261,17 @@ export function buildInstallGuideKnowledgeForAnnita(): string {
     .filter((key) => !key.startsWith("desktop"))
     .map((key) => {
       const guide = getInstallGuideContent(key);
-      return `### ${guide.platformLabel} — ${guide.browserLabel}
+      return `### ${guide.platformLabel}: ${guide.browserLabel}
 ${guide.steps.map((step, i) => `${i + 1}. ${step}`).join("\n")}${guide.tip ? `\nTip: ${guide.tip}` : ""}`;
     });
 
   return `
 ## Installing the wedding app on your phone
 - Official site: jarodandjamiewedding.com
-- The app is a **web app** — no App Store or Play Store download. Guests add it to their **home screen** for full-screen access like a native app.
-- If they're already opening from a home screen icon with no browser bar, they're installed — no steps needed.
+- The app is a **web app**: no App Store or Play Store download. Guests add it to their **home screen** for full-screen access like a native app.
+- If they're already opening from a home screen icon with no browser bar, they're installed: no steps needed.
 - The login screen shows a one-time install guide; after dismissing it, they won't see it again unless they clear site data.
-- Always ask what phone and browser they use (iPhone Safari, iPhone Chrome, Android Chrome, Samsung Internet, etc.) then give the matching steps below — don't guess.
+- Always ask what phone and browser they use (iPhone Safari, iPhone Chrome, Android Chrome, Samsung Internet, etc.) then give the matching steps below: don't guess.
 
 ${sections.join("\n\n")}
 `;

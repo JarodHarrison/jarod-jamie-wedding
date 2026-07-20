@@ -6,7 +6,7 @@ export type ReturnShuttleAirport = (typeof RETURN_SHUTTLE_AIRPORTS)[number];
 
 export const RETURN_SHUTTLE_FLYER_PATH = "/transfers/airport-express-departure.png";
 
-/** Cache-busted src for static flyer assets — use with native <img>, not next/image. */
+/** Cache-busted src for static flyer assets: use with native <img>, not next/image. */
 export function returnShuttleFlyerSrc(): string {
   return `${RETURN_SHUTTLE_FLYER_PATH}?v=${encodeURIComponent(APP_BUILD_ID)}`;
 }
@@ -16,7 +16,7 @@ export const RETURN_SHUTTLE = {
   displayDate: "Sunday 27 September",
   title: "Airport Express",
   description:
-    "Departure-only coach from Spicers Clovelly Estate on Sunday 27 September — relax, unwind, and we'll get you to the airport in style.",
+    "Departure-only coach from Spicers Clovelly Estate on Sunday 27 September: relax, unwind, and we'll get you to the airport in style.",
 } as const;
 
 export const RETURN_SHUTTLE_AIRPORT_DETAILS: Record<
@@ -41,5 +41,5 @@ export function returnShuttleAirportLabel(code: string | null | undefined): stri
 
 export function returnShuttleOptionLabel(code: ReturnShuttleAirport): string {
   const details = RETURN_SHUTTLE_AIRPORT_DETAILS[code];
-  return `${returnShuttleAirportLabel(code)} — departs ${details.departureTime} (${details.priceGuide})`;
+  return `${returnShuttleAirportLabel(code)}: departs ${details.departureTime} (${details.priceGuide})`;
 }

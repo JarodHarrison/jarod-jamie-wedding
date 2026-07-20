@@ -16,7 +16,7 @@ export function GuestAccountTip({ compact = false, className = "" }: GuestAccoun
       </p>
       <p className="mt-1">
         Sign up with the <strong className="font-medium text-[#2a2723]">same email you gave us</strong>{" "}
-        on your invitation or RSVP — we&apos;ll load your guest profile automatically.
+        on your invitation or RSVP: we&apos;ll load your guest profile automatically.
       </p>
       {!compact && (
         <p className="mt-2 text-[11px] text-gray-500">

@@ -11,7 +11,7 @@ export async function GET() {
       return jsonError("GOOGLE_CLIENT_ID is not configured.", 500);
     }
 
-    const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3001";
+    const origin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     const state = await createDriveOAuthState();
     const url = buildDriveConnectUrl(origin, state);
 

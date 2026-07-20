@@ -4,7 +4,7 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
+  useLayoutEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -28,7 +28,7 @@ const WeddingThemeContext = createContext<WeddingThemeContextValue | null>(null)
 export function WeddingThemeProvider({ children }: { children: ReactNode }) {
   const [themeMode, setThemeModeState] = useState<WeddingThemeMode>("classic");
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const stored = readStoredWeddingTheme();
     setThemeModeState(stored);
     applyWeddingTheme(stored);

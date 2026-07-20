@@ -42,7 +42,7 @@ type AdminTransferOverviewModalProps = {
 function matchStatusLabel(match: BuddyMatch): string {
   if (match.status === "INTRODUCED") return "Introduced";
   if (match.guestLowConsent === true && match.guestHighConsent === true) {
-    return "Both agreed — introducing";
+    return "Both agreed: introducing";
   }
   if (match.guestLowConsent === true || match.guestHighConsent === true) {
     return "One guest agreed";
@@ -81,7 +81,7 @@ export function AdminTransferOverviewModal({ modal, onClose }: AdminTransferOver
 
   const title =
     modal.kind === "return-shuttle"
-      ? `Return shuttle — ${modal.airport}`
+      ? `Return shuttle: ${modal.airport}`
       : "Travel buddy matches";
 
   const shuttleGuests =

@@ -14,7 +14,7 @@ export function formatCachedAttractionForChat(
   const ratingHint =
     typeof place.rating === "number" ? ` · ★ ${place.rating.toFixed(1)}` : "";
 
-  return `• **${place.name}** (${place.category}${ratingHint}, ${distanceLabel}) — ${place.description}${formatPlaceChatLinks({
+  return `• **${place.name}** (${place.category}${ratingHint}, ${distanceLabel}): ${place.description}${formatPlaceChatLinks({
     name: place.name,
     websiteUrl: place.websiteUrl,
     latitude: place.latitude,

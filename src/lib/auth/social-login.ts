@@ -8,6 +8,7 @@ import {
 import { isAdminPreferredEmail, isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import { hashPassword } from "@/lib/auth/password";
 import { findClaimableGuestForSignup, findGuestByLoginEmail } from "@/lib/guest-claim";
+import { clearGuestManagementOnClaim } from "@/lib/guest-party";
 import { prisma } from "@/lib/prisma";
 import crypto from "node:crypto";
 
@@ -124,6 +125,7 @@ async function createOrClaimGoogleGuest(email: string, name: string) {
       });
 
   await recordGoogleLoginForGuest(guest.id, normalized);
+  await clearGuestManagementOnClaim(guest.id);
 
   return guest;
 }

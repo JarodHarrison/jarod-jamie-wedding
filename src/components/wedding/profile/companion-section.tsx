@@ -183,10 +183,10 @@ export function CompanionSection({
             <p className="font-serif text-xl text-[#2a2723]">{displayName}</p>
             {linkedGuest ? (
               <p className="text-xs text-emerald-700">
-                {partnerHasOwnProfile ? "Linked guest profile" : "Linked — waiting on their photo"}
+                {partnerHasOwnProfile ? "Linked guest profile" : "Linked: waiting on their photo"}
               </p>
             ) : (
-              <p className="text-xs text-gray-500">Name saved — they can claim their profile later</p>
+              <p className="text-xs text-gray-500">Name saved. They can claim their profile later</p>
             )}
           </div>
         </div>
@@ -315,7 +315,7 @@ export function CompanionSection({
         <div className="mt-5 border-t pt-5" style={{ borderColor: theme.border }}>
           <p className="text-xs text-gray-500">
             {linkedGuest && !partnerHasOwnProfile
-              ? `${linkedGuest.name} hasn't uploaded a photo yet — you can add one for the guest wall.`
+              ? `${linkedGuest.name} hasn't uploaded a photo yet. You can add one for the guest wall.`
               : "Add a photo of your plus-one for the guest wall until they sign up."}
             {visionModerationEnabled ? " Only clearly unsafe images are blocked." : ""}
           </p>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { RotateCcw } from "lucide-react";
 import { isAppInstalled, isIosDevice } from "@/lib/pwa/install-guide";
 import { theme } from "@/lib/theme";
@@ -10,7 +11,14 @@ function isTouchMobile(): boolean {
   return window.matchMedia("(pointer: coarse)").matches;
 }
 
-function shouldLockPortrait(): boolean {
+function isPublicEventLandingPath(pathname: string | null): boolean {
+  if (!pathname) return false;
+  const path = pathname.toLowerCase();
+  return path === "/bucksparty" || path === "/glowup";
+}
+
+function shouldLockPortrait(pathname: string | null): boolean {
+  if (isPublicEventLandingPath(pathname)) return false;
   if (!isTouchMobile()) return false;
   if (isIosDevice()) return isAppInstalled();
   return true;
@@ -34,10 +42,14 @@ function isPhysicallyLandscape(): boolean {
 }
 
 export function OrientationGuard() {
+  const pathname = usePathname();
   const [showRotatePrompt, setShowRotatePrompt] = useState(false);
 
   useEffect(() => {
-    if (!shouldLockPortrait()) return;
+    if (!shouldLockPortrait(pathname)) {
+      setShowRotatePrompt(false);
+      return;
+    }
 
     const sync = () => {
       setShowRotatePrompt(isPhysicallyLandscape());
@@ -54,7 +66,7 @@ export function OrientationGuard() {
         };
         await orientation?.lock?.("portrait-primary");
       } catch {
-        // iOS PWA can't programmatically lock — manifest + overlay handle it.
+        // iOS PWA can't programmatically lock: manifest + overlay handle it.
       }
     };
 
@@ -64,7 +76,7 @@ export function OrientationGuard() {
       window.screen.orientation?.removeEventListener("change", sync);
       window.removeEventListener("orientationchange", sync);
     };
-  }, []);
+  }, [pathname]);
 
   if (!showRotatePrompt) return null;
 

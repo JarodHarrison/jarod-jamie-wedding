@@ -6,7 +6,7 @@ export type AnnitaFabPosition = {
   y: number;
 };
 
-/** In-memory only — cleared when the app shell loads again. */
+/** In-memory only: cleared when the app shell loads again. */
 let annitaFabHiddenSession = false;
 
 /** Drop legacy permanent hide flag from older builds. */
@@ -60,7 +60,7 @@ export function writeAnnitaFabPosition(position: AnnitaFabPosition | null) {
   }
 }
 
-/** Bottom-centre dismiss target — fraction of viewport width/height */
+/** Bottom-centre dismiss target: fraction of viewport width/height */
 export const ANNITA_DISMISS_ZONE = {
   x: 0.5,
   y: 0.88,

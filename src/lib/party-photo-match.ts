@@ -3,6 +3,7 @@ import { normalizeGuestName } from "@/lib/guest-name";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
 import type { PartyRosterMember } from "@/lib/party-roster";
 import {
+  partyCelebrantAndMcs,
   partyFamilyGroups,
   partyGrooms,
   partyWeddingParty,
@@ -11,6 +12,9 @@ import {
 export type GuestProfilePhoto = GuestProfileCardData & {
   email?: string;
   photoUrl: string;
+  partyBio?: string | null;
+  isMc?: boolean;
+  isCelebrant?: boolean;
 };
 
 export type PartyMemberWithPhoto = PartyRosterMember & {
@@ -31,13 +35,18 @@ function collectMatchKeys(member: PartyRosterMember): string[] {
   return [...keys];
 }
 
-function toGuestProfileCard(guest: GuestProfilePhoto): GuestProfileCardData {
+function toGuestProfileCard(
+  guest: GuestProfilePhoto,
+  roleLabel?: string,
+): GuestProfileCardData {
   return {
     name: guest.name,
     plusOneName: guest.plusOneName,
     guestOfHost: guest.guestOfHost,
     guestRelationship: guest.guestRelationship,
     guestRelationshipNote: guest.guestRelationshipNote,
+    partyBio: guest.partyBio,
+    partyRoleLabel: roleLabel ?? null,
   };
 }
 
@@ -88,25 +97,35 @@ export function applyPhotosToRoster(
   guests: GuestProfilePhoto[],
 ): PartyMemberWithPhoto[] {
   const usedPhotoUrls = new Set<string>();
+  const placeholder = "/party/person-placeholder.svg";
 
   return members.map((member) => {
     const guest = findPhotoForMember(member, guests);
-    const photoUrl = guest?.photoUrl;
-    if (!photoUrl || usedPhotoUrls.has(photoUrl)) {
-      return member;
+    if (!guest) return member;
+
+    const photoUrl = guest.photoUrl;
+    const realPhoto = Boolean(photoUrl && photoUrl !== placeholder);
+    if (realPhoto && photoUrl && !usedPhotoUrls.has(photoUrl)) {
+      usedPhotoUrls.add(photoUrl);
+    } else if (realPhoto && photoUrl && usedPhotoUrls.has(photoUrl)) {
+      return {
+        ...member,
+        guestProfile: {
+          ...toGuestProfileCard(guest, member.role),
+          name: member.name,
+          hideConnection: member.role === "Groom",
+        },
+      };
     }
 
-    usedPhotoUrls.add(photoUrl);
     return {
       ...member,
-      imageSrc: photoUrl,
-      guestProfile: guest
-        ? {
-            ...toGuestProfileCard(guest),
-            name: member.name,
-            hideConnection: member.role === "Groom",
-          }
-        : undefined,
+      imageSrc: realPhoto ? photoUrl : undefined,
+      guestProfile: {
+        ...toGuestProfileCard(guest, member.role),
+        name: member.name,
+        hideConnection: member.role === "Groom",
+      },
     };
   });
 }
@@ -122,6 +141,7 @@ export function findGuestProfileByPhoto(
 const allPartyRosterMembers: PartyRosterMember[] = [
   ...partyGrooms,
   ...partyWeddingParty,
+  ...partyCelebrantAndMcs,
   ...partyFamilyGroups.flatMap((group) => [...group.members]),
 ];
 

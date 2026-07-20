@@ -1,4 +1,5 @@
 import { Bus, Camera, Map, MapPinned, PlaneTakeoff, Shirt, Sparkles } from "lucide-react";
+import { GLOW_UP_PARTY_PUBLIC_PATH } from "@/lib/glow-up-party";
 import type { AppTab } from "@/types/wedding";
 import { GuideCard, type GuideCardConfig } from "@/components/wedding/shared/guide-card";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
@@ -11,7 +12,7 @@ const guideCards: GuideCardConfig[] = [
     id: "venue-map",
     title: "Venue Map",
     description:
-      "Homesteads, lawns, pool, and the walk to Lake View Deck — your illustrated Spicers map.",
+      "Homesteads, lawns, pool, and the walk to Lake View Deck, all on your illustrated Spicers map.",
     actionLabel: "Open Map",
     icon: MapPinned,
     className:
@@ -49,7 +50,7 @@ const guideCards: GuideCardConfig[] = [
     id: "glowup",
     title: "Pre-Wedding Glow-Up",
     description: "Teeth whitening & Botox Pump Party. Let's get snatched!",
-    actionLabel: "Register",
+    actionLabel: "Open Glow-Up",
     icon: Sparkles,
     className: "bg-gradient-to-br from-[#9a7344] via-[#c3a379] to-[#e0c9a0] text-[#2a2723] shadow-lg shadow-[#c3a379]/30",
     titleClassName: "text-[#2a2723]",
@@ -73,7 +74,7 @@ const guideCards: GuideCardConfig[] = [
     id: "departure-transport",
     title: "Departure Transport",
     description:
-      `Airport Express coach from Spicers to BNE or MCY on ${RETURN_SHUTTLE.displayDate} — register your interest.`,
+      `Airport Express coach from Spicers to BNE or MCY on ${RETURN_SHUTTLE.displayDate}: register your interest.`,
     actionLabel: "View & Register",
     icon: PlaneTakeoff,
     className: "bg-gradient-to-br from-[#2d4a3e] via-[#3d6b58] to-[#4d8a6f] text-white shadow-lg shadow-[#2d4a3e]/25",
@@ -86,7 +87,7 @@ const guideCards: GuideCardConfig[] = [
     id: "shuttle",
     title: "Live Wedding Shuttle",
     description:
-      "Track the courtesy bus in real time — next stop, ETA, and route to Spicers Clovelly Estate.",
+      "Track the courtesy bus in real time: next stop, ETA, and route to Spicers Clovelly Estate.",
     actionLabel: "View Live Map",
     icon: Bus,
     className: "bg-gradient-to-br from-[#1e4a63] via-[#2d6382] to-[#3d7fa3] text-white shadow-lg shadow-[#1e4a63]/25",
@@ -126,11 +127,21 @@ export function GuideScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => v
 
       <div className="mb-8 space-y-4 px-6">
         {visibleCards.map((card) => (
-          <GuideCard key={card.id} card={card} onSelect={() => setActiveTab(card.id as AppTab)} />
+          <GuideCard
+            key={card.id}
+            card={card}
+            onSelect={() => {
+              if (card.id === "glowup") {
+                window.location.assign(GLOW_UP_PARTY_PUBLIC_PATH);
+                return;
+              }
+              setActiveTab(card.id as AppTab);
+            }}
+          />
         ))}
         {visibleCards.length === 0 && (
           <p className="rounded-2xl border bg-white/80 px-5 py-8 text-center text-sm text-gray-500">
-            Planning guides return closer to the wedding — check back during wedding week.
+            Planning guides return closer to the wedding. Check back during wedding week.
           </p>
         )}
       </div>

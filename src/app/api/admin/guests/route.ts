@@ -5,6 +5,8 @@ import {
 } from "@/lib/auth/password";
 import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError, normalizeEmail, isValidGuestTier } from "@/lib/api-utils";
+import { attachBucksRsvpsToAdminGuests } from "@/lib/bucks-party-server";
+import { attachGlowUpInterestsToAdminGuests } from "@/lib/glow-up-party-server";
 import { adminGuestSelect, serializeAdminGuest } from "@/lib/guest-profile";
 import { sendGuestInviteEmail } from "@/lib/guest-emails";
 import { prisma } from "@/lib/prisma";
@@ -16,11 +18,13 @@ export async function GET() {
       orderBy: { name: "asc" },
       select: adminGuestSelect,
     });
+    const withBucks = await attachBucksRsvpsToAdminGuests(guests);
+    const withGlow = await attachGlowUpInterestsToAdminGuests(withBucks);
     const adminEmails = new Set(
       (await prisma.admin.findMany({ select: { email: true } })).map((a) => a.email),
     );
     return NextResponse.json({
-      guests: guests.map((g) => ({
+      guests: withGlow.map((g) => ({
         ...serializeAdminGuest(g),
         isAdmin: adminEmails.has(g.email),
       })),

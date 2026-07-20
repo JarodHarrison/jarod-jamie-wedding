@@ -1,3 +1,4 @@
+import { BUCKS_PARTY_CALENDAR_EVENT } from "@/lib/bucks-party-calendar";
 import { LAKESIDE_MEET_GREET } from "@/lib/on-site-access";
 import { WEDDING_TIMEZONE } from "@/lib/wedding-event";
 
@@ -57,10 +58,11 @@ export const WEDDING_CALENDAR_EVENTS: Record<string, WeddingCalendarEvent> = {
   }),
   ceremony: eventWindow("2026-09-26", "3:00pm", 75, {
     id: "ceremony",
-    title: "Jarod & Jamie — The Ceremony",
+    title: "Jarod & Jamie: The Ceremony",
     description: "Colourful cocktail attire. Adults-only ceremony.",
     location: VENUE,
   }),
+  "bucks-party": BUCKS_PARTY_CALENDAR_EVENT,
 };
 
 export function getCalendarEvent(eventId: string): WeddingCalendarEvent | null {

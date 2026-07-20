@@ -7,6 +7,7 @@ import { AccommodationPropertyPicker } from "@/components/wedding/forms/accommod
 import { SPICERS_CLOVELLY } from "@/lib/hinterland-accommodations";
 import { BED_PREFERENCE_OPTIONS } from "@/lib/bed-preference";
 import { GIFT_COLOUR_CHOICE_1_OPTIONS, GIFT_COLOUR_CHOICE_2_OPTIONS } from "@/lib/gift-colour-choices";
+import { glowUpInterestLabel, glowUpWhiteningLabel } from "@/lib/glow-up-party";
 import { ARRIVAL_MAX_WAIT_OPTIONS } from "@/lib/transfer-arrival-wait";
 import { RETURN_SHUTTLE_AIRPORTS, returnShuttleAirportLabel } from "@/lib/return-shuttle";
 import { theme } from "@/lib/theme";
@@ -319,7 +320,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               </div>
             ) : (
               <p className="text-xs italic text-gray-500">
-                Not signed up yet — password will appear here after they create an account in the app.
+                Not signed up yet: password will appear here after they create an account in the app.
               </p>
             )}
           </div>
@@ -401,6 +402,28 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
                 className="h-4 w-4 rounded border-gray-300"
               />
               Wedding MC (can verify Photobooth Bingo winners)
+            </label>
+            <label className="mt-2 flex items-center gap-2 text-xs text-[#2a2723]">
+              <input
+                type="checkbox"
+                checked={guest.isCelebrant}
+                onChange={async (e) => {
+                  const isCelebrant = e.target.checked;
+                  const res = await fetch(`/api/admin/guests/${guest.id}`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ isCelebrant }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    onError(data.error ?? "Failed to update celebrant profile.");
+                    return;
+                  }
+                  onUpdated({ ...guest, ...data.guest, isAdmin: guest.isAdmin });
+                }}
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              Wedding celebrant
             </label>
           </div>
         </div>
@@ -510,6 +533,144 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
           {rsvpState.error && <p className="mt-2 text-[10px] text-red-500">{rsvpState.error}</p>}
           <SaveButton saving={rsvpState.saving} saved={rsvpState.saved} label="Save RSVP" />
         </form>
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Bucks Party RSVP"
+        submittedAt={guest.bucksPartyRsvp?.updatedAt ?? null}
+        defaultOpen={Boolean(guest.bucksPartyRsvp)}
+      >
+        {guest.bucksPartyRsvp ? (
+          <dl className="space-y-2 text-xs text-[#2a2723]">
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Status</dt>
+              <dd className="text-right font-semibold">
+                {guest.bucksPartyRsvp.attending ? "Attending" : "Not attending"}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Name</dt>
+              <dd className="text-right">{guest.bucksPartyRsvp.name}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Email</dt>
+              <dd className="break-all text-right">{guest.bucksPartyRsvp.email}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Phone</dt>
+              <dd className="text-right">{guest.bucksPartyRsvp.phone || "-"}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Plus one</dt>
+              <dd className="text-right">{guest.bucksPartyRsvp.plusOneName || "-"}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Budget</dt>
+              <dd className="text-right">
+                {guest.bucksPartyRsvp.budgetChoice != null
+                  ? `$${guest.bucksPartyRsvp.budgetChoice}`
+                  : "-"}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Prepaid</dt>
+              <dd className="text-right">
+                {guest.bucksPartyRsvp.prepaid ? "Yes" : "No"}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Source</dt>
+              <dd className="text-right">
+                {guest.bucksPartyRsvp.source === "ADMIN_LINK" ? "Organiser link" : "Public page"}
+              </dd>
+            </div>
+            {guest.isBucksPartyAdmin && (
+              <div className="flex justify-between gap-3">
+                <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Organiser
+                </dt>
+                <dd className="text-right font-semibold text-emerald-700">Yes</dd>
+              </div>
+            )}
+            <p className="pt-1 text-[10px] text-gray-400">
+              Linked by matching email with the bucks party RSVP. Edit in the Bucks Party organiser
+              tools.
+            </p>
+          </dl>
+        ) : (
+          <p className="text-xs text-gray-500">
+            No bucks party RSVP found for this guest&apos;s email
+            {guest.isBucksPartyAdmin ? " (this guest is a bucks organiser)." : "."}
+          </p>
+        )}
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Pump Party / Glow-Up"
+        submittedAt={guest.glowUpPartyInterest?.updatedAt ?? null}
+        defaultOpen={Boolean(guest.glowUpPartyInterest)}
+      >
+        {guest.glowUpPartyInterest ? (
+          <dl className="space-y-2 text-xs text-[#2a2723]">
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Interest</dt>
+              <dd className="text-right font-semibold">
+                {glowUpInterestLabel(guest.glowUpPartyInterest.interest)}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Name</dt>
+              <dd className="text-right">{guest.glowUpPartyInterest.name}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Email</dt>
+              <dd className="break-all text-right">{guest.glowUpPartyInterest.email}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Phone</dt>
+              <dd className="text-right">{guest.glowUpPartyInterest.phone || "-"}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Whitening
+              </dt>
+              <dd className="text-right">
+                {glowUpWhiteningLabel(guest.glowUpPartyInterest.whiteningPackage)}
+              </dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Botox units
+              </dt>
+              <dd className="text-right">{guest.glowUpPartyInterest.botoxUnits ?? "-"}</dd>
+            </div>
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                Filler ml
+              </dt>
+              <dd className="text-right">{guest.glowUpPartyInterest.fillerMl ?? "-"}</dd>
+            </div>
+            {guest.glowUpPartyInterest.notes ? (
+              <div>
+                <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Notes</dt>
+                <dd className="mt-1 whitespace-pre-wrap">{guest.glowUpPartyInterest.notes}</dd>
+              </div>
+            ) : null}
+            <div className="flex justify-between gap-3">
+              <dt className="text-[10px] font-bold uppercase tracking-wider text-gray-400">Source</dt>
+              <dd className="text-right">
+                {guest.glowUpPartyInterest.source === "ADMIN_LINK" ? "Admin link" : "Public page"}
+              </dd>
+            </div>
+            <p className="pt-1 text-[10px] text-gray-400">
+              Linked by matching email with the glow-up form. Edit in Admin → Pump Party.
+            </p>
+          </dl>
+        ) : (
+          <p className="text-xs text-gray-500">
+            No pump party / glow-up interest found for this guest&apos;s email.
+          </p>
+        )}
       </CollapsibleSection>
 
       <CollapsibleSection title="Accommodation" submittedAt={guest.accommodationSubmittedAt}>
@@ -826,7 +987,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               className={inputClass}
               style={fieldStyle}
             >
-              <option value="">Glow up — none</option>
+              <option value="">Glow up: none</option>
               <option value="teeth">Teeth Whitening</option>
               <option value="botox">Botox Pump Party</option>
               <option value="both">Both</option>
@@ -837,7 +998,7 @@ export function AdminGuestEditor({ guest, onUpdated, onError }: AdminGuestEditor
               className={inputClass}
               style={fieldStyle}
             >
-              <option value="">On-site services — none</option>
+              <option value="">On-site services: none</option>
               <option value="hair">Hair & Make-up</option>
               <option value="barber">Barber / Fresh Cut</option>
               <option value="both">Both Services</option>

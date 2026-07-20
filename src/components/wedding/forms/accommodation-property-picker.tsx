@@ -153,7 +153,7 @@ export function AccommodationPropertyPicker({
       </div>
 
       <p className="text-[10px] leading-relaxed text-gray-400">
-        Start typing to see hotels, motels, B&Bs, and rentals around Montville and Maleny — or enter
+        Start typing to see hotels, motels, B&Bs, and rentals around Montville and Maleny: or enter
         your own.
       </p>
 

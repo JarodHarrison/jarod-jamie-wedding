@@ -93,7 +93,7 @@ export function AdminGuestPhotos({ onMessage }: AdminGuestPhotosProps) {
     <div className="space-y-4">
       <p className="text-sm text-gray-500">
         Clean and borderline uploads go live automatically. Google Vision only blocks clearly unsafe
-        images — you can still hide or delete anything from here.
+        images. You can still hide or delete anything from here.
       </p>
 
       <div className="grid grid-cols-3 gap-2">

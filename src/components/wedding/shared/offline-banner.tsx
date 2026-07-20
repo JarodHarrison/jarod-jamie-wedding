@@ -25,7 +25,7 @@ export function OfflineBanner() {
       role="status"
     >
       <WifiOff size={12} />
-      You&apos;re offline — itinerary & FAQs cached; other features sync when back online
+      You&apos;re offline: itinerary & FAQs cached; other features sync when back online
     </div>
   );
 }

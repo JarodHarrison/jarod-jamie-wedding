@@ -184,7 +184,7 @@ export function mergeSayiGuestExports(attendingCsv: string, rsvpCsv: string): Sa
       mergeStats.rsvpOnly += 1;
       errors.push({
         row: rsvpRow.rowNumber,
-        message: `RSVP row for "${rsvpRow.name}" had no match in the attending list — imported from RSVP only.`,
+        message: `RSVP row for "${rsvpRow.name}" had no match in the attending list: imported from RSVP only.`,
       });
     }
   }

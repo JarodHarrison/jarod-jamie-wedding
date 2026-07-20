@@ -128,7 +128,7 @@ export function AccommodationForm() {
             On-site guest
           </p>
           <p className="mt-1 leading-relaxed text-gray-600">
-            You&apos;re staying at Spicers Clovelly Estate — no courtesy shuttle needed. Your details
+            You&apos;re staying at Spicers Clovelly Estate: no courtesy shuttle needed. Your details
             below are pre-filled from your allocation.
           </p>
         </div>
@@ -147,7 +147,7 @@ export function AccommodationForm() {
             <p className="mt-1 text-xs text-gray-500">
               Allocated as: {profile.assignedRoomConfiguration}
               {bedPreferenceLabel(bedPreference) && !profile.bedPreference
-                ? ` (${bedPreferenceLabel(bedPreference)} pre-selected — change below if needed)`
+                ? ` (${bedPreferenceLabel(bedPreference)} pre-selected: change below if needed)`
                 : ""}
             </p>
           )}
@@ -210,7 +210,7 @@ export function AccommodationForm() {
           <div>
             <p className="text-sm font-medium text-[#2a2723]">Bed preference</p>
             <p className="mt-1 text-xs leading-relaxed text-gray-500">
-              Choose King or Two double beds — we&apos;ll pass your preference to Spicers.
+              Choose King or Two double beds: we&apos;ll pass your preference to Spicers.
             </p>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -308,7 +308,7 @@ export function AccommodationForm() {
       )}
       {onSiteUnlocked && (
         <p className="text-[10px] font-bold uppercase leading-relaxed tracking-wider text-[#2a2723]">
-          On-site access unlocked — Friday&apos;s lakeside welcome is now in your itinerary.
+          On-site access unlocked: Friday&apos;s lakeside welcome is now in your itinerary.
         </p>
       )}
       <button

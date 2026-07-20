@@ -16,7 +16,7 @@ async function main() {
   }
 
   if (candidates.length > 1) {
-    console.log("Multiple matches — using the first. Pass an exact name as an argument if needed:");
+    console.log("Multiple matches: using the first. Pass an exact name as an argument if needed:");
     for (const guest of candidates) {
       console.log(`  - ${guest.name} (${guest.email}) [${guest.tier}]`);
     }

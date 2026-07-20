@@ -172,7 +172,7 @@ async function main() {
 
     console.log(`Created guest profile at ${JAROD_GUEST_EMAIL} (copied from ${LEGACY_GUEST_EMAIL}).`);
   } else if (existingGmailGuest) {
-    console.log(`Guest ${JAROD_GUEST_EMAIL} already exists — skipping profile copy.`);
+    console.log(`Guest ${JAROD_GUEST_EMAIL} already exists: skipping profile copy.`);
   } else {
     const passwordHash = await hashPassword(crypto.randomUUID());
     await prisma.guest.create({
@@ -212,14 +212,14 @@ async function main() {
   if (jarodGuestProfile) {
     await linkAdminToGuest(JAROD_ADMIN_EMAIL, jarodGuestProfile);
   } else {
-    console.warn(`No guest profile found to link — create ${JAROD_GUEST_EMAIL} first.`);
+    console.warn(`No guest profile found to link: create ${JAROD_GUEST_EMAIL} first.`);
   }
 
   const jamieGuestProfile = await findJamieGuestProfile();
   if (jamieGuestProfile) {
     await linkAdminToGuest(JAMIE_ADMIN_EMAIL, jamieGuestProfile);
   } else {
-    console.warn("No Jamie guest profile found — import or create Jamie Stocks guest first.");
+    console.warn("No Jamie guest profile found: import or create Jamie Stocks guest first.");
   }
 
   const gmailGuest = jarodGuestProfile

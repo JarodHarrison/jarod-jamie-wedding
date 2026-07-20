@@ -66,7 +66,7 @@ export function NotificationBell({ className }: NotificationBellProps) {
       });
       setUnreadCount(nextUnread);
     } catch {
-      // Guest may not be logged in or network blip — ignore
+      // Guest may not be logged in or network blip: ignore
     }
   }, [open]);
 

@@ -2,7 +2,7 @@
 
 import { useWeddingTheme } from "@/components/wedding/hooks/use-wedding-theme";
 
-/** Classic pride flag letter colours — cycles per character (skipping spaces). */
+/** Classic pride flag letter colours: cycles per character (skipping spaces). */
 export const PRIDE_LETTER_COLORS = [
   "#e40303",
   "#ff8c00",
@@ -14,16 +14,18 @@ export const PRIDE_LETTER_COLORS = [
 
 /** Darker pride palette for legibility on light / pastel backgrounds. */
 export const PRIDE_LETTER_COLORS_READABLE = [
-  "#b80000",
-  "#c45c00",
-  "#9a7b00",
-  "#006622",
-  "#0039a6",
-  "#5c1a66",
+  "#9b0000",
+  "#a04a00",
+  "#6d5800",
+  "#005024",
+  "#002f8a",
+  "#4a1255",
 ] as const;
 
 const READABLE_LETTER_SHADOW =
-  "0 1px 0 rgba(255, 255, 255, 0.95), 0 0 12px rgba(255, 255, 255, 0.65)";
+  "0 1px 0 rgba(255, 255, 255, 1), 0 1px 2px rgba(26, 15, 46, 0.14), 0 0 10px rgba(255, 255, 255, 0.55)";
+
+const HEADING_TAGS = new Set(["h1", "h2", "h3", "h4"]);
 
 type RainbowTextProps = {
   children: string;
@@ -50,9 +52,10 @@ export function RainbowText({
 
   let letterIndex = 0;
   const palette = PRIDE_LETTER_COLORS_READABLE;
+  const headingClass = HEADING_TAGS.has(Tag) ? " font-semibold" : "";
 
   return (
-    <Tag className={className} aria-label={children}>
+    <Tag className={`${className}${headingClass}`} aria-label={children}>
       {children.split("").map((char, index) => {
         if (char === " ") {
           return <span key={`space-${index}`}> </span>;

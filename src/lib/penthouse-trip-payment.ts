@@ -1,4 +1,4 @@
-/** Gold Coast penthouse trip — re-exports penthouse product from shared Stripe config. */
+/** Gold Coast penthouse trip: re-exports penthouse product from shared Stripe config. */
 export {
   getGoldCoastProduct,
   getGoldCoastStripeUrl,
@@ -12,7 +12,7 @@ export const PENTHOUSE_TRIP_PAYMENT = {
   perPersonCents: 55000,
   coupleTotalLabel: "$1,100",
   title: "Penthouse Experience",
-  description: getGoldCoastProduct("penthouse").priceLabel.replace(" per person", "") + " — three nights in a Gold Coast penthouse.",
+  description: getGoldCoastProduct("penthouse").priceLabel.replace(" per person", "") + ": three nights in a Gold Coast penthouse.",
   quantityHint: getGoldCoastProduct("penthouse").quantityHint ?? "",
 } as const;
 

@@ -23,7 +23,7 @@ export async function normalizePhotoForUpload(
   try {
     bitmap = await createImageBitmap(file);
   } catch {
-    throw new Error("We couldn't read that photo — try another image or take a new one.");
+    throw new Error("We couldn't read that photo: try another image or take a new one.");
   }
 
   const longestEdge = Math.max(bitmap.width, bitmap.height);
@@ -57,7 +57,7 @@ export async function normalizePhotoForUpload(
   }
 
   if (blob.size > options.maxBytes) {
-    throw new Error("Photo is still too large — try a closer crop or a smaller image.");
+    throw new Error("Photo is still too large: try a closer crop or a smaller image.");
   }
 
   const baseName = file.name.replace(/\.[^.]+$/, "") || "photo";

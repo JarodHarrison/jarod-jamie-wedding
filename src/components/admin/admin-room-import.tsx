@@ -55,11 +55,11 @@ export function AdminRoomImport({ onMessage, onImported }: AdminRoomImportProps)
 
       if (data.updated === 0) {
         onMessage(
-          `No rooms were assigned — ${data.unmatched} guest${data.unmatched === 1 ? "" : "s"} could not be matched by name.`,
+          `No rooms were assigned: ${data.unmatched} guest${data.unmatched === 1 ? "" : "s"} could not be matched by name.`,
         );
       } else {
         onMessage(
-          `Room allocation imported — ${data.updated} guest${data.updated === 1 ? "" : "s"} updated${
+          `Room allocation imported: ${data.updated} guest${data.updated === 1 ? "" : "s"} updated${
             data.unmatched > 0 ? `, ${data.unmatched} unmatched` : ""
           }.`,
         );

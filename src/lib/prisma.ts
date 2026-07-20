@@ -2,9 +2,13 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { Pool } from "pg";
 
+/** Bump when models are added so a stale global PrismaClient is discarded in dev. */
+const PRISMA_CLIENT_GENERATION = 2;
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
   prismaPool: Pool | undefined;
+  prismaGeneration: number | undefined;
 };
 
 function createPrismaClient() {
@@ -33,9 +37,27 @@ function createPrismaClient() {
   return client;
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+function getPrismaClient(): PrismaClient {
+  const cached = globalForPrisma.prisma;
+  const generationMatches = globalForPrisma.prismaGeneration === PRISMA_CLIENT_GENERATION;
+  const hasBucksConfig =
+    cached != null &&
+    typeof (cached as PrismaClient & { bucksPartyConfig?: unknown }).bucksPartyConfig !==
+      "undefined";
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+  if (cached && generationMatches && hasBucksConfig) {
+    return cached;
+  }
+
+  const client = createPrismaClient();
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+    globalForPrisma.prismaGeneration = PRISMA_CLIENT_GENERATION;
+  }
+  return client;
+}
+
+export const prisma = getPrismaClient();
 
 export type { Prisma } from "@prisma/client";
 export {

@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError } from "@/lib/api-utils";
 import { findGuestByNormalizedName } from "@/lib/guest-claim";
-import { normalizeGuestName } from "@/lib/guest-name";
+import {
+  guestNameTokens,
+  namesShareFirstName,
+  normalizeGuestName,
+  preferFullerGuestName,
+} from "@/lib/guest-name";
 import {
   bedPreferenceFromRoomConfiguration,
   toDateInputValue,
@@ -19,24 +24,45 @@ async function findGuestForRoomRow(guestName: string, email: string | null) {
   const byName = await findGuestByNormalizedName(guestName);
   if (byName) return byName;
 
+  const candidates = await prisma.guest.findMany({
+    select: { id: true, name: true, email: true },
+  });
+
+  const normalized = normalizeGuestName(guestName);
+  if (!normalized) return null;
+
+  const exact = candidates.find((guest) => normalizeGuestName(guest.name) === normalized);
+  if (exact) return exact;
+
+  const fuzzyExact = candidates.find((guest) => guestNameMatchesImport(guest.name, guestName));
+  if (fuzzyExact) return fuzzyExact;
+
+  const importTokens = guestNameTokens(guestName);
+  const firstName = importTokens[0];
+  if (!firstName) return null;
+
+  const firstNameMatches = candidates.filter((guest) => namesShareFirstName(guest.name, guestName));
+  if (firstNameMatches.length === 1) return firstNameMatches[0];
+
+  if (importTokens.length >= 2) {
+    const lastName = importTokens.at(-1)!;
+    const surnameMatches = firstNameMatches.filter((guest) => {
+      const tokens = guestNameTokens(guest.name);
+      return tokens.length === 1 || tokens.includes(lastName);
+    });
+    if (surnameMatches.length === 1) return surnameMatches[0];
+  }
+
+  // Email last: sheets often reuse a partner email for two guests
   if (email) {
     const byEmail = await prisma.guest.findUnique({
       where: { email },
       select: { id: true, name: true, email: true },
     });
-    if (byEmail && guestNameMatchesImport(byEmail.name, guestName)) {
-      return byEmail;
-    }
+    if (byEmail && namesShareFirstName(byEmail.name, guestName)) return byEmail;
   }
 
-  const normalized = normalizeGuestName(guestName);
-  if (!normalized) return null;
-
-  const candidates = await prisma.guest.findMany({
-    select: { id: true, name: true, email: true },
-  });
-
-  return candidates.find((guest) => normalizeGuestName(guest.name) === normalized) ?? null;
+  return null;
 }
 
 export async function POST(request: Request) {
@@ -66,6 +92,7 @@ export async function POST(request: Request) {
       matched: 0,
       updated: 0,
       unmatched: 0,
+      namesCompleted: 0,
       errors: [...parsed.errors] as { row: number; message: string; guestName?: string }[],
       unmatchedGuests: [] as { row: number; guestName: string }[],
     };
@@ -87,16 +114,19 @@ export async function POST(request: Request) {
 
         const guestRecord = await prisma.guest.findUnique({
           where: { id: guest.id },
-          select: { tier: true },
+          select: { tier: true, name: true },
         });
         const promotedTier = tierForRoomAllocation(guestRecord?.tier ?? "OFF_SITE");
         const importedBed = bedPreferenceFromRoomConfiguration(row.configuration);
         const importedCheckIn = toDateInputValue(row.checkIn);
         const importedCheckOut = toDateInputValue(row.checkOut);
+        const completedName = preferFullerGuestName(guestRecord?.name ?? guest.name, row.guestName);
+        const nameChanged = completedName !== (guestRecord?.name ?? guest.name);
 
         await prisma.guest.update({
           where: { id: guest.id },
           data: {
+            ...(nameChanged ? { name: completedName } : {}),
             assignedRoomName: row.roomName,
             assignedRoomDetails: row.roomDetails,
             assignedRoomCheckIn: row.checkIn,
@@ -104,7 +134,7 @@ export async function POST(request: Request) {
             assignedRoomConfiguration: row.configuration,
             roomAllocationImportedAt: importedAt,
             accommodationType: "ON_SITE",
-            accommodationName: `Spicers Clovelly Estate — ${row.roomName}`,
+            accommodationName: `Spicers Clovelly Estate: ${row.roomName}`,
             accommodationAddress: "68 Montville-Maleny Rd, Montville QLD 4560",
             needsShuttle: false,
             ...(importedCheckIn ? { checkInDate: importedCheckIn } : {}),
@@ -116,6 +146,7 @@ export async function POST(request: Request) {
 
         result.matched += 1;
         result.updated += 1;
+        if (nameChanged) result.namesCompleted += 1;
       } catch (error) {
         result.errors.push({
           row: row.rowNumber,

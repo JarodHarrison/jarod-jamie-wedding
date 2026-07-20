@@ -58,7 +58,7 @@ export async function POST(request: Request, context: RouteContext) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.byteLength > VENDOR_DOCUMENT_MAX_BYTES) {
-      return jsonError("File is too large — please use a file under 5MB.", 400);
+      return jsonError("File is too large. Please use a file under 5MB.", 400);
     }
 
     const vendor = await prisma.vendor.update({

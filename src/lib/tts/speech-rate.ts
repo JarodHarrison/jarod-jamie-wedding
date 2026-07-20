@@ -12,5 +12,5 @@ export function annitaSpeechRate(): number {
   return Math.min(MAX_SPEECH_RATE, Math.max(MIN_SPEECH_RATE, parsed));
 }
 
-/** Client-side default — keep in sync with server ANNITA_SPEECH_RATE when possible. */
+/** Client-side default: keep in sync with server ANNITA_SPEECH_RATE when possible. */
 export const CLIENT_ANNITA_SPEECH_RATE = 1.15;

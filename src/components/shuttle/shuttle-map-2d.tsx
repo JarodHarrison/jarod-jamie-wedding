@@ -126,7 +126,7 @@ export function ShuttleMap2D({ stops, busLocation, nextStopId, className }: Shut
       <div
         className={`flex items-center justify-center rounded-2xl border bg-[#f0ebe3] p-6 text-center text-xs text-gray-500 ${className ?? ""}`}
       >
-        Map unavailable — add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to show the live map.
+        Map unavailable: add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to show the live map.
       </div>
     );
   }

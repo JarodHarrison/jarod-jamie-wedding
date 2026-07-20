@@ -23,6 +23,8 @@ export const guestProfileSelect = {
   companionPhotoMime: true,
   partyRole: true,
   isMc: true,
+  isCelebrant: true,
+  partyBio: true,
   dietaryNotes: true,
   songRequest: true,
   rsvpSubmittedAt: true,
@@ -82,6 +84,10 @@ export type GuestProfileRecord = Prisma.GuestGetPayload<{ select: typeof guestPr
 export const adminGuestSelect = {
   ...guestProfileSelect,
   passwordPlaintext: true,
+  isBucksPartyAdmin: true,
+  bucksPartyRsvp: true,
+  glowUpPartyInterest: true,
+  linkedLogins: { select: { email: true } },
   _count: {
     select: {
       linkedLogins: true,
@@ -128,13 +134,54 @@ export function serializeGuestProfile(guest: GuestProfileRecord) {
 export type SerializedGuestProfile = ReturnType<typeof serializeGuestProfile>;
 
 export function serializeAdminGuest(guest: AdminGuestRecord) {
-  const { _count, passwordPlaintext, ...profileGuest } = guest;
+  const {
+    _count,
+    passwordPlaintext,
+    bucksPartyRsvp,
+    glowUpPartyInterest,
+    linkedLogins: _linkedLogins,
+    isBucksPartyAdmin,
+    ...profileGuest
+  } = guest;
   const linkedLoginCount = _count?.linkedLogins ?? 0;
   const passkeyCount = _count?.passkeyCredentials ?? 0;
 
   return {
     ...serializeGuestProfile(profileGuest),
     passwordPlaintext: passwordPlaintext ?? null,
+    isBucksPartyAdmin: Boolean(isBucksPartyAdmin),
+    bucksPartyRsvp: bucksPartyRsvp
+      ? {
+          id: bucksPartyRsvp.id,
+          name: bucksPartyRsvp.name,
+          email: bucksPartyRsvp.email,
+          phone: bucksPartyRsvp.phone,
+          attending: bucksPartyRsvp.attending,
+          plusOneName: bucksPartyRsvp.plusOneName,
+          budgetChoice: bucksPartyRsvp.budgetChoice,
+          prepaid: Boolean(bucksPartyRsvp.prepaidNotedAt),
+          prepaidNotedAt: bucksPartyRsvp.prepaidNotedAt?.toISOString() ?? null,
+          source: bucksPartyRsvp.source,
+          createdAt: bucksPartyRsvp.createdAt.toISOString(),
+          updatedAt: bucksPartyRsvp.updatedAt.toISOString(),
+        }
+      : null,
+    glowUpPartyInterest: glowUpPartyInterest
+      ? {
+          id: glowUpPartyInterest.id,
+          name: glowUpPartyInterest.name,
+          email: glowUpPartyInterest.email,
+          phone: glowUpPartyInterest.phone,
+          interest: glowUpPartyInterest.interest,
+          whiteningPackage: glowUpPartyInterest.whiteningPackage,
+          botoxUnits: glowUpPartyInterest.botoxUnits,
+          fillerMl: glowUpPartyInterest.fillerMl,
+          notes: glowUpPartyInterest.notes,
+          source: glowUpPartyInterest.source,
+          createdAt: glowUpPartyInterest.createdAt.toISOString(),
+          updatedAt: glowUpPartyInterest.updatedAt.toISOString(),
+        }
+      : null,
     hasAppAccount: guestHasActivatedAppAccount({
       passwordPlaintext,
       linkedLoginCount,
@@ -152,7 +199,8 @@ export type GuestProfileSection =
   | "interests"
   | "gift-colours"
   | "identity"
-  | "companion";
+  | "companion"
+  | "party-bio";
 
 export function isGuestProfileSection(value: string): value is GuestProfileSection {
   return (
@@ -162,6 +210,7 @@ export function isGuestProfileSection(value: string): value is GuestProfileSecti
     value === "interests" ||
     value === "gift-colours" ||
     value === "identity" ||
-    value === "companion"
+    value === "companion" ||
+    value === "party-bio"
   );
 }

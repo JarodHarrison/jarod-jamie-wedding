@@ -26,7 +26,7 @@ export async function POST(request: Request) {
       return jsonError(
         configured
           ? "Annita's voice couldn't be generated. Check your ElevenLabs Voice ID and credits."
-          : "Server voice not configured — add ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID, then redeploy.",
+          : "Server voice not configured: add ELEVENLABS_API_KEY and ELEVENLABS_VOICE_ID, then redeploy.",
         503,
       );
     }

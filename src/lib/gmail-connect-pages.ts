@@ -31,7 +31,7 @@ export function gmailCallbackHelpHtml(origin: string) {
        <li>Click <strong>Connect Gmail</strong> (not this URL).</li>
        <li>Sign in as <code>theboys@jarodandjamiewedding.com</code> when Google asks.</li>
      </ol>
-     <p>For Google Cloud Console only — paste this redirect URI (don&apos;t click it):</p>
+     <p>For Google Cloud Console only: paste this redirect URI (don&apos;t click it):</p>
      <pre>${origin}/api/admin/gmail/callback</pre>
      <a class="button" href="${origin}/api/admin/gmail/connect">Connect Gmail</a>
      <p style="margin-top:1rem"><a href="${origin}/">← Back to wedding app</a></p>`,
@@ -54,18 +54,18 @@ export function gmailConnectUnauthorizedHtml(origin: string) {
 export function gmailAccessDeniedHtml(origin: string) {
   return gmailPage(
     "Google blocked Gmail access",
-    `<p>Google returned <code>access_denied</code>. The app code and redirect URI look correct — this is almost always a Google Cloud Console setting.</p>
+    `<p>Google returned <code>access_denied</code>. The app code and redirect URI look correct: this is almost always a Google Cloud Console setting.</p>
      <h2 style="font-size:1rem;margin-top:1.5rem">Fix in Google Cloud Console</h2>
      <p>Open <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener">OAuth consent screen</a> for the project that owns client <code>511812132544-…</code>:</p>
      <ol>
-       <li><strong>Enable Gmail API</strong> — APIs &amp; Services → Library → Gmail API → Enable.</li>
-       <li><strong>Add the Gmail scope</strong> — OAuth consent screen → Edit app → Scopes → Add <code>…/auth/gmail.send</code>.</li>
-       <li><strong>Add yourself as a test user</strong> — OAuth consent screen → Test users → Add <code>theboys@jarodandjamiewedding.com</code> (and any Google account you sign in with). Required while the app is in <em>Testing</em> — <code>gmail.send</code> is a restricted scope.</li>
-       <li><strong>Or set User type to Internal</strong> — if this GCP project is under your Workspace org, choose Internal so any <code>@jarodandjamiewedding.com</code> user can authorize without test-user limits.</li>
-       <li><strong>Add redirect URI</strong> — Credentials → your OAuth client → Authorized redirect URIs:
+       <li><strong>Enable Gmail API</strong>: APIs &amp; Services → Library → Gmail API → Enable.</li>
+       <li><strong>Add the Gmail scope</strong>: OAuth consent screen → Edit app → Scopes → Add <code>…/auth/gmail.send</code>.</li>
+       <li><strong>Add yourself as a test user</strong>: OAuth consent screen → Test users → Add <code>theboys@jarodandjamiewedding.com</code> (and any Google account you sign in with). Required while the app is in <em>Testing</em>: <code>gmail.send</code> is a restricted scope.</li>
+       <li><strong>Or set User type to Internal</strong>: if this GCP project is under your Workspace org, choose Internal so any <code>@jarodandjamiewedding.com</code> user can authorize without test-user limits.</li>
+       <li><strong>Add redirect URI</strong>: Credentials → your OAuth client → Authorized redirect URIs:
          <pre>${origin}/api/admin/gmail/callback</pre>
        </li>
-       <li><strong>Workspace admin</strong> — if you use Google Workspace, an admin may need to allow third-party app access for this OAuth client under Admin → Security → API controls.</li>
+       <li><strong>Workspace admin</strong>: if you use Google Workspace, an admin may need to allow third-party app access for this OAuth client under Admin → Security → API controls.</li>
      </ol>
      <p>Then sign in as <code>theboys@jarodandjamiewedding.com</code> (not a personal Gmail) and click Allow on the consent screen.</p>
      <a class="button" href="${origin}/api/admin/gmail/connect">Try Connect Gmail again</a>

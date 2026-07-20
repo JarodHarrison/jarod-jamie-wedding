@@ -57,7 +57,7 @@ function buildWelcomeMessage(profile: GuestProfile | null): string {
 
   const tasks = getIncompleteProfileTasks(profile);
   if (tasks.length === 0) {
-    return `${ANNITA.welcomeMessage} Your forms are all complete — you're officially ready to slay, honey.`;
+    return `${ANNITA.welcomeMessage} Your forms are all complete. You're officially ready to slay, honey.`;
   }
 
   const required = tasks.filter((task) => task.priority === "required");
@@ -66,7 +66,7 @@ function buildWelcomeMessage(profile: GuestProfile | null): string {
     return `${ANNITA.welcomeMessage} I can also see you still need: ${missing}. Want me to help you fill those in right here?`;
   }
 
-  return `${ANNITA.welcomeMessage} You've got a few optional details we could still add — just say the word, darling.`;
+  return `${ANNITA.welcomeMessage} You've got a few optional details we could still add: just say the word, darling.`;
 }
 
 function buildStarters(profile: GuestProfile | null): string[] {
@@ -545,7 +545,7 @@ export function WeddingChatbot({ open: controlledOpen, onOpenChange }: WeddingCh
       setInputPlaceholder(pickAnnitaLine(ANNITA_INPUT_PLACEHOLDERS));
       if (speakEnabled) void speak(displayReply);
     } catch {
-      setError("Network error — please try again.");
+      setError("Network error. Please try again.");
       setMessages(messages);
       setInput(trimmed);
     } finally {

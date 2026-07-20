@@ -57,11 +57,11 @@ export function AdminSeatingImport({ onMessage, onImported }: AdminSeatingImport
 
       if (data.updated === 0) {
         onMessage(
-          `No seats were assigned — ${data.unmatched} guest${data.unmatched === 1 ? "" : "s"} could not be matched by name.`,
+          `No seats were assigned: ${data.unmatched} guest${data.unmatched === 1 ? "" : "s"} could not be matched by name.`,
         );
       } else {
         onMessage(
-          `Seating imported — ${data.updated} guest${data.updated === 1 ? "" : "s"} seated${
+          `Seating imported: ${data.updated} guest${data.updated === 1 ? "" : "s"} seated${
             data.unmatched > 0 ? `, ${data.unmatched} unmatched` : ""
           }.`,
         );

@@ -16,8 +16,8 @@ export const GUEST_STAT_LABELS: Record<GuestStatCategory, string> = {
   "off-site": "Off-site",
   transfers: "Transfers",
   photos: "Profile Photos",
-  "bingo-playing": "Bingo — Playing",
-  "bingo-done": "Bingo — Completed",
+  "bingo-playing": "Bingo: Playing",
+  "bingo-done": "Bingo: Completed",
   "story-authors": "Stories",
 };
 

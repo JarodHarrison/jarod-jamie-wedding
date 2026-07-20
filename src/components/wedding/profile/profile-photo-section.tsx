@@ -185,7 +185,7 @@ export function ProfilePhotoSection({
           </RainbowText>
           <p className="truncate text-sm text-gray-500">{profile.email}</p>
           <p className="mt-2 text-xs text-gray-500">
-            Add a photo so Jarod & Jamie know who&apos;s who — especially for the guest wall.
+            Add a photo so Jarod & Jamie know who&apos;s who: especially for the guest wall.
             {visionModerationEnabled ? " Only clearly unsafe images are blocked." : ""}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">

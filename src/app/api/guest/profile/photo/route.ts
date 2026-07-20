@@ -62,7 +62,7 @@ export async function POST(request: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.byteLength > PROFILE_PHOTO_MAX_BYTES) {
-      return jsonError("Photo is too large — please use an image under 750KB.", 400);
+      return jsonError("Photo is too large. Please use an image under 750KB.", 400);
     }
 
     const mime = resolveUploadImageMime(file, buffer);

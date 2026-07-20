@@ -72,6 +72,10 @@ export async function PATCH(request: Request) {
 
     if (!existingGuest) return jsonError("Guest not found.", 404);
 
+    if (section === "party-bio" && !existingGuest.isMc && !existingGuest.isCelebrant) {
+      return jsonError("Party bio is only available for the celebrant and MCs.", 403);
+    }
+
     const result = buildGuestProfileSectionUpdate(section, body, {
       existing: existingGuest,
     });

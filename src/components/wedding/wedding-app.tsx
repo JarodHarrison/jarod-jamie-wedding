@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Calendar, Heart, Home, MapPin, UserCircle, Users, Shield, Store } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/admin-dashboard";
+import { BucksOrganiserPortal } from "@/components/bucks-party/bucks-organiser-portal";
 import { LoginScreen } from "@/components/wedding/login-screen";
 import { PhoneFrame } from "@/components/wedding/phone-frame";
 import { NavItem } from "@/components/wedding/shared/nav-item";
@@ -73,6 +74,10 @@ export function WeddingApp() {
   const [user, setUser] = useState<WeddingUser | null>(null);
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [canAccessAdmin, setCanAccessAdmin] = useState(false);
+  const [canAccessBucksOrganiser, setCanAccessBucksOrganiser] = useState(false);
+  const [bucksPartyAttending, setBucksPartyAttending] = useState(false);
+  const [glowUpRegistered, setGlowUpRegistered] = useState(false);
+  const [glowUpInterest, setGlowUpInterest] = useState<string | null>(null);
   const [canViewVendors, setCanViewVendors] = useState(false);
   const [canVerifyBingo, setCanVerifyBingo] = useState(false);
   const [hasOnSiteAccess, setHasOnSiteAccess] = useState(false);
@@ -108,6 +113,12 @@ export function WeddingApp() {
       if (data.admin) setAdmin(data.admin);
       else setAdmin(null);
       setCanAccessAdmin(Boolean(data.canAccessAdmin));
+      setCanAccessBucksOrganiser(Boolean(data.canAccessBucksOrganiser));
+      setBucksPartyAttending(Boolean(data.bucksPartyAttending));
+      setGlowUpRegistered(Boolean(data.glowUpRegistered));
+      setGlowUpInterest(
+        typeof data.glowUpInterest === "string" ? data.glowUpInterest : null,
+      );
       setCanViewVendors(Boolean(data.canViewVendors));
       setCanVerifyBingo(Boolean(data.canVerifyBingo));
       setHasOnSiteAccess(Boolean(data.hasOnSiteAccess));
@@ -118,6 +129,10 @@ export function WeddingApp() {
       setUser(null);
       setAdmin(null);
       setCanAccessAdmin(false);
+      setCanAccessBucksOrganiser(false);
+      setBucksPartyAttending(false);
+      setGlowUpRegistered(false);
+      setGlowUpInterest(null);
       setCanViewVendors(false);
       setCanVerifyBingo(false);
       setHasOnSiteAccess(false);
@@ -190,6 +205,7 @@ export function WeddingApp() {
     user?: WeddingUser | null;
     admin?: AdminUser | null;
     canAccessAdmin?: boolean;
+    canAccessBucksOrganiser?: boolean;
     canViewVendors?: boolean;
     canVerifyBingo?: boolean;
   }) => {
@@ -198,6 +214,9 @@ export function WeddingApp() {
     setUser(data.user ?? null);
     setAdmin(data.admin ?? null);
     setCanAccessAdmin(Boolean(data.canAccessAdmin));
+    setCanAccessBucksOrganiser(
+      Boolean(data.canAccessBucksOrganiser ?? data.canAccessAdmin),
+    );
     setCanViewVendors(Boolean(data.canViewVendors));
     setCanVerifyBingo(Boolean(data.canVerifyBingo));
     setActiveTab("home");
@@ -210,6 +229,10 @@ export function WeddingApp() {
     setUser(null);
     setAdmin(null);
     setCanAccessAdmin(false);
+    setCanAccessBucksOrganiser(false);
+    setBucksPartyAttending(false);
+    setGlowUpRegistered(false);
+    setGlowUpInterest(null);
     setCanViewVendors(false);
     setCanVerifyBingo(false);
     setHasOnSiteAccess(false);
@@ -275,6 +298,23 @@ export function WeddingApp() {
             onUnauthorized={handleLogout}
           />
         );
+      case "bucks-organiser":
+        return canAccessBucksOrganiser ? (
+          <BucksOrganiserPortal
+            onBack={() => setActiveTab("home")}
+            canAppointOrganisers={canAccessAdmin}
+          />
+        ) : (
+          <HomeScreen
+            setActiveTab={setActiveTab}
+            onLogout={handleLogout}
+            userName={displayName}
+            onOpenChat={() => setChatOpen(true)}
+            onOpenInstall={requestInstallGuide}
+            canVerifyBingo={canVerifyBingo}
+            canAccessBucksOrganiser={canAccessBucksOrganiser}
+          />
+        );
       case "home":
         return (
           <HomeScreen
@@ -284,6 +324,7 @@ export function WeddingApp() {
             onOpenChat={() => setChatOpen(true)}
             onOpenInstall={requestInstallGuide}
             canVerifyBingo={canVerifyBingo}
+            canAccessBucksOrganiser={canAccessBucksOrganiser}
           />
         );
       case "itinerary":
@@ -292,6 +333,10 @@ export function WeddingApp() {
             canAccessGoldCoast={canAccessGoldCoast}
             isPenthouseGuest={isPenthouseGuest}
             isOnSite={isOnSite}
+            bucksPartyAttending={bucksPartyAttending}
+            showGlowUp={Boolean(user)}
+            glowUpRegistered={glowUpRegistered}
+            glowUpInterest={glowUpInterest}
             setActiveTab={setActiveTab}
           />
         );
@@ -357,7 +402,7 @@ export function WeddingApp() {
     <PhoneFrame>
       <SparkleOverlay />
       <OfflineBanner />
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden">
         <main ref={mainRef} className="min-h-0 flex-1 overflow-y-auto scroll-smooth">{renderScreen()}</main>
         <WeddingChatbot open={chatOpen} onOpenChange={setChatOpen} />
         <InstallAppPopup />

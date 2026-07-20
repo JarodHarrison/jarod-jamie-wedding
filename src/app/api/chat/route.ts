@@ -171,7 +171,7 @@ export async function POST(request: Request) {
     }
     if (error instanceof Error && error.message === "CHAT_NOT_CONFIGURED") {
       return jsonError(
-        "Annita Help isn't ready for her close-up yet — please add GOOGLE_API_KEY to your environment.",
+        "Annita Help isn't ready for her close-up yet. Please add GOOGLE_API_KEY to your environment.",
         503,
       );
     }

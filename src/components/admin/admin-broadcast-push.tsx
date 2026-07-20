@@ -80,7 +80,7 @@ export function AdminBroadcastPush({ guestCount, onMessage }: AdminBroadcastPush
       </div>
       <p className="mb-4 text-xs text-gray-500">
         Delivers instantly inside the wedding app (bell icon on Home). Guests see it when they open
-        the app — no email required. {guestCount} guest{guestCount === 1 ? "" : "s"} loaded.
+        the app: no email required. {guestCount} guest{guestCount === 1 ? "" : "s"} loaded.
       </p>
 
       <form onSubmit={handleSend} className="space-y-3">

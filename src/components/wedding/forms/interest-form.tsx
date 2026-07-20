@@ -81,7 +81,7 @@ export function InterestForm({ field, options }: InterestFormProps) {
       )}
       {saved && (
         <p className="text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">
-          Interest registered — thank you!
+          Interest registered: thank you!
         </p>
       )}
       <button

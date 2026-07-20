@@ -33,7 +33,7 @@ export type SubTab =
   | "departure-transport"
   | "seating";
 
-export type AppTab = MainTab | SubTab | "admin" | "vendors";
+export type AppTab = MainTab | SubTab | "admin" | "vendors" | "bucks-organiser";
 
 export type ScheduleBooking = {
   sub: string;
@@ -63,6 +63,8 @@ export type AdminGuest = {
   hasCompanionPhoto: boolean;
   partyRole: "BEST_BITCH" | null;
   isMc: boolean;
+  isCelebrant: boolean;
+  partyBio: string | null;
   dietaryNotes: string | null;
   songRequest: string | null;
   rsvpSubmittedAt: string | null;
@@ -119,6 +121,35 @@ export type AdminGuest = {
   passwordPlaintext: string | null;
   hasAppAccount: boolean;
   isAdmin?: boolean;
+  isBucksPartyAdmin?: boolean;
+  bucksPartyRsvp?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    attending: boolean;
+    plusOneName: string | null;
+    budgetChoice: number | null;
+    prepaid: boolean;
+    prepaidNotedAt: string | null;
+    source: string;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
+  glowUpPartyInterest?: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    interest: "teeth" | "botox" | "both";
+    whiteningPackage: "WHITENING_ONLY" | "WHITENING_WITH_KIT" | null;
+    botoxUnits: number | null;
+    fillerMl: number | null;
+    notes: string | null;
+    source: string;
+    createdAt: string;
+    updatedAt: string;
+  } | null;
 };
 
 export type GuestProfile = Omit<AdminGuest, "createdAt" | "passwordPlaintext" | "isAdmin"> & {

@@ -13,7 +13,7 @@ export type EateryRecord = {
   googlePlaceId?: string;
 };
 
-/** Curated seed — always available before Google Places sync runs. */
+/** Curated seed: always available before Google Places sync runs. */
 export const SEED_EATERIES: EateryRecord[] = [
   {
     name: "The Long Apron",
@@ -66,7 +66,7 @@ export const SEED_EATERIES: EateryRecord[] = [
     longitude: 152.848,
     category: "Modern Asian",
     cuisineTags: inferCuisineTags({ name: "The Tamarind", category: "Modern Asian" }),
-    description: "Hatted Spicers restaurant in Maleny — sweet, sour, and spicy Pan-Asian flavours.",
+    description: "Hatted Spicers restaurant in Maleny: sweet, sour, and spicy Pan-Asian flavours.",
     websiteUrl: "https://spicersretreats.com/restaurants/the-tamarind/",
   },
   {
@@ -75,7 +75,7 @@ export const SEED_EATERIES: EateryRecord[] = [
     longitude: 152.961,
     category: "Retro Diner",
     cuisineTags: inferCuisineTags({ name: "Rick's Garage", category: "Retro Diner", description: "giant burgers milkshakes" }),
-    description: "Famous retro diner in Palmwoods — giant burgers, milkshakes, and rockabilly vibes.",
+    description: "Famous retro diner in Palmwoods: giant burgers, milkshakes, and rockabilly vibes.",
     websiteUrl: "https://www.ricksgarage.com.au/",
   },
   {

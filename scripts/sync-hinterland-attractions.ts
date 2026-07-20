@@ -199,13 +199,13 @@ async function main() {
     const count = await upsertAttractionBatch(collected);
     invalidateAttractionCache();
     console.log(
-      `Done — ${SEED_ATTRACTIONS.length} curated + ${count} synced (${collected.length} from Google).`,
+      `Done: ${SEED_ATTRACTIONS.length} curated + ${count} synced (${collected.length} from Google).`,
     );
   } catch (error) {
     console.warn("Google Places sync skipped:", error);
     invalidateAttractionCache();
     console.log(
-      `Done — ${SEED_ATTRACTIONS.length} curated attractions cached (run again after enabling Places API).`,
+      `Done: ${SEED_ATTRACTIONS.length} curated attractions cached (run again after enabling Places API).`,
     );
   }
 }

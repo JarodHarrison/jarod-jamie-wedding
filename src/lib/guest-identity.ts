@@ -1,7 +1,7 @@
 export const GUEST_OF_HOST_OPTIONS = [
   { value: "jarod", label: "Jarod (J-rod)" },
   { value: "jamie", label: "Jamie (Jamo)" },
-  { value: "both", label: "Both — we know both grooms" },
+  { value: "both", label: "Both: we know both grooms" },
 ] as const;
 
 export const GUEST_RELATIONSHIP_OPTIONS = [

@@ -17,7 +17,7 @@ export type SampleMenu = {
   pdfUrl?: string;
 };
 
-/** Group booking sample menu — Little Truffle, Mermaid Beach. */
+/** Group booking sample menu: Little Truffle, Mermaid Beach. */
 export const LITTLE_TRUFFLE_SAMPLE_MENU: SampleMenu = {
   title: "Sample 4-course menu",
   pdfUrl: "/little-truffle-menu.pdf",

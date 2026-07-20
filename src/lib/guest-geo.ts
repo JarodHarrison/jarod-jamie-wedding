@@ -7,7 +7,7 @@ export const SPICERS_CLOVELLY_COORDINATES: GeoPoint = {
   longitude: 152.892,
 };
 
-/** Sunshine Coast + hinterland — guests inside this box get distances from their location. */
+/** Sunshine Coast + hinterland: guests inside this box get distances from their location. */
 const REGION_BOUNDS = {
   minLat: -27.12,
   maxLat: -26.02,

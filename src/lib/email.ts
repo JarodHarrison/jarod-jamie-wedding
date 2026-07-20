@@ -7,9 +7,9 @@ const DEFAULT_NOTIFY_EMAIL = "J-rodandJamie@outlook.com";
 const WEDDING_NAME = "J-rod & Jamo";
 const DOMAIN = "jarodandjamiewedding.com";
 
-/** notifications@ — admin alerts when guests register or update forms */
-/** updates@ — guest-facing announcements and invites from the couple */
-/** noreply@ — automated password reset emails */
+/** notifications@: admin alerts when guests register or update forms */
+/** updates@: guest-facing announcements and invites from the couple */
+/** noreply@: automated password reset emails */
 export type EmailSender = "notifications" | "updates" | "noreply";
 
 const DEFAULT_SENDERS: Record<EmailSender, string> = {
@@ -120,7 +120,7 @@ export async function sendEmail({
   const mailer = getTransporter();
   if (!mailer) {
     console.warn(
-      "[email] No mail transport configured — connect Gmail (GMAIL_REFRESH_TOKEN) or set SMTP_USER/SMTP_PASS:",
+      "[email] No mail transport configured: connect Gmail (GMAIL_REFRESH_TOKEN) or set SMTP_USER/SMTP_PASS:",
       subject,
     );
     return false;
@@ -161,7 +161,7 @@ export async function sendNotificationEmail(
 ): Promise<boolean> {
   const recipients = getNotificationRecipients();
   if (recipients.length === 0) {
-    console.warn("[email] NOTIFY_EMAIL is empty — skipping notification:", subject);
+    console.warn("[email] NOTIFY_EMAIL is empty: skipping notification:", subject);
     return false;
   }
   return sendEmail({ to: recipients, subject, text, html, from: "notifications" });

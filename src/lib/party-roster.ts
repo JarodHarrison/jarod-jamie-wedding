@@ -27,9 +27,9 @@ export const partyWeddingParty: PartyRosterMember[] = [
 export const partyJrodFamily: PartyRosterMember[] = [
   { name: "Bernadette Harrison", role: "Mother" },
   { name: "John Harrison", role: "Father" },
-  { name: "Grace Dillon", role: "Sister" },
-  { name: "Max Dillon", role: "Brother-in-law" },
-  { name: "Rosie Dillon", role: "Niece (Flower girl)" },
+  { name: "Grace Dillion", role: "Sister" },
+  { name: "Max Dillion", role: "Brother-in-law" },
+  { name: "Rosie Dillion", role: "Niece (Flower girl)" },
   { name: "Damien Pobar", role: "Uncle" },
   { name: "Monica Cleary", role: "Aunty" },
   { name: "Martin Pobar", role: "Guncle" },
@@ -40,10 +40,33 @@ export const partyJrodFamily: PartyRosterMember[] = [
 
 export const partyJamoFamily: PartyRosterMember[] = [
   { name: "Tracey Gooden", role: "Mother Figure" },
-  { name: "Akara Gooden", role: "Sister" },
-  { name: "Kai", role: "Nephew (Ring bearer)" },
-  { name: "Jo Bloodworth", role: "Father figure" },
-  { name: "AJ Heta", role: "Jo's husband" },
+  { name: "Akara Gooden", role: "Sister", matchNames: ["Akara Chan"] },
+  {
+    name: "Malakai Gooden",
+    role: "Nephew (Ring bearer)",
+    matchNames: ["Kai", "Malakai", "Malakai Gooderson"],
+  },
+  {
+    name: "Jo Bloodworth",
+    role: "Father figure",
+    matchNames: ["Johanna Bloodworth", "Joanna Bloodworth", "Jo"],
+    matchEmails: ["johanna-bloodworth@guests.jarodandjamiewedding.com"],
+  },
+  { name: "AJ Heta", role: "Jo's husband", matchEmails: ["ajheta@yahoo.com"] },
+];
+
+export const partyCelebrantAndMcs: PartyRosterMember[] = [
+  {
+    name: "Liz Anya",
+    role: "Celebrant & MC",
+    matchEmails: ["celebrant_flair@outlook.com"],
+  },
+  {
+    name: "Andrew Gillard",
+    role: "MC",
+    matchNames: ["Andy Gillard", "Andrew Jillard"],
+    matchEmails: ["andrewjillard67@gmail.com"],
+  },
 ];
 
 export const partyFamilyGroups = [

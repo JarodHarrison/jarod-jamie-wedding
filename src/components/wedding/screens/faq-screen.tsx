@@ -65,7 +65,7 @@ export function WishingWellScreen({ setActiveTab }: { setActiveTab: (tab: AppTab
         >
           <Image
             src={WISHING_WELL_IMAGE}
-            alt="Digital Wishing Well for Jarod and Jamie — honeymoon poem with Maldives, Dubai, and theme park photos"
+            alt="Digital Wishing Well for Jarod and Jamie: honeymoon poem with Maldives, Dubai, and theme park photos"
             width={1200}
             height={750}
             className="h-auto w-full"

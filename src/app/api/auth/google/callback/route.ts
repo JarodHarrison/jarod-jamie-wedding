@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth/social-login";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { sendGuestWelcomeEmail } from "@/lib/guest-emails";
+import { clearGuestManagementOnClaim } from "@/lib/guest-party";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { prisma } from "@/lib/prisma";
 
@@ -76,6 +77,7 @@ export async function GET(request: Request) {
     });
     if (guest) {
       await recordGoogleLoginForGuest(guest.id, profile.email);
+      await clearGuestManagementOnClaim(guest.id);
     }
 
     return response;

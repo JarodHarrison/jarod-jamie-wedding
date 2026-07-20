@@ -8,12 +8,14 @@ import { useTabRefresh } from "@/components/wedding/hooks/use-tab-refresh";
 import { fetchJsonWithClientCache, readClientCache } from "@/lib/client-data-cache";
 import { RainbowText } from "@/components/wedding/shared/rainbow-text";
 import type { GuestProfileCardData } from "@/lib/guest-profile-card";
+import { hasGuestProfileCard } from "@/lib/guest-profile-card";
 import {
   applyPhotosToRoster,
   type GuestProfilePhoto,
   type PartyMemberWithPhoto,
 } from "@/lib/party-photo-match";
 import {
+  partyCelebrantAndMcs,
   partyFamilyGroups,
   partyGrooms,
   partyWeddingParty,
@@ -39,12 +41,17 @@ function PersonAvatar({
   guestProfile?: GuestProfileCardData;
   onPhotoTap?: (photo: PartyPhotoLightbox) => void;
 }) {
-  const canExpand = Boolean(imageSrc && imageSrc !== PERSON_PLACEHOLDER);
+  const displaySrc = imageSrc ?? PERSON_PLACEHOLDER;
+  const canExpand =
+    Boolean(onPhotoTap) &&
+    (Boolean(imageSrc && imageSrc !== PERSON_PLACEHOLDER) ||
+      Boolean(guestProfile && hasGuestProfileCard(guestProfile)));
+
   const content = (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src={imageSrc ?? PERSON_PLACEHOLDER}
+        src={displaySrc}
         alt={name}
         className="h-full w-full object-cover"
         loading="lazy"
@@ -53,14 +60,16 @@ function PersonAvatar({
     </>
   );
 
-  if (canExpand && onPhotoTap && imageSrc) {
+  if (canExpand && onPhotoTap) {
     return (
       <button
         type="button"
-        onClick={() => onPhotoTap({ src: imageSrc, alt: name, profile: guestProfile })}
+        onClick={() =>
+          onPhotoTap({ src: displaySrc, alt: name, profile: guestProfile })
+        }
         className="relative h-14 w-14 shrink-0 cursor-zoom-in overflow-hidden rounded-full border-2 bg-[#f7f4ee] shadow-sm"
         style={{ borderColor: theme.border }}
-        aria-label={`View ${name} full screen`}
+        aria-label={`View ${name}`}
       >
         {content}
       </button>
@@ -271,6 +280,11 @@ export function PartyScreen() {
     [profilePhotos],
   );
 
+  const celebrantAndMcsWithPhotos = useMemo(
+    () => applyPhotosToRoster(partyCelebrantAndMcs, profilePhotos),
+    [profilePhotos],
+  );
+
   const familyGroupsWithPhotos = useMemo(
     () =>
       partyFamilyGroups.map((family) => ({
@@ -282,7 +296,7 @@ export function PartyScreen() {
 
   return (
     <div className="animate-fade-in animate-slide-up pb-10">
-      <div className="wedding-screen-top sticky top-0 z-20 bg-[#f7f4ee]/90 px-8 pb-6 text-center backdrop-blur-md">
+      <div className="wedding-screen-top sticky top-0 z-20 bg-[var(--wedding-bg)]/90 px-8 pb-6 text-center backdrop-blur-md">
         <RainbowText
           as="h2"
           className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500"
@@ -334,6 +348,45 @@ export function PartyScreen() {
                   <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
                     {person.role}
                   </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <h3
+            className="mb-4 border-b pb-2 font-serif text-xl"
+            style={{ borderColor: theme.border, color: theme.gold }}
+          >
+            Celebrant &amp; MCs
+          </h3>
+          <p className="mb-4 text-sm text-gray-500">
+            Tap a photo to read their bio.
+          </p>
+          <div className="grid gap-4">
+            {celebrantAndMcsWithPhotos.map((person) => (
+              <div
+                key={person.name}
+                className="flex items-center gap-3 rounded-2xl border bg-white/80 p-4 shadow-sm"
+                style={{ borderColor: theme.border }}
+              >
+                <PersonAvatar
+                  name={person.name}
+                  imageSrc={person.imageSrc}
+                  guestProfile={person.guestProfile}
+                  onPhotoTap={setLightbox}
+                />
+                <div>
+                  <p className="font-serif text-lg text-[#2a2723]">{person.name}</p>
+                  <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                    {person.role}
+                  </p>
+                  {person.guestProfile?.partyBio?.trim() ? (
+                    <p className="mt-2 line-clamp-2 text-xs text-gray-600">
+                      {person.guestProfile.partyBio}
+                    </p>
+                  ) : null}
                 </div>
               </div>
             ))}

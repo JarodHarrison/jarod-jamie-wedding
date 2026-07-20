@@ -99,7 +99,7 @@ export function buildProfileStatusSummary(profile: SerializedGuestProfile): stri
   }
 
   if (tasks.length === 0) {
-    lines.push("\nAll main forms are complete — no outstanding tasks.");
+    lines.push("\nAll main forms are complete: no outstanding tasks.");
   } else {
     lines.push("\nOutstanding tasks (nudge the guest warmly if relevant):");
     for (const task of tasks) {

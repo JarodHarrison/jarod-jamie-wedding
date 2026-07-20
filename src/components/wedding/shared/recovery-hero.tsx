@@ -25,7 +25,7 @@ export function RecoveryHero({ setActiveTab }: RecoveryHeroProps) {
         </div>
         <h2 className="font-serif text-3xl text-white">Thank you for celebrating with us</h2>
         <p className="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-white/80">
-          Relive the magic — share photos, read the story wall, and soak up the memories while we recover.
+          Relive the magic: share photos, read the story wall, and soak up the memories while we recover.
         </p>
       </div>
 

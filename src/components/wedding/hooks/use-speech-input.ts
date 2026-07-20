@@ -61,7 +61,7 @@ export function useSpeechInput({ onFinal, onInterim, onError }: UseSpeechInputOp
 
     recognition.onerror = (event) => {
       if (event.error !== "aborted" && event.error !== "no-speech") {
-        onError?.("Couldn't hear you — please try again.");
+        onError?.("Couldn't hear you. Please try again.");
       }
       setListening(false);
     };

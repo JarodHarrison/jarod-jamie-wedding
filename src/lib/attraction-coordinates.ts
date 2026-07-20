@@ -1,7 +1,7 @@
 import type { GeoPoint } from "@/lib/guest-geo";
 import { buildMapsDirectionsUrl } from "@/lib/maps-directions";
 
-/** Approximate coordinates for curated venues — drive estimates and map directions. */
+/** Approximate coordinates for curated venues: drive estimates and map directions. */
 export const ATTRACTION_COORDINATES: Record<string, GeoPoint> = {
   // Eat & drink
   "The Long Apron": { latitude: -26.691, longitude: 152.892 },

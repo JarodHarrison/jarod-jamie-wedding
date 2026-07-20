@@ -387,7 +387,7 @@ export function parseGuestSpreadsheet(csvText: string): GuestSpreadsheetParseRes
       emailGenerated = true;
       errors.push({
         row: rowNumber,
-        message: `Shared email "${sayiCustomData["Email (Sayi)"]}" — placeholder login email assigned; update in admin if needed.`,
+        message: `Shared email "${sayiCustomData["Email (Sayi)"]}": placeholder login email assigned; update in admin if needed.`,
       });
     } else {
       usedEmails.add(email);

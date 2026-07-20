@@ -255,7 +255,7 @@ function extractStreamDelta(assembled: string, chunk: string): string {
   // Cumulative snapshot: Gemini sometimes sends the full prefix-so-far.
   if (chunk.startsWith(assembled)) return chunk.slice(assembled.length);
   if (chunk === assembled) return "";
-  // Incremental token(s): append as-is. Do not use includes/endsWith — they drop
+  // Incremental token(s): append as-is. Do not use includes/endsWith: they drop
   // repeated characters (e.g. the second "0" in "3:00pm" or "m" in "pm").
   return chunk;
 }
@@ -753,7 +753,7 @@ async function runToolLoop(config: ResolvedChatConfig): Promise<ChatReply> {
     });
   }
 
-  throw new GeminiChatError("Too many form update steps — please try again.");
+  throw new GeminiChatError("Too many form update steps. Please try again.");
 }
 
 export function formatChatError(error: unknown): string {

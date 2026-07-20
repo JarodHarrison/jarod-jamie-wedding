@@ -49,7 +49,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     if (!isWeddingFeatureVisible("guest-pic")) {
-      return jsonError("Photo uploads open in wedding week — check back closer to the day!", 403);
+      return jsonError("Photo uploads open in wedding week. Check back closer to the day!", 403);
     }
 
     const session = await requireGuestSession();
@@ -63,7 +63,7 @@ export async function POST(request: Request) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
     if (buffer.byteLength > SHARED_PHOTO_MAX_BYTES) {
-      return jsonError("Photo is too large — please use an image under 4MB.", 400);
+      return jsonError("Photo is too large. Please use an image under 4MB.", 400);
     }
 
     const mime = resolveUploadImageMime(file, buffer);

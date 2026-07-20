@@ -3,6 +3,7 @@ import { buildPasswordFields } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
 import { findClaimableGuestForSignup } from "@/lib/guest-claim";
+import { clearGuestManagementOnClaim } from "@/lib/guest-party";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
 import { notifyRegistration } from "@/lib/registration-notify";
 import { sendGuestWelcomeEmail } from "@/lib/guest-emails";
@@ -78,6 +79,8 @@ export async function POST(request: Request) {
             select: guestProfileSelect,
           });
     }
+
+    await clearGuestManagementOnClaim(guest.id);
 
     await setSessionCookie({
       type: "guest",

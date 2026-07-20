@@ -34,7 +34,7 @@ export async function checkForAppUpdate(force = false): Promise<void> {
       return;
     }
   } catch {
-    // Offline or transient error — keep using the current bundle.
+    // Offline or transient error: keep using the current bundle.
   }
 
   if (!("serviceWorker" in navigator)) return;
@@ -43,6 +43,6 @@ export async function checkForAppUpdate(force = false): Promise<void> {
     const registration = await navigator.serviceWorker.getRegistration();
     await registration?.update();
   } catch {
-    // Non-fatal — push SW may not be registered yet.
+    // Non-fatal: push SW may not be registered yet.
   }
 }

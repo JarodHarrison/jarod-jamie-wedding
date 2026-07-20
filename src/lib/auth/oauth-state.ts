@@ -10,7 +10,7 @@ function getSecret(): Uint8Array {
   return new TextEncoder().encode(secret);
 }
 
-/** Self-contained signed state — works in installed PWAs where OAuth cookies are often lost. */
+/** Self-contained signed state: works in installed PWAs where OAuth cookies are often lost. */
 export async function createOAuthState(mode: GoogleOAuthMode, guestId?: string): Promise<string> {
   const nonce = crypto.randomBytes(16).toString("hex");
   const payload: Record<string, string> = { mode, nonce };

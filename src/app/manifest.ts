@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     id: "/",
     name: APP_TITLE,
     short_name: "J&J Wedding",
-    description: "Jarod & Jamie — 26 September 2026",
+    description: "Jarod & Jamie: 26 September 2026",
     start_url: "/",
     scope: "/",
     display: "fullscreen",

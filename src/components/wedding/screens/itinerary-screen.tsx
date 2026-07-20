@@ -9,25 +9,128 @@ import { attractionToScheduleProps, goldCoastAttractions } from "@/lib/gold-coas
 import { LAKESIDE_MEET_GREET } from "@/lib/on-site-access";
 import { saveOfflineBundle } from "@/lib/offline-cache";
 import { theme } from "@/lib/theme";
+import { getBucksPartyStripeUrl } from "@/lib/bucks-party-stripe";
+import type { BucksPartyConfigData } from "@/lib/bucks-party-config";
+import {
+  GLOW_UP_PARTY_DATE_LABEL,
+  GLOW_UP_PARTY_PLACE_LABEL,
+  GLOW_UP_PARTY_PUBLIC_PATH,
+  GLOW_UP_PARTY_RSVP_DEADLINE_LABEL,
+  GLOW_UP_PARTY_TIME_LABEL,
+  glowUpInterestLabel,
+  isGlowUpInterestChoice,
+} from "@/lib/glow-up-party";
 import type { AppTab } from "@/types/wedding";
 import { useVenueMapAccess } from "@/components/wedding/hooks/use-venue-map-access";
 import { useWeddingPhase } from "@/components/wedding/hooks/use-wedding-phase";
 
 function WeddingSchedule({
   isOnSite,
+  bucksPartyAttending,
+  showGlowUp,
+  glowUpRegistered,
+  glowUpInterest,
   onOpenVenueMap,
   showVenueMapLink,
   onOpenSeating,
   showSeatingLink,
+  stripeUrl,
 }: {
   isOnSite: boolean;
+  bucksPartyAttending?: boolean;
+  showGlowUp?: boolean;
+  glowUpRegistered?: boolean;
+  glowUpInterest?: string | null;
   onOpenVenueMap?: () => void;
   showVenueMapLink?: boolean;
   onOpenSeating?: () => void;
   showSeatingLink?: boolean;
+  stripeUrl?: string | null;
 }) {
+  const [bucksEvent, setBucksEvent] = useState<BucksPartyConfigData | null>(null);
+
+  useEffect(() => {
+    if (!bucksPartyAttending) return;
+    void (async () => {
+      try {
+        const res = await fetch("/api/bucks-party/config", { cache: "no-store" });
+        const data = await res.json();
+        if (res.ok && data.event) setBucksEvent(data.event as BucksPartyConfigData);
+      } catch {
+        setBucksEvent(null);
+      }
+    })();
+  }, [bucksPartyAttending]);
+
+  const glowUpChoice = isGlowUpInterestChoice(glowUpInterest)
+    ? glowUpInterestLabel(glowUpInterest)
+    : null;
+
   return (
     <div className="relative space-y-6 before:absolute before:inset-0 before:ml-6 before:h-full before:w-0.5 before:-translate-x-px before:bg-gradient-to-b before:from-[#e2d5c4]/0 before:via-[#e2d5c4] before:to-[#e2d5c4]/0">
+      {bucksPartyAttending && (
+        <div className="relative">
+          <div className="mb-2 ml-12 h-1 w-[calc(100%-3rem)] rounded-full bg-gradient-to-r from-red-500 via-yellow-400 via-green-500 to-purple-600" />
+          <ScheduleNode
+            date={bucksEvent?.dateShort ?? "29.08"}
+            title="Bucks Party"
+            time={bucksEvent?.timeLabel ?? "TBC"}
+            attire="Your sluttiest outfit (optional but encouraged)"
+            loc={bucksEvent?.placeLabel ?? "Details coming soon"}
+            desc={
+              bucksEvent?.detailsNote?.trim() ||
+              "Jarod & Jamie's ultimate joint bucks. We'll SMS & email the plan."
+            }
+            tip={
+              stripeUrl
+                ? "Prepay open: use the button below or the public Bucks page."
+                : "Prepay opens closer to the date."
+            }
+          />
+          {stripeUrl ? (
+            <>
+              <a
+                href={stripeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ml-12 mt-2 inline-flex min-h-11 w-[calc(100%-3rem)] items-center justify-center rounded-xl bg-[#1a0f24] px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-pink-200"
+              >
+                Prepay with Stripe
+              </a>
+              <p className="ml-12 mt-1 w-[calc(100%-3rem)] text-center text-[10px] text-gray-500">
+                Price shown includes the processing fee.
+              </p>
+            </>
+          ) : null}
+        </div>
+      )}
+      {showGlowUp ? (
+        <div className="relative">
+          <ScheduleNode
+            date="05.09"
+            title="Pre-Wedding Glow-Up"
+            time={GLOW_UP_PARTY_TIME_LABEL}
+            attire="Come ready to glow"
+            loc={GLOW_UP_PARTY_PLACE_LABEL}
+            desc={
+              glowUpRegistered && glowUpChoice
+                ? `You're down for ${glowUpChoice}. Open the Glow-Up page anytime for details or to update your RSVP.`
+                : `Teeth whitening & Botox Pump Party on ${GLOW_UP_PARTY_DATE_LABEL}. RSVP by ${GLOW_UP_PARTY_RSVP_DEADLINE_LABEL}.`
+            }
+            tip={
+              glowUpRegistered
+                ? "You're on the list. We'll email & SMS closer to the day."
+                : "Register on the Glow-Up page to lock in your spot."
+            }
+          />
+          <a
+            href={GLOW_UP_PARTY_PUBLIC_PATH}
+            className="ml-12 mt-2 inline-flex min-h-11 w-[calc(100%-3rem)] items-center justify-center rounded-xl bg-[#2a2723] px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#e0c9a0]"
+          >
+            {glowUpRegistered ? "Open Glow-Up page" : "RSVP on Glow-Up page"}
+          </a>
+        </div>
+      ) : null}
       {showVenueMapLink && onOpenVenueMap && (
         <button
           type="button"
@@ -121,7 +224,7 @@ function GoldCoastSchedule({ isPenthouseGuest }: { isPenthouseGuest: boolean }) 
           <ScheduleNode
             time="09:00 AM"
             title="Depart Brisbane"
-            desc="Minivan pick-up from Pullman Brisbane Airport — have luggage ready for the drive south."
+            desc="Minivan pick-up from Pullman Brisbane Airport. Have luggage ready for the drive south."
             loc="Pullman Brisbane Airport (BNE)"
             details={[
               "We meet at the Pullman Brisbane Airport hotel before heading down the coast.",
@@ -139,7 +242,7 @@ function GoldCoastSchedule({ isPenthouseGuest }: { isPenthouseGuest: boolean }) 
               desc="Arrive on the Gold Coast and settle into our three-storey Surfers Paradise penthouse."
               loc="Surfers Paradise"
               details={[
-                "Three nights — Tue 22, Wed 23 & Thu 24 Sep.",
+                "Three nights: Tue 22, Wed 23 & Thu 24 Sep.",
                 "Ocean views, room to spread out, and the perfect base for theme park days and nights out.",
               ]}
             />
@@ -184,7 +287,7 @@ function GoldCoastSchedule({ isPenthouseGuest }: { isPenthouseGuest: boolean }) 
         <ScheduleNode
           time="06:15 PM"
           title="Uber to Dracula's"
-          desc="Catch an Uber to Dracula's Cabaret — arrive 15 minutes before doors open for priority entry and the ghost train."
+          desc="Catch an Uber to Dracula's Cabaret. Arrive 15 minutes before doors open for priority entry and the ghost train."
           loc="Broadbeach"
           details={[
             "Decadent dining, dazzling performances, and deliciously dark glamour.",
@@ -201,7 +304,7 @@ function GoldCoastSchedule({ isPenthouseGuest }: { isPenthouseGuest: boolean }) 
             desc="Check out of the penthouse and head north towards the Sunshine Coast and Australia Zoo."
             loc="Surfers Paradise"
             details={[
-              "Allow about two hours to Beerwah with a coffee stop — traffic can vary.",
+              "Allow about two hours to Beerwah with a coffee stop. Traffic can vary.",
               "After the zoo we continue up into the hinterland to Spicers Clovelly Estate.",
             ]}
           />
@@ -227,11 +330,19 @@ export function ItineraryScreen({
   canAccessGoldCoast,
   isPenthouseGuest,
   isOnSite,
+  bucksPartyAttending = false,
+  showGlowUp = false,
+  glowUpRegistered = false,
+  glowUpInterest = null,
   setActiveTab,
 }: {
   canAccessGoldCoast: boolean;
   isPenthouseGuest: boolean;
   isOnSite: boolean;
+  bucksPartyAttending?: boolean;
+  showGlowUp?: boolean;
+  glowUpRegistered?: boolean;
+  glowUpInterest?: string | null;
   setActiveTab?: (tab: AppTab) => void;
 }) {
   const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
@@ -256,8 +367,8 @@ export function ItineraryScreen({
       itineraryHtml:
         "Fri Meet & Greet 6pm (on-site). Sat Ceremony 3pm, Garden Party 4:30pm, Reception 6pm at Spicers Clovelly. Sun Breakfast 9am.",
       faqSnippets: [
-        "Ceremony 3:00pm — colourful cocktail attire, adults-only",
-        "Reception 6:00pm — The Pavilion",
+        "Ceremony 3:00pm: colourful cocktail attire, adults-only",
+        "Reception 6:00pm: The Pavilion",
         "Courtesy shuttle for Montville-area guests",
         "Hashtag #J-rodandJamo",
       ],
@@ -270,7 +381,7 @@ export function ItineraryScreen({
 
   return (
     <div ref={topRef} className="animate-fade-in pb-10">
-      <div className="wedding-screen-top sticky top-0 z-20 bg-[#f7f4ee]/90 px-8 pb-6 text-center backdrop-blur-md">
+      <div className="wedding-screen-top sticky top-0 z-20 bg-[var(--wedding-bg)]/90 px-8 pb-6 text-center backdrop-blur-md">
         <RainbowText
           as="h2"
           className="mb-2 font-serif text-sm uppercase tracking-[0.15em] text-gray-500"
@@ -305,6 +416,11 @@ export function ItineraryScreen({
         ) : (
           <WeddingSchedule
             isOnSite={isOnSite}
+            bucksPartyAttending={bucksPartyAttending}
+            showGlowUp={showGlowUp}
+            glowUpRegistered={glowUpRegistered}
+            glowUpInterest={glowUpInterest}
+            stripeUrl={getBucksPartyStripeUrl()}
             showVenueMapLink={showVenueMap}
             onOpenVenueMap={setActiveTab ? () => setActiveTab("venue-map") : undefined}
             showSeatingLink={showSeating}

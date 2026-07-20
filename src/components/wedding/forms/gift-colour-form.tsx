@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { useGuestProfile } from "@/components/wedding/hooks/use-guest-profile";
-import { GIFT_COLOUR_OPTIONS } from "@/lib/gift-colour-choices";
+import {
+  GIFT_COLOUR_CHOICE_1_OPTIONS,
+  GIFT_COLOUR_CHOICE_2_OPTIONS,
+  type GiftColourOption,
+} from "@/lib/gift-colour-choices";
 import { theme } from "@/lib/theme";
 
 export function GiftColourForm() {
@@ -43,27 +47,25 @@ export function GiftColourForm() {
     label,
     value,
     onChange,
-    otherValue,
+    options,
   }: {
     label: string;
     value: string;
     onChange: (next: string) => void;
-    otherValue: string;
+    options: GiftColourOption[];
   }) {
     return (
       <div>
         <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-gray-500">{label}</p>
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {GIFT_COLOUR_OPTIONS.map((option) => {
+          {options.map((option) => {
             const selected = value === option.id;
-            const disabled = otherValue === option.id;
             return (
               <button
                 key={option.id}
                 type="button"
-                disabled={disabled}
                 onClick={() => onChange(option.id)}
-                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 ${selected ? "ring-2 ring-[#c3a379]" : ""}`}
+                className={`flex flex-col items-center gap-1.5 rounded-xl border px-2 py-2.5 text-center transition-transform active:scale-95 ${selected ? "ring-2 ring-[#c3a379]" : ""}`}
                 style={{ borderColor: theme.border, backgroundColor: selected ? "rgba(195,163,121,0.12)" : "white" }}
                 aria-pressed={selected}
               >
@@ -87,18 +89,28 @@ export function GiftColourForm() {
       onSubmit={handleSubmit}
     >
       <p className="text-sm leading-relaxed text-gray-600">
-        Pick your top two colours — we&apos;ll note them on your guest profile.
+        Pick your top two colours: we&apos;ll note them on your guest profile.
       </p>
 
-      <ColourPicker label="Colour choice 1" value={choice1} onChange={setChoice1} otherValue={choice2} />
-      <ColourPicker label="Colour choice 2" value={choice2} onChange={setChoice2} otherValue={choice1} />
+      <ColourPicker
+        label="Colour choice 1"
+        value={choice1}
+        onChange={setChoice1}
+        options={GIFT_COLOUR_CHOICE_1_OPTIONS}
+      />
+      <ColourPicker
+        label="Colour choice 2"
+        value={choice2}
+        onChange={setChoice2}
+        options={GIFT_COLOUR_CHOICE_2_OPTIONS}
+      />
 
       {error && (
         <p className="text-[10px] font-bold uppercase tracking-wider text-red-500">{error}</p>
       )}
       {saved && (
         <p className="text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">
-          Colours saved — thank you!
+          Colours saved: thank you!
         </p>
       )}
 

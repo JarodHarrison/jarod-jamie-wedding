@@ -1,19 +1,17 @@
 import { ExternalLink } from "lucide-react";
-import { useState } from "react";
-import Image from "next/image";
 import { InterestForm } from "@/components/wedding/forms/interest-form";
 import { ReturnShuttleRegistrationForm } from "@/components/wedding/forms/return-shuttle-registration";
 import { RETURN_SHUTTLE } from "@/lib/return-shuttle";
 import { fashionInspirationLinks } from "@/components/wedding/data/fashion-inspiration";
-import { ImageLightbox } from "@/components/wedding/shared/image-lightbox";
 import { SubHeader } from "@/components/wedding/shared/sub-header";
 import { theme } from "@/lib/theme";
+import {
+  GLOW_UP_PARTY_PLACE_LABEL,
+  GLOW_UP_PARTY_PUBLIC_PATH,
+  GLOW_UP_PARTY_RSVP_DEADLINE_LABEL,
+  GLOW_UP_PARTY_WHEN_LABEL,
+} from "@/lib/glow-up-party";
 import type { AppTab } from "@/types/wedding";
-
-const TEETH_WHITENING_FLYER = "/glow-up/teeth-whitening-party.png";
-const BOTOX_PUMP_PARTY_FLYER = "/glow-up/botox-pump-party.png";
-
-type GlowUpFlyer = "teeth" | "botox";
 
 export function FashionInspirationScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
   return (
@@ -37,7 +35,7 @@ export function FashionInspirationScreen({ setActiveTab }: { setActiveTab: (tab:
             </li>
           </ul>
           <p className="mt-4 text-xs text-gray-500">
-            Think colour, personality, and a little glamour — you&apos;re on a mountaintop, honey.
+            Think colour, personality, and a little glamour. You&apos;re on a mountaintop, honey.
           </p>
         </div>
 
@@ -65,91 +63,31 @@ export function FashionInspirationScreen({ setActiveTab }: { setActiveTab: (tab:
 }
 
 export function GlowUpScreen({ setActiveTab }: { setActiveTab: (tab: AppTab) => void }) {
-  const [flyerOpen, setFlyerOpen] = useState<GlowUpFlyer | null>(null);
-
   return (
     <div className="animate-fade-in animate-slide-right pb-10">
       <SubHeader title="Pre-Wedding Glow-Up" subtitle="Beauty Prep" onBack={() => setActiveTab("guide")} />
       <div className="mt-8 space-y-6 px-6">
         <div
-          className="overflow-hidden rounded-3xl border bg-white/80 shadow-sm"
+          className="rounded-2xl border bg-white p-5 shadow-sm"
           style={{ borderColor: theme.border }}
         >
-          <button
-            type="button"
-            onClick={() => setFlyerOpen("teeth")}
-            className="block w-full cursor-zoom-in"
-            aria-label="View Teeth-Whitening Party flyer full screen"
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
+            {GLOW_UP_PARTY_WHEN_LABEL}
+          </p>
+          <h3 className="mt-1 font-serif text-xl text-[#2a2723]">Teeth whitening &amp; Botox Pump Party</h3>
+          <p className="mt-3 text-sm leading-relaxed text-gray-600">
+            {GLOW_UP_PARTY_PLACE_LABEL}. RSVP by {GLOW_UP_PARTY_RSVP_DEADLINE_LABEL} on the Glow-Up page. Snatch,
+            glow, and celebrate love before the big day.
+          </p>
+          <a
+            href={GLOW_UP_PARTY_PUBLIC_PATH}
+            className="mt-5 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#2a2723] px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-[#e0c9a0]"
           >
-            <Image
-              src={TEETH_WHITENING_FLYER}
-              alt="J&J Teeth-Whitening Party — $250 each with optional Glow Kit add-on"
-              width={1200}
-              height={750}
-              className="h-auto w-full"
-            />
-          </button>
-          <div className="p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">Teeth-Whitening Party</p>
-            <h3 className="mt-1 font-serif text-xl text-[#2a2723]">Signature Smile · $250 each</h3>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">
-              Professional in-chair whitening with dental-grade gel before the big day. Optional at-home Glow Kit
-              add-on (+$50) to enhance and stabilise your results.
-            </p>
-          </div>
+            Open Glow-Up page
+            <ExternalLink size={12} />
+          </a>
         </div>
-
-        <div
-          className="overflow-hidden rounded-3xl border bg-white/80 shadow-sm"
-          style={{ borderColor: theme.border }}
-        >
-          <button
-            type="button"
-            onClick={() => setFlyerOpen("botox")}
-            className="block w-full cursor-zoom-in"
-            aria-label="View Botox Pump Party flyer full screen"
-          >
-            <Image
-              src={BOTOX_PUMP_PARTY_FLYER}
-              alt="J&J Botox Pump Party — tox from $3.75 per unit, filler $375 per ml, plus teeth whitening on the day"
-              width={1200}
-              height={750}
-              className="h-auto w-full"
-            />
-          </button>
-          <div className="p-5">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">Botox Pump Party</p>
-            <h3 className="mt-1 font-serif text-xl text-[#2a2723]">Snatch. Glow. Celebrate love.</h3>
-            <p className="mt-3 text-sm leading-relaxed text-gray-600">
-              Join us for a luxe pre-wedding beauty party — tox from <strong className="text-[#2a2723]">$3.75 per unit</strong>,
-              filler <strong className="text-[#2a2723]">$375 per ml</strong>, with our teeth-whitening clinic running
-              on the day too. Come get snatched, glowing, and celebration-ready before the big day.
-            </p>
-          </div>
-        </div>
-
-        <InterestForm
-          field="glowUpInterest"
-          options={[
-            { value: "teeth", label: "Teeth Whitening" },
-            { value: "botox", label: "Botox Pump Party" },
-            { value: "both", label: "Hit me with both!" },
-          ]}
-        />
       </div>
-
-      <ImageLightbox
-        open={flyerOpen === "teeth"}
-        src={TEETH_WHITENING_FLYER}
-        alt="J&J Teeth-Whitening Party flyer"
-        onClose={() => setFlyerOpen(null)}
-      />
-      <ImageLightbox
-        open={flyerOpen === "botox"}
-        src={BOTOX_PUMP_PARTY_FLYER}
-        alt="J&J Botox Pump Party flyer"
-        onClose={() => setFlyerOpen(null)}
-      />
     </div>
   );
 }

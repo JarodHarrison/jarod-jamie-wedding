@@ -1,4 +1,4 @@
-/** Detect gross or inappropriate guest messages — triggers Annita's disgusted face. */
+/** Detect gross or inappropriate guest messages: triggers Annita's disgusted face. */
 const DISGUSTING_PATTERNS = [
   /\b(poop|poo|shit|turd|feces|faeces|diarrhea|diarrhoea|vomit|puke|barf)\b/i,
   /\b(fart|queef|booger|snot|phlegm|mucus)\b/i,

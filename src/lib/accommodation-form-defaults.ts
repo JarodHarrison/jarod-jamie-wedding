@@ -103,7 +103,7 @@ export function deriveAccommodationFormState(
 
   let accommodationName = profile.accommodationName?.trim() ?? "";
   if (hasRoomAllocation && profile.assignedRoomName) {
-    const roomLabel = `${SPICERS_CLOVELLY.name} — ${profile.assignedRoomName}`;
+    const roomLabel = `${SPICERS_CLOVELLY.name}: ${profile.assignedRoomName}`;
     if (!accommodationName || accommodationName === SPICERS_CLOVELLY.name) {
       accommodationName = roomLabel;
     }

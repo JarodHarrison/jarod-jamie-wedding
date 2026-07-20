@@ -2,7 +2,7 @@ export const WEDDING_THEME_STORAGE_KEY = "wedding-theme";
 
 export type WeddingThemeMode = "classic" | "rainbow";
 
-/** Theme tokens — values are CSS variables so rainbow mode can override globally. */
+/** Theme tokens: values are CSS variables so rainbow mode can override globally. */
 export const theme = {
   gold: "var(--wedding-gold)",
   btnDark: "var(--wedding-btn-dark)",

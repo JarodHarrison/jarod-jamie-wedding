@@ -6,6 +6,8 @@ import {
 import { MIN_PASSWORD_LENGTH } from "@/lib/auth/constants";
 import { requireAdminAccess } from "@/lib/auth/admin-access";
 import { jsonError, normalizeEmail, isValidGuestTier } from "@/lib/api-utils";
+import { attachBucksRsvpsToAdminGuests } from "@/lib/bucks-party-server";
+import { attachGlowUpInterestsToAdminGuests } from "@/lib/glow-up-party-server";
 import { adminGuestSelect, serializeAdminGuest } from "@/lib/guest-profile";
 import { prisma } from "@/lib/prisma";
 
@@ -23,6 +25,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       tier?: "PENTHOUSE" | "ON_SITE" | "OFF_SITE";
       partyRole?: "BEST_BITCH" | null;
       isMc?: boolean;
+      isCelebrant?: boolean;
       passwordHash?: string;
       passwordPlaintext?: string | null;
     } = {};
@@ -52,6 +55,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       data.isMc = Boolean(body.isMc);
     }
 
+    if (body.isCelebrant !== undefined) {
+      data.isCelebrant = Boolean(body.isCelebrant);
+    }
+
     let newPassword: string | undefined;
 
     if (body.resetPassword === true) {
@@ -74,13 +81,15 @@ export async function PATCH(request: Request, context: RouteContext) {
       data,
       select: adminGuestSelect,
     });
+    const [withBucks] = await attachBucksRsvpsToAdminGuests([guest]);
+    const [withGlow] = await attachGlowUpInterestsToAdminGuests([withBucks]);
 
     const adminEmails = new Set(
       (await prisma.admin.findMany({ select: { email: true } })).map((a) => a.email),
     );
 
     const profile = {
-      ...serializeAdminGuest(guest),
+      ...serializeAdminGuest(withGlow),
       isAdmin: adminEmails.has(guest.email),
     };
 

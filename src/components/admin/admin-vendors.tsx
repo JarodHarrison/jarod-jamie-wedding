@@ -286,7 +286,7 @@ export function AdminVendors() {
         ))}
 
         {vendors.length === 0 && (
-          <p className="text-center text-sm text-gray-400">No vendors yet — add your first one above.</p>
+          <p className="text-center text-sm text-gray-400">No vendors yet. Add your first one above.</p>
         )}
       </div>
     </div>

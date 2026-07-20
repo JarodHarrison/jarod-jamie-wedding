@@ -38,7 +38,7 @@ export async function sendTransferIntroductionEmail({
   const text = [
     `Hi ${recipient.name},`,
     "",
-    "Good news — we've matched you with another guest travelling on a similar schedule.",
+    "Good news: we've matched you with another guest travelling on a similar schedule.",
     "",
     `${buddy.name} is ${buddySummary}. If you'd like to coordinate a lift or share a ride, we've attached their contact card so you can reach out directly.`,
     "",

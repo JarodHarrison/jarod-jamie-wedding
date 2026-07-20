@@ -13,10 +13,12 @@ export async function GET(request: Request) {
       return NextResponse.json({ guests: [] });
     }
 
+    // Include pending / unclaimed guests so companions and party members can be linked
+    // before they sign in. Exclude declined RSVPs.
     const guests = await prisma.guest.findMany({
       where: {
         id: { not: session.id },
-        rsvpStatus: "ACCEPTED",
+        rsvpStatus: { in: ["ACCEPTED", "PENDING"] },
         name: { contains: query, mode: "insensitive" },
       },
       orderBy: { name: "asc" },

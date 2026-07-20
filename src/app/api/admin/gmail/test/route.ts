@@ -23,7 +23,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const subject = "Test email — Jarod & Jamie Wedding app";
+    const subject = "Test email: Jarod & Jamie Wedding app";
     const text = `This is a test email from your wedding app.
 
 Transport: ${mode}${isGmailOAuthConfigured() ? " (Google Workspace OAuth)" : ""}

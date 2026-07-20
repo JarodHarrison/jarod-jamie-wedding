@@ -41,15 +41,15 @@ export function toFriendlyChatError(raw: string): string {
     lower.includes("overloaded") ||
     lower.includes("unavailable")
   ) {
-    return "Annita's getting a lot of love right now — give her a few seconds and try again, honey.";
+    return "Annita's getting a lot of love right now. Give her a few seconds and try again, honey.";
   }
 
   if (lower.includes("rate limit") || lower.includes("quota exceeded") || lower.includes("exceeded your current quota")) {
-    return "Annita's hit her API limit for now, honey — try again in a few minutes, or ask Jarod to enable billing on the Google AI key.";
+    return "Annita's hit her API limit for now, honey. Try again in a few minutes, or ask Jarod to enable billing on the Google AI key.";
   }
 
   if (lower.includes("empty response")) {
-    return "Annita drew a blank on that one — try asking again or rephrase your question.";
+    return "Annita drew a blank on that one. Try asking again or rephrase your question.";
   }
 
   if (lower.includes("too many form update")) {
@@ -57,7 +57,7 @@ export function toFriendlyChatError(raw: string): string {
   }
 
   if (raw.length > 100 || /^[A-Z0-9\s.!?,'"-]+$/.test(raw.trim())) {
-    return "Something went sideways — please try again in a moment.";
+    return "Something went sideways. Please try again in a moment.";
   }
 
   return raw;

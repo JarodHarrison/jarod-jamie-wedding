@@ -29,7 +29,7 @@ async function main() {
 
   const ok = await sendEmail({
     to,
-    subject: "Test email — Jarod & Jamie Wedding app is live",
+    subject: "Test email: Jarod & Jamie Wedding app is live",
     text: `Hi!
 
 This is a test from your wedding app at jarodandjamiewedding.com.

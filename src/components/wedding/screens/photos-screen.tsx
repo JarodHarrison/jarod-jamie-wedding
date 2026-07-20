@@ -60,12 +60,12 @@ export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
             style={{ borderColor: theme.border }}
           >
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#c3a379]">
-              GuestPic — coming soon
+              GuestPic: coming soon
             </p>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">
               Uploads and table-card QR sharing open in wedding week
               {daysUntil > 0 ? ` (${daysUntil} day${daysUntil === 1 ? "" : "s"} to go)` : ""}. Until
-              then, tag <strong>#{WEDDING_HASHTAG}</strong> on Instagram — those posts still appear on
+              then, tag <strong>#{WEDDING_HASHTAG}</strong> on Instagram: those posts still appear on
               the wall below.
             </p>
           </div>
@@ -211,7 +211,7 @@ export function PhotosScreen({ setActiveTab }: PhotosScreenProps) {
             >
               <p className="text-sm font-light leading-relaxed text-gray-600">
                 {configured
-                  ? "No posts yet — upload above or tag #J-rodandJamo on Instagram!"
+                  ? "No posts yet. Upload above or tag #J-rodandJamo on Instagram!"
                   : "Guest uploads and Instagram posts tagged #J-rodandJamo appear here together."}
               </p>
             </div>

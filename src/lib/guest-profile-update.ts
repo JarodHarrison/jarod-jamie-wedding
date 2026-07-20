@@ -217,5 +217,19 @@ export function buildGuestProfileSectionUpdate(
     };
   }
 
+  if (section === "party-bio") {
+    const partyBio = trimOrNull(body.partyBio);
+    const dietaryNotes = trimOrNull(body.dietaryNotes);
+
+    return {
+      ok: true,
+      data: {
+        partyBio,
+        dietaryNotes,
+        profileUpdatedAt: now,
+      },
+    };
+  }
+
   return { ok: false, error: "Invalid form section.", status: 400 };
 }

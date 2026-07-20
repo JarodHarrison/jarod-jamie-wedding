@@ -124,7 +124,7 @@ function ResetPasswordForm() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {guestName && (
               <p className="text-center text-sm text-gray-600">
-                Hi {guestName} — choose a new password below.
+                Hi {guestName}: choose a new password below.
               </p>
             )}
             <input

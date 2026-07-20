@@ -9,7 +9,9 @@ export type GuestProfileCardData = {
   guestOfHost?: string | null;
   guestRelationship?: string | null;
   guestRelationshipNote?: string | null;
-  /** Hide "How they know the grooms" — e.g. for Jarod & Jamie on the party page */
+  partyBio?: string | null;
+  partyRoleLabel?: string | null;
+  /** Hide "How they know the grooms": e.g. for Jarod & Jamie on the party page */
   hideConnection?: boolean;
 };
 
@@ -50,5 +52,6 @@ export function guestConnectionSummary(data: GuestProfileCardData): string | nul
 export function hasGuestProfileCard(data: GuestProfileCardData): boolean {
   const hasCompanion = Boolean(data.plusOneName?.trim());
   const hasConnection = Boolean(guestConnectionSummary(data));
-  return hasCompanion || hasConnection;
+  const hasBio = Boolean(data.partyBio?.trim());
+  return hasCompanion || hasConnection || hasBio;
 }

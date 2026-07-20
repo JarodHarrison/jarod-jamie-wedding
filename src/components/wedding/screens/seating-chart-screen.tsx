@@ -59,7 +59,7 @@ export function SeatingChartScreen({ setActiveTab }: SeatingChartScreenProps) {
                 className="rounded-2xl border bg-white p-5 text-center shadow-sm"
                 style={{ borderColor: theme.border }}
               >
-                <p className="text-sm text-gray-500">Your table hasn&apos;t been assigned yet — check back soon.</p>
+                <p className="text-sm text-gray-500">Your table hasn&apos;t been assigned yet. Check back soon.</p>
               </div>
             )}
 

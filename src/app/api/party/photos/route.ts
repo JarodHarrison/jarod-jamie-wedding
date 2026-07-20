@@ -8,7 +8,13 @@ export async function GET() {
     await requireGuestSession();
 
     const guests = await prisma.guest.findMany({
-      where: { profilePhotoMime: { not: null } },
+      where: {
+        OR: [
+          { profilePhotoMime: { not: null } },
+          { isMc: true },
+          { isCelebrant: true },
+        ],
+      },
       orderBy: { name: "asc" },
       select: {
         id: true,
@@ -18,6 +24,10 @@ export async function GET() {
         guestRelationship: true,
         guestRelationshipNote: true,
         plusOneName: true,
+        partyBio: true,
+        isMc: true,
+        isCelebrant: true,
+        profilePhotoMime: true,
         profileUpdatedAt: true,
         plusOneGuest: {
           select: { name: true },
@@ -34,7 +44,12 @@ export async function GET() {
           guestRelationship: guest.guestRelationship,
           guestRelationshipNote: guest.guestRelationshipNote,
           plusOneName: guest.plusOneGuest?.name ?? guest.plusOneName,
-          photoUrl: `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`,
+          partyBio: guest.partyBio,
+          isMc: guest.isMc,
+          isCelebrant: guest.isCelebrant,
+          photoUrl: guest.profilePhotoMime
+            ? `/api/guest/profile/photo?guestId=${guest.id}&v=${guest.profileUpdatedAt?.getTime() ?? guest.id}`
+            : "/party/person-placeholder.svg",
         })),
       },
       { headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" } },

@@ -29,7 +29,7 @@ export function ThemeToggle() {
             Rainbow mode
           </p>
           <p className="text-[10px] uppercase tracking-widest text-gray-500">
-            {isRainbow ? "Sparkles on — fabulous" : "Optional pride sparkle"}
+            {isRainbow ? "Sparkles on: fabulous" : "Optional pride sparkle"}
           </p>
         </div>
       </div>

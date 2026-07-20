@@ -76,7 +76,7 @@ async function main() {
   console.log(`\nRemoved ${linkedRemoved.count} linked login(s).`);
   console.log("Room allocation set to Provincial Suite 10 (from room spreadsheet).");
   console.log(
-    "Jarod can sign in at jarod.harrison87@gmail.com — accommodation form should auto-populate from room allocation.",
+    "Jarod can sign in at jarod.harrison87@gmail.com: accommodation form should auto-populate from room allocation.",
   );
 }
 

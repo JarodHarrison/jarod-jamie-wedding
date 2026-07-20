@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, Users } from "lucide-react";
+import { Heart, Mic2, Users } from "lucide-react";
 import {
   guestConnectionSummary,
   type GuestProfileCardData,
@@ -15,8 +15,10 @@ type GuestProfileCardProps = {
 export function GuestProfileCard({ profile, compact = false }: GuestProfileCardProps) {
   const companion = profile.plusOneName?.trim() || null;
   const connection = guestConnectionSummary(profile);
+  const bio = profile.partyBio?.trim() || null;
+  const roleLabel = profile.partyRoleLabel?.trim() || null;
 
-  if (!companion && !connection) return null;
+  if (!companion && !connection && !bio) return null;
 
   return (
     <div
@@ -25,13 +27,33 @@ export function GuestProfileCard({ profile, compact = false }: GuestProfileCardP
       }`}
       style={{ borderColor: theme.gold }}
     >
-      <p
-        className={`font-serif text-[#2a2723] ${compact ? "text-lg" : "text-xl"}`}
-      >
+      <p className={`font-serif text-[#2a2723] ${compact ? "text-lg" : "text-xl"}`}>
         {profile.name}
       </p>
+      {roleLabel && (
+        <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-gray-500">
+          {roleLabel}
+        </p>
+      )}
 
       <div className={`space-y-3 ${compact ? "mt-3" : "mt-4"}`}>
+        {bio && (
+          <div className="flex items-start gap-3">
+            <div
+              className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border bg-white/80"
+              style={{ borderColor: theme.border }}
+            >
+              <Mic2 size={14} className="text-[#c3a379]" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">Bio</p>
+              <p className="whitespace-pre-wrap text-sm font-medium leading-relaxed text-[#2a2723]">
+                {bio}
+              </p>
+            </div>
+          </div>
+        )}
+
         {companion && (
           <div className="flex items-start gap-3">
             <div

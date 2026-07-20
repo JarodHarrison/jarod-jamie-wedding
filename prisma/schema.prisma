@@ -67,10 +67,16 @@ model Guest {
   plusOneGuestId   String?
   plusOneGuest     Guest?  @relation("GuestPlusOne", fields: [plusOneGuestId], references: [id], onDelete: SetNull)
   plusOneOf        Guest[] @relation("GuestPlusOne")
+  /** Guest who is filling in this unclaimed profile until they sign up. */
+  managedByGuestId String?
+  managedByGuest   Guest?  @relation("GuestManagedBy", fields: [managedByGuestId], references: [id], onDelete: SetNull)
+  managedGuests    Guest[] @relation("GuestManagedBy")
   companionPhotoMime String?
   companionPhotoData Bytes?
   partyRole        PartyRole?
   isMc             Boolean   @default(false)
+  isCelebrant      Boolean   @default(false)
+  partyBio         String?
   dietaryNotes     String?
   songRequest      String?
   rsvpSubmittedAt  DateTime? @db.Timestamptz
@@ -135,6 +141,8 @@ model Guest {
   seatingTableKey  SeatingTableKey?
   seatingSortOrder Int?
 
+  isBucksPartyAdmin Boolean @default(false)
+
   goldCoastTrip GoldCoastTrip?
   goldCoastTickets GuestAttractionTicket[]
   passwordResetTokens GuestPasswordResetToken[]
@@ -149,6 +157,93 @@ model Guest {
   transferMatchesLow  TransferMatch[] @relation("TransferMatchLow")
   transferMatchesHigh TransferMatch[] @relation("TransferMatchHigh")
   annitaQuestionLogs  AnnitaQuestionLog[]
+  bucksPartyRsvp BucksPartyRsvp?
+  glowUpPartyInterest GlowUpPartyInterest?
+}
+
+enum BucksPartyRsvpSource {
+  PUBLIC
+  ADMIN_LINK
+}
+
+model BucksPartyRsvp {
+  id               String                @id @default(cuid())
+  name             String
+  email            String                @unique
+  phone            String
+  attending        Boolean
+  plusOneName      String?
+  budgetChoice     Int?
+  commsConsent     Boolean               @default(false)
+  source           BucksPartyRsvpSource  @default(PUBLIC)
+  guestId          String?               @unique
+  guest            Guest?                @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  prepaidNotedAt   DateTime?             @db.Timestamptz
+  prepaidNotes     String?
+  createdAt        DateTime              @default(now()) @db.Timestamptz
+  updatedAt        DateTime              @updatedAt @db.Timestamptz
+
+  @@index([attending])
+  @@index([prepaidNotedAt])
+}
+
+model BucksPartyConfig {
+  id                  String   @id @default("default")
+  dateLabel           String
+  dateShort           String
+  timeLabel           String
+  placeLabel          String
+  placeNote           String?
+  detailsNote         String?
+  dressCode           String?
+  whatToBring         String?
+  meetingPoint        String?
+  transportNote       String?
+  agendaNote          String?
+  startAt             DateTime @db.Timestamptz
+  endAt               DateTime @db.Timestamptz
+  calendarDescription String?
+  calendarLocation    String?
+  shareBlurb          String?
+  updatedAt           DateTime @updatedAt @db.Timestamptz
+  updatedByGuestId    String?
+}
+
+enum GlowUpInterestChoice {
+  teeth
+  botox
+  both
+}
+
+enum GlowUpPartySource {
+  PUBLIC
+  ADMIN_LINK
+}
+
+enum GlowUpWhiteningPackage {
+  WHITENING_ONLY
+  WHITENING_WITH_KIT
+}
+
+model GlowUpPartyInterest {
+  id                 String                   @id @default(cuid())
+  name               String
+  email              String                   @unique
+  phone              String
+  interest           GlowUpInterestChoice
+  whiteningPackage   GlowUpWhiteningPackage?
+  botoxUnits         Int?
+  fillerMl           Float?
+  notes              String?
+  commsConsent       Boolean                  @default(false)
+  source             GlowUpPartySource        @default(PUBLIC)
+  guestId            String?                  @unique
+  guest              Guest?                   @relation(fields: [guestId], references: [id], onDelete: SetNull)
+  createdAt          DateTime                 @default(now()) @db.Timestamptz
+  updatedAt          DateTime                 @updatedAt @db.Timestamptz
+
+  @@index([interest])
+  @@index([source])
 }
 
 enum TransferMatchKind {

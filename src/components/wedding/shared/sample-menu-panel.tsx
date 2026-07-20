@@ -46,7 +46,7 @@ export function SampleMenuPanel({ menu }: SampleMenuPanelProps) {
               {course.items.map((item) => (
                 <li key={item.name} className="text-[11px] leading-relaxed text-gray-600">
                   <span className="font-medium text-[#2a2723]">{item.name}</span>
-                  {item.description && <span> — {item.description}</span>}
+                  {item.description && <span>: {item.description}</span>}
                   {item.dietary && (
                     <span className="ml-1 text-[9px] font-bold uppercase tracking-wider text-[#c3a379]">
                       ({item.dietary})

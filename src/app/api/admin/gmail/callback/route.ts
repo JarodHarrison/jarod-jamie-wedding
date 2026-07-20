@@ -26,7 +26,7 @@ GMAIL_SENDER_EMAIL="${senderEmail ?? "theboys@jarodandjamiewedding.com"}"</pre>
   <ol>
     <li>Copy the values above into <code>.env</code> and Vercel → Settings → Environment Variables.</li>
     <li>Enable the <strong>Gmail API</strong> in Google Cloud Console for this project.</li>
-    <li>Paste the redirect URI into Google Cloud Console only — do not open it in your browser.</li>
+    <li>Paste the redirect URI into Google Cloud Console only: do not open it in your browser.</li>
     <li>To send as <code>updates@</code> or <code>noreply@</code>, add them as <strong>Send mail as</strong> aliases on your primary mailbox in Google Workspace.</li>
   </ol>
   <p><a href="/">← Back to the wedding app</a></p>

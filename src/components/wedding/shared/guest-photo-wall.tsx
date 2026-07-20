@@ -45,7 +45,7 @@ export function GuestPhotoWall({ compact = false }: { compact?: boolean }) {
   if (guests.length === 0) {
     return (
       <p className="rounded-2xl border border-dashed px-4 py-6 text-center text-sm text-gray-500" style={{ borderColor: theme.border }}>
-        Be the first to add your photo in Profile — then everyone can see who&apos;s coming!
+        Be the first to add your photo in Profile: then everyone can see who&apos;s coming!
       </p>
     );
   }

@@ -1,6 +1,6 @@
 import { Lato, Pinyon_Script, Playfair_Display } from "next/font/google";
 
-/** Primary body font — general text and UI elements (.font-sans) */
+/** Primary body font: general text and UI elements (.font-sans) */
 export const lato = Lato({
   variable: "--font-lato",
   subsets: ["latin"],
@@ -15,7 +15,7 @@ export const playfair = Playfair_Display({
   style: ["normal", "italic"],
 });
 
-/** Cursive accent font — wedding date, decorative touches (.font-script) */
+/** Cursive accent font: wedding date, decorative touches (.font-script) */
 export const pinyon = Pinyon_Script({
   variable: "--font-pinyon",
   subsets: ["latin"],

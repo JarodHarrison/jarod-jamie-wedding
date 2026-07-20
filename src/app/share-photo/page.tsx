@@ -44,7 +44,7 @@ export default function SharePhotoPage() {
           <h1 className="font-serif text-3xl text-[#2a2723]">GuestPic opens soon</h1>
           <p className="mt-4 text-sm text-gray-600">
             Photo uploads unlock in wedding week
-            {daysUntil > 0 ? ` — ${daysUntil} day${daysUntil === 1 ? "" : "s"} to go` : ""}. Scan your
+            {daysUntil > 0 ? `: ${daysUntil} day${daysUntil === 1 ? "" : "s"} to go` : ""}. Scan your
             table QR or open this page again then.
           </p>
           <Link

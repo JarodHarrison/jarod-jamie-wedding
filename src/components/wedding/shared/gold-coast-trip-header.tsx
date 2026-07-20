@@ -9,7 +9,7 @@ import {
   GOLD_COAST_TRIP_ULTIMATE_NOTE,
 } from "@/lib/gold-coast-trip";
 import { getGoldCoastStripeUrl } from "@/lib/gold-coast-stripe";
-import { STRIPE_CHECKOUT_FOOTER } from "@/lib/stripe-checkout-hints";
+import { STRIPE_CHECKOUT_FOOTER_WITH_FEE } from "@/lib/stripe-checkout-hints";
 import { theme } from "@/lib/theme";
 
 export function GoldCoastTripHeader({ isPenthouseGuest }: { isPenthouseGuest: boolean }) {
@@ -44,14 +44,19 @@ export function GoldCoastTripHeader({ isPenthouseGuest }: { isPenthouseGuest: bo
               Ultimate Experience
               <ChevronRight size={16} className="shrink-0" />
             </span>
-            <span className="mt-1 text-[10px] opacity-80">All tickets &amp; experiences · 2 dinners included</span>
+            <span className="mt-1 text-[10px] opacity-80">
+              All tickets &amp; experiences · 2 dinners included
+            </span>
+            <span className="mt-1 text-[10px] opacity-80">
+              Price shown includes the processing fee
+            </span>
           </a>
         ) : (
           <div
             className="rounded-2xl border px-4 py-3.5 text-[10px] font-bold uppercase tracking-widest text-gray-400"
             style={{ borderColor: theme.border }}
           >
-            Ultimate Experience — link coming soon
+            Ultimate Experience: link coming soon
           </div>
         )}
 
@@ -77,15 +82,15 @@ export function GoldCoastTripHeader({ isPenthouseGuest }: { isPenthouseGuest: bo
             className="rounded-2xl border px-4 py-3.5 text-[10px] font-bold uppercase tracking-widest text-gray-400"
             style={{ borderColor: theme.border }}
           >
-            Accommodation only — link coming soon
+            Accommodation only: link coming soon
           </div>
         ))}
       </div>
 
       {(gcueUrl || (isPenthouseGuest && penthouseUrl)) && (
         <div className="mt-4 space-y-2 border-t pt-4" style={{ borderColor: theme.border }}>
-          <StripeCheckoutHint />
-          <p className="text-[10px] text-gray-400">{STRIPE_CHECKOUT_FOOTER}</p>
+          <StripeCheckoutHint includeProcessingFee />
+          <p className="text-[10px] text-gray-400">{STRIPE_CHECKOUT_FOOTER_WITH_FEE}</p>
         </div>
       )}
     </div>

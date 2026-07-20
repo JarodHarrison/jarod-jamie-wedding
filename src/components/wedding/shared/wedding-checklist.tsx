@@ -55,7 +55,7 @@ export function WeddingChecklist({ setActiveTab, onOpenInstall }: WeddingCheckli
           {
             id: "story",
             label: "Share a J&J story",
-            detail: "Funny, heartfelt, or chaotic — your call",
+            detail: "Funny, heartfelt, or chaotic: your call",
             done: myStories.length > 0,
             tab: "jarodjamie",
           },

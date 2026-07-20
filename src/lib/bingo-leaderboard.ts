@@ -93,7 +93,7 @@ export function buildBingoViewerContext(
   if (leader && viewer) {
     if (leader.guestId === viewerGuestId) {
       if (leader.score > 10 && second && leader.score - second.score <= 10) {
-        leaderAlert = "People are catching up to you — keep snapping those poses!";
+        leaderAlert = "People are catching up to you: keep snapping those poses!";
       }
       if (second && leader.score - second.score === 1) {
         chaserAlert = `${second.name} is only 1 point behind you!`;

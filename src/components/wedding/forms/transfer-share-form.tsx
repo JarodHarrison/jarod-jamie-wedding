@@ -36,9 +36,9 @@ function matchSummary(match: TransferMatch): string {
   if (match.kind === "ARRIVAL") {
     const waitLabel = arrivalMaxWaitLabel(other.arrivalMaxWait);
     const waitNote = waitLabel ? `, can wait ${waitLabel}` : "";
-    return `${other.name} — arriving ${airportLabel(other.arrivalAirport)}, ${formatTravelWhen(other.arrivalDate, other.arrivalTime)}${waitNote}`;
+    return `${other.name}: arriving ${airportLabel(other.arrivalAirport)}, ${formatTravelWhen(other.arrivalDate, other.arrivalTime)}${waitNote}`;
   }
-  return `${other.name} — departing ${airportLabel(other.departureAirport)}, ${formatTravelWhen(other.departureDate, other.departureTime)}`;
+  return `${other.name}: departing ${airportLabel(other.departureAirport)}, ${formatTravelWhen(other.departureDate, other.departureTime)}`;
 }
 
 export function TransferShareForm() {
@@ -236,7 +236,7 @@ export function TransferShareForm() {
           ))}
         </select>
         <span className="mt-1 block text-[11px] font-normal text-gray-400">
-          We only match you with guests whose arrival window overlaps yours — shorter waits mean
+          We only match you with guests whose arrival window overlaps yours: shorter waits mean
           fewer matches, but no hanging around.
         </span>
       </label>
@@ -354,7 +354,7 @@ export function TransferShareForm() {
             >
               <p className="text-sm font-medium text-[#2a2723]">{matchSummary(match)}</p>
               <p className="mt-1 text-xs text-emerald-700">
-                Introduced — check your email for their contact card.
+                Introduced: check your email for their contact card.
               </p>
             </div>
           ))}
@@ -364,7 +364,7 @@ export function TransferShareForm() {
       {error && <p className="text-[10px] font-bold uppercase tracking-wider text-red-500">{error}</p>}
       {saved && (
         <p className="text-[10px] font-bold uppercase tracking-wider text-[#c3a379]">
-          Transfer details saved — we&apos;ll look for travel buddies if you opted in.
+          Transfer details saved: we&apos;ll look for travel buddies if you opted in.
         </p>
       )}
       <button

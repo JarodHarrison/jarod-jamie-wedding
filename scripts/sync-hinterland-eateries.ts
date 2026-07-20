@@ -156,11 +156,11 @@ async function main() {
     console.log(`Upserting ${collected.length} Google Places eateries…`);
     const count = await upsertEateryBatch(collected);
     invalidateEateryCache();
-    console.log(`Done — ${SEED_EATERIES.length} curated + ${count} synced (${collected.length} from Google).`);
+    console.log(`Done: ${SEED_EATERIES.length} curated + ${count} synced (${collected.length} from Google).`);
   } catch (error) {
     console.warn("Google Places sync skipped:", error);
     invalidateEateryCache();
-    console.log(`Done — ${SEED_EATERIES.length} curated eateries cached (run again after enabling Places API).`);
+    console.log(`Done: ${SEED_EATERIES.length} curated eateries cached (run again after enabling Places API).`);
   }
 }
 

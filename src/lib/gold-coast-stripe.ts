@@ -25,12 +25,12 @@ export const GOLD_COAST_STRIPE_PRODUCTS: Record<GoldCoastStripeProductId, GoldCo
   gcue: {
     id: "gcue",
     title: "Ultimate Gold Coast Experience",
-    priceLabel: "Add-on · tickets & 2 dinners included",
+    priceLabel: "Add-on · tickets, 2 dinners & processing fee included",
     image: "/gold-coast/ultimate-gold-coast-experience.png",
     envKey: "NEXT_PUBLIC_STRIPE_GCUE_PAYMENT_LINK",
-    defaultUrl: "https://buy.stripe.com/14AdRa8QIact2Iv7Dj5AQ08",
+    defaultUrl: "https://buy.stripe.com/6oUcN6d6Y5Wd82P5vb5AQ0b",
     quantityHint:
-      "We book all tickets and experiences for you — Little Truffle and Dracula's dinners included. Couples select quantity 2.",
+      "We book all tickets and experiences for you: Little Truffle and Dracula's dinners included, and the Stripe processing fee is already covered. Couples select quantity 2.",
   },
   penthouse: {
     id: "penthouse",
@@ -38,7 +38,7 @@ export const GOLD_COAST_STRIPE_PRODUCTS: Record<GoldCoastStripeProductId, GoldCo
     priceLabel: "$550 per person",
     image: "/gold-coast/penthouse-experience.png",
     envKey: "NEXT_PUBLIC_STRIPE_PENTHOUSE_PAYMENT_LINK",
-    defaultUrl: "https://buy.stripe.com/dRm8wQ7MEactgzl7Dj5AQ02",
+    defaultUrl: "https://buy.stripe.com/6oUcN6gjaesJ6YLcXD5AQ0a",
     quantityHint: "Couples: select quantity 2 at checkout ($1,100 total).",
   },
   "movie-world-fast-pass": {
@@ -63,7 +63,7 @@ export const GOLD_COAST_STRIPE_PRODUCTS: Record<GoldCoastStripeProductId, GoldCo
     priceLabel: "$89 per person",
     image: "/gold-coast/little-truffle.png",
     envKey: "NEXT_PUBLIC_STRIPE_LITTLE_TRUFFLE_PAYMENT_LINK",
-    defaultUrl: "https://buy.stripe.com/aFa3cwd6Y70hbf11eV5AQ03",
+    defaultUrl: "https://buy.stripe.com/28E5kE3woact82Pg9P5AQ0e",
   },
   draculas: {
     id: "draculas",
@@ -71,7 +71,7 @@ export const GOLD_COAST_STRIPE_PRODUCTS: Record<GoldCoastStripeProductId, GoldCo
     priceLabel: "$149 per person",
     image: "/gold-coast/draculas.png",
     envKey: "NEXT_PUBLIC_STRIPE_DRACULAS_PAYMENT_LINK",
-    defaultUrl: "https://buy.stripe.com/4gM9AU4AsdoF0An3n35AQ06",
+    defaultUrl: "https://buy.stripe.com/3cl3cwgjaactbf10aR5AQ0d",
   },
   "australia-zoo": {
     id: "australia-zoo",

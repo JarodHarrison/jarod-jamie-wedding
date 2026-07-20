@@ -79,7 +79,7 @@ export function GuestPhotoSharePanel({ onUploaded }: GuestPhotoSharePanelProps) 
 
       const cacheBust = Date.now();
       setCaption("");
-      setMessage("Photo shared — it's on the live wall now.");
+      setMessage("Photo shared. It's on the live wall now.");
       setRecent((current) => [
         {
           id: data.photo.id,
@@ -113,7 +113,7 @@ export function GuestPhotoSharePanel({ onUploaded }: GuestPhotoSharePanelProps) 
             Share a photo
           </p>
           <p className="mt-2 text-sm text-gray-600">
-            Like GuestPic — upload here or scan the QR on your table card. Photos go live on the TV wall
+            Like GuestPic: upload here or scan the QR on your table card. Photos go live on the TV wall
             right away and are saved to the couple&apos;s Google Drive when connected.
             {visionSafetyEnabled ? " Only clearly unsafe images are blocked." : ""}
           </p>

@@ -1,6 +1,6 @@
 import { generateText, streamText } from "ai";
 
-/** Free-tier AI Gateway models only — used when direct Gemini is unavailable. */
+/** Free-tier AI Gateway models only: used when direct Gemini is unavailable. */
 const DEFAULT_FREE_GATEWAY_MODELS = [
   "google/gemini-2.5-flash",
   "anthropic/claude-haiku-4.5",

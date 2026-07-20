@@ -1,4 +1,4 @@
-/** Ceremony start — Australia/Brisbane */
+/** Ceremony start: Australia/Brisbane */
 export const WEDDING_DATE_ISO = "2026-09-26";
 export const WEDDING_CEREMONY_ISO = "2026-09-26T15:00:00+10:00";
 export const WEDDING_TIMEZONE = "Australia/Brisbane";

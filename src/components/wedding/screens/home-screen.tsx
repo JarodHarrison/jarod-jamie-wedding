@@ -34,6 +34,7 @@ type HomeScreenProps = {
   onOpenChat?: () => void;
   onOpenInstall?: () => void;
   canVerifyBingo?: boolean;
+  canAccessBucksOrganiser?: boolean;
 };
 
 function buildHomeCards(onOpenChat?: () => void, showBingoPromo = false): Array<GuideCardConfig & { action: () => void }> {
@@ -41,7 +42,7 @@ function buildHomeCards(onOpenChat?: () => void, showBingoPromo = false): Array<
     {
       id: "jarodjamie",
       title: "Jarod & Jamie",
-      description: "Share a funny memory, heartfelt moment, or chaos — on the story wall for everyone.",
+      description: "Share a funny memory, heartfelt moment, or chaos on the story wall for everyone.",
       actionLabel: "Share Yours",
       icon: Heart,
       className:
@@ -70,8 +71,8 @@ function buildHomeCards(onOpenChat?: () => void, showBingoPromo = false): Array<
       id: "photos",
       title: "Photos & Booth",
       description: showBingoPromo
-        ? "Hashtag wall, booth downloads, and photobooth bingo — strike a pose."
-        : "Hashtag wall and booth downloads — share your favourite moments.",
+        ? "Hashtag wall, booth downloads, and photobooth bingo. Strike a pose."
+        : "Hashtag wall and booth downloads. Share your favourite moments.",
       actionLabel: "Open Gallery",
       icon: Camera,
       className:
@@ -85,7 +86,7 @@ function buildHomeCards(onOpenChat?: () => void, showBingoPromo = false): Array<
     {
       id: "wishingwell",
       title: "Wishing Well",
-      description: "Your presence is the gift — but if you'd like to bless us, tap here.",
+      description: "Your presence is the gift, but if you'd like to bless us, tap here.",
       actionLabel: "Contribute",
       icon: Gift,
       className:
@@ -127,7 +128,7 @@ function buildHomeCards(onOpenChat?: () => void, showBingoPromo = false): Array<
     {
       id: "faq",
       title: "FAQs",
-      description: "Kids, venue, surprises — everything you were too polite to ask.",
+      description: "Kids, venue, surprises: everything you were too polite to ask.",
       actionLabel: "View Answers",
       icon: Info,
       className:
@@ -150,6 +151,7 @@ export function HomeScreen({
   onOpenChat,
   onOpenInstall,
   canVerifyBingo = false,
+  canAccessBucksOrganiser = false,
 }: HomeScreenProps) {
   const { phase, isFeatureVisible } = useWeddingPhase();
   const { canViewVenueMap: showVenueMap } = useVenueMapAccess();
@@ -168,8 +170,8 @@ export function HomeScreen({
       return {
         ...card,
         description: showBingo
-          ? "Hashtag wall, booth downloads, and photobooth bingo — GuestPic uploads open in wedding week."
-          : "Hashtag wall and booth downloads — GuestPic uploads open in wedding week.",
+          ? "Hashtag wall, booth downloads, and photobooth bingo. GuestPic uploads open in wedding week."
+          : "Hashtag wall and booth downloads. GuestPic uploads open in wedding week.",
       };
     }
     return {
@@ -303,6 +305,22 @@ export function HomeScreen({
       )}
 
       <div className="space-y-4 px-6 pb-10">
+        {canAccessBucksOrganiser && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("bucks-organiser")}
+            className="w-full overflow-hidden rounded-2xl border border-[#f9a8d4] bg-gradient-to-r from-[#1a0f24] via-[#4c1d95] to-[#db2777] p-4 text-left text-white shadow-md active:scale-[0.99]"
+          >
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-pink-200">
+              Bucks organiser
+            </p>
+            <p className="mt-1 font-serif text-xl">Joint bucks HQ</p>
+            <p className="mt-1 text-xs text-white/75">
+              RSVPs, prepaid, budget votes, and share link: 29 Aug
+            </p>
+          </button>
+        )}
+
         {showChecklist && (
           <WeddingChecklist setActiveTab={setActiveTab} onOpenInstall={onOpenInstall} />
         )}

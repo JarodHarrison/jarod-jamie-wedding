@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { guestHasAdminAccess } from "@/lib/auth/admin-access";
+import { emailIsBucksPartyOrganiser } from "@/lib/auth/bucks-party-access";
 import { guestIsMcOrAdmin } from "@/lib/auth/mc-access";
 import { getVendorAccessForSession } from "@/lib/auth/vendor-access";
 import { getLinkedGuestForAdmin, toWeddingUser } from "@/lib/auth/linked-guest";
@@ -18,7 +19,11 @@ export async function GET() {
       canManageVendors: false,
       canViewVendors: false,
       canVerifyBingo: false,
+      canAccessBucksOrganiser: false,
       hasOnSiteAccess: false,
+      bucksPartyAttending: false,
+      glowUpRegistered: false,
+      glowUpInterest: null,
       partyRole: null,
     });
   }
@@ -35,20 +40,52 @@ export async function GET() {
         canManageVendors: false,
         canViewVendors: false,
         canVerifyBingo: false,
+        canAccessBucksOrganiser: false,
         hasOnSiteAccess: false,
+        bucksPartyAttending: false,
+        glowUpRegistered: false,
+        glowUpInterest: null,
         partyRole: null,
       });
     }
 
     const guestFlags = await prisma.guest.findUnique({
       where: { id: fresh.id },
-      select: { isMc: true, assignedRoomName: true, goldCoastTrip: { select: { id: true } } },
+      select: {
+        isMc: true,
+        isBucksPartyAdmin: true,
+        assignedRoomName: true,
+        glowUpInterest: true,
+        goldCoastTrip: { select: { id: true } },
+        bucksPartyRsvp: { select: { attending: true } },
+        glowUpPartyInterest: { select: { interest: true } },
+      },
     });
     const canAccessAdmin = await guestHasAdminAccess(fresh.email);
     const canVerifyBingo = await guestIsMcOrAdmin(fresh.email, guestFlags?.isMc ?? false);
     const hasOnSiteAccess = hasOnSiteAppAccess(fresh.tier, {
       assignedRoomName: guestFlags?.assignedRoomName,
     });
+    const canAccessBucksOrganiser =
+      canAccessAdmin ||
+      Boolean(guestFlags?.isBucksPartyAdmin) ||
+      emailIsBucksPartyOrganiser(fresh.email);
+    const glowUpInterest =
+      guestFlags?.glowUpPartyInterest?.interest ?? guestFlags?.glowUpInterest ?? null;
+    const glowUpRegistered = Boolean(glowUpInterest);
+
+    if (
+      emailIsBucksPartyOrganiser(fresh.email) &&
+      guestFlags &&
+      !guestFlags.isBucksPartyAdmin
+    ) {
+      void prisma.guest
+        .update({
+          where: { id: fresh.id },
+          data: { isBucksPartyAdmin: true },
+        })
+        .catch(() => undefined);
+    }
 
     return NextResponse.json({
       user: {
@@ -60,8 +97,12 @@ export async function GET() {
       admin: null,
       canAccessAdmin,
       canVerifyBingo,
+      canAccessBucksOrganiser,
       hasOnSiteAccess,
       hasGoldCoastTrip: Boolean(guestFlags?.goldCoastTrip),
+      bucksPartyAttending: Boolean(guestFlags?.bucksPartyRsvp?.attending),
+      glowUpRegistered,
+      glowUpInterest,
       canManageVendors: vendorAccess.canManageVendors,
       canViewVendors: vendorAccess.canViewVendors,
       partyRole: vendorAccess.partyRole,
@@ -72,17 +113,29 @@ export async function GET() {
   const linkedGuestFlags = linkedGuest
     ? await prisma.guest.findUnique({
         where: { id: linkedGuest.id },
-        select: { goldCoastTrip: { select: { id: true } } },
+        select: {
+          goldCoastTrip: { select: { id: true } },
+          bucksPartyRsvp: { select: { attending: true } },
+          glowUpInterest: true,
+          glowUpPartyInterest: { select: { interest: true } },
+        },
       })
     : null;
+
+  const linkedGlowUpInterest =
+    linkedGuestFlags?.glowUpPartyInterest?.interest ?? linkedGuestFlags?.glowUpInterest ?? null;
 
   return NextResponse.json({
     user: linkedGuest ? toWeddingUser(linkedGuest) : null,
     admin: { id: session.id, name: session.name, email: session.email },
     canAccessAdmin: true,
     canVerifyBingo: true,
+    canAccessBucksOrganiser: true,
     hasOnSiteAccess: true,
     hasGoldCoastTrip: Boolean(linkedGuestFlags?.goldCoastTrip),
+    bucksPartyAttending: Boolean(linkedGuestFlags?.bucksPartyRsvp?.attending),
+    glowUpRegistered: Boolean(linkedGlowUpInterest),
+    glowUpInterest: linkedGlowUpInterest,
     canManageVendors: vendorAccess.canManageVendors,
     canViewVendors: vendorAccess.canViewVendors,
     partyRole: null,

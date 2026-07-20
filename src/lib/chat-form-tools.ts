@@ -126,7 +126,7 @@ export async function executeGuestFormSave(
     return {
       success: false,
       message:
-        "RSVP needs a clear yes or no — ask if they joyfully accept or regretfully decline before saving.",
+        "RSVP needs a clear yes or no: ask if they joyfully accept or regretfully decline before saving.",
     };
   }
 

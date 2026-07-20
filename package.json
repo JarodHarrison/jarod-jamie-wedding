@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node scripts/prisma-generate.mjs && next dev --hostname 0.0.0.0 -p 3001",
+    "dev": "node scripts/prisma-generate.mjs && next dev --hostname 0.0.0.0 -p 3000",
     "build": "node scripts/prisma-generate.mjs && next build",
     "vercel-build": "node scripts/prisma-generate.mjs && prisma db push --accept-data-loss && next build",
     "start": "next start",

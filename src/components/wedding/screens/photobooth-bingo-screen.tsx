@@ -146,7 +146,7 @@ export function PhotoboothBingoScreen({ setActiveTab }: PhotoboothBingoScreenPro
         setError(
           typeof data.error === "string"
             ? data.error
-            : "Could not sync bingo progress — showing the card offline.",
+            : "Could not sync bingo progress: showing the card offline.",
         );
         return;
       }
@@ -155,13 +155,13 @@ export function PhotoboothBingoScreen({ setActiveTab }: PhotoboothBingoScreenPro
       wasCompletedRef.current = parsed.completed;
       setState(parsed);
       if (data.progressUnavailable) {
-        setError("Progress could not be loaded from the server — ticks may not save until this is fixed.");
+        setError("Progress could not be loaded from the server: ticks may not save until this is fixed.");
       } else {
         setError("");
       }
     } catch {
       setState(emptyBingoState());
-      setError("Could not reach the server — showing the bingo card offline.");
+      setError("Could not reach the server: showing the bingo card offline.");
     } finally {
       setLoading(false);
     }
@@ -288,14 +288,14 @@ export function PhotoboothBingoScreen({ setActiveTab }: PhotoboothBingoScreenPro
               <p className="font-serif text-2xl text-[#2a2723]">You cleared the card!</p>
               <p className="mt-3 text-sm leading-relaxed text-gray-600">
                 Every guest just got the good news from Annita. Now grab your phone and head to the
-                nearest drag queen — they will verify your win as an official MC.
+                nearest drag queen: they will verify your win as an official MC.
               </p>
               <div
                 className="mt-4 flex items-start gap-2 rounded-2xl border px-4 py-3 text-xs"
                 style={{ borderColor: theme.gold, backgroundColor: theme.cardBg, color: theme.textDark }}
               >
                 <Crown size={16} className="mt-0.5 shrink-0" style={{ color: theme.gold }} />
-                <span>Keep this screen open — your MC will tap Verify when they see you.</span>
+                <span>Keep this screen open: your MC will tap Verify when they see you.</span>
               </div>
               <button
                 type="button"
@@ -320,7 +320,7 @@ export function PhotoboothBingoScreen({ setActiveTab }: PhotoboothBingoScreenPro
               content: (
                 <p>
                   Snap each challenge at the photobooth (or anywhere the vibe fits). Tick them off as
-                  you go — first guest to clear the whole card triggers a &ldquo;Bingo!&rdquo; announcement to
+                  you go: first guest to clear the whole card triggers a &ldquo;Bingo!&rdquo; announcement to
                   everyone, courtesy of Annita. Then take your phone to a drag queen for official
                   verification.
                 </p>
@@ -347,7 +347,7 @@ export function PhotoboothBingoScreen({ setActiveTab }: PhotoboothBingoScreenPro
                 For the camera
               </p>
               <p className="text-xs text-gray-500">
-                Tick each shot as you nail it at the photobooth. First to complete everything wins bragging rights — and Annita tells everyone.
+                Tick each shot as you nail it at the photobooth. First to complete everything wins bragging rights: and Annita tells everyone.
               </p>
             </div>
           </div>

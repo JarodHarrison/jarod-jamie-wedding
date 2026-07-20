@@ -39,7 +39,7 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
     intro: "A relaxed coastal lunch stop in one of Australia's most famous beach towns.",
     details: [
       "Wander the main street for cafés, boutiques, and ocean views before we head north again.",
-      "Great spot for a proper meal after the drive down from Brisbane — think fresh, casual, and very Byron.",
+      "Great spot for a proper meal after the drive down from Brisbane: think fresh, casual, and very Byron.",
     ],
   },
   skydeck: {
@@ -47,13 +47,13 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
     time: "05:00 PM",
     title: "Q1 Skydeck",
     loc: "SkyPoint, Surfers Paradise",
-    intro: "Panoramic views from the tallest building on the Gold Coast — sunset timing is chef's kiss.",
+    intro: "Panoramic views from the tallest building on the Gold Coast: sunset timing is chef's kiss.",
     details: [
       "Ride up to the observation deck for 360° views over the coast, hinterland, and city skyline.",
       "Late September sunset is around 5:40 PM, so you'll catch the golden hour and twilight glow.",
       "Optional Twilight Climb available if you want an open-air experience (book separately).",
     ],
-    tip: "Arrive a little early — lines can build around sunset in peak season.",
+    tip: "Arrive a little early: lines can build around sunset in peak season.",
     booking: {
       sub: "Deck Entry | Optional Twilight Climb",
       price: "$36 - $92",
@@ -67,11 +67,11 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
     time: "10:00 AM – 5:00 PM",
     title: "Warner Bros. Movie World",
     loc: "Movie World",
-    intro: "Hollywood on the Gold Coast — blockbuster rides, shows, and character meet-and-greets.",
+    intro: "Hollywood on the Gold Coast: blockbuster rides, shows, and character meet-and-greets.",
     details: [
       "Home to DC Super Heroes and Looney Tunes lands, plus some of Australia's biggest thrill rides.",
-      "Expect queues in late September — Fast Track passes are worth it if you want maximum ride time.",
-      "Don't miss the stunt and parade shows — they're camp, chaotic, and very fun.",
+      "Expect queues in late September: Fast Track passes are worth it if you want maximum ride time.",
+      "Don't miss the stunt and parade shows. They're camp, chaotic, and very fun.",
     ],
     tip: "Wear comfy shoes and sunscreen. You'll be on your feet all day.",
     booking: {
@@ -88,11 +88,11 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
     title: "Little Truffle",
     loc: "Mermaid Beach",
     intro:
-      "Enjoy a 4-course dinner with us at Little Truffle — Mermaid Beach's award-winning hidden gem.",
+      "Enjoy a 4-course dinner with us at Little Truffle: Mermaid Beach's award-winning hidden gem.",
     details: [
       "An intimate dining room, elegant contemporary surrounds, and an exceptional wine list.",
       "Our group booking covers a 4-course dinner; dietary needs can usually be accommodated with notice.",
-      "Smart casual dress — you've earned something fabulous after Movie World.",
+      "Smart casual dress. You've earned something fabulous after Movie World.",
     ],
     sampleMenu: LITTLE_TRUFFLE_SAMPLE_MENU,
     stripeProductId: "little-truffle",
@@ -110,11 +110,11 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
     loc: "Dreamworld",
     intro: "Big thrills, DreamWorks zones, wildlife, and white-knuckle coasters in one mega park.",
     details: [
-      "Ride Express passes let you skip the regular queue on participating attractions — huge time saver.",
+      "Ride Express passes let you skip the regular queue on participating attractions: huge time saver.",
       "Mix of family-friendly zones and serious thrill rides (Steel Taipan, Giant Drop, and more).",
       "Wildlife areas and shows break up the adrenaline if you need a breather.",
     ],
-    tip: "Hydrate and pace yourself — it's a full day before Dracula's tonight.",
+    tip: "Hydrate and pace yourself. It's a full day before Dracula's tonight.",
     booking: {
       sub: "Adult Entry | Optional Ride Express",
       price: "$139 - $269",
@@ -129,13 +129,13 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
     title: "Dracula's Cabaret",
     loc: "Broadbeach",
     intro:
-      "Join us for a wickedly fabulous evening at Dracula's — decadent dining, dazzling performances, and deliciously dark glamour.",
+      "Join us for a wickedly fabulous evening at Dracula's: decadent dining, dazzling performances, and deliciously dark glamour.",
     details: [
       "Catch an Uber from the hotel around 6:15 PM and arrive 15 minutes before doors open.",
       "Priority entry, the ghost train ride, and a theatrical three-course dinner show with plenty of audience participation.",
-      "A-Reserve VIP gets you closer to the action — dress to impress (within reason for splashes of fake blood).",
+      "A-Reserve VIP gets you closer to the action: dress to impress (within reason for splashes of fake blood).",
     ],
-    tip: "Leave Dreamworld on time — you want time to freshen up before this one.",
+    tip: "Leave Dreamworld on time. You want time to freshen up before this one.",
     stripeProductId: "draculas",
     booking: {
       sub: "A-Reserve VIP",
@@ -150,12 +150,12 @@ export const goldCoastAttractions: Record<GoldCoastVenueImageId, GoldCoastAttrac
     title: "Australia Zoo",
     loc: "Beerwah",
     intro:
-      "Join us for a wild day at Australia Zoo — iconic wildlife, lush tropical surrounds, and unforgettable animal encounters.",
+      "Join us for a wild day at Australia Zoo: iconic wildlife, lush tropical surrounds, and unforgettable animal encounters.",
     details: [
-      "The Home of the Crocodile Hunter — wildlife presentations, the Africa exhibit, Crocs Lair, and roving keepers.",
+      "The Home of the Crocodile Hunter: wildlife presentations, the Africa exhibit, Crocs Lair, and roving keepers.",
       "The drive from the Gold Coast is about two hours, so our 10 AM arrival allows for a coffee stop or traffic.",
       "Optional Animal Encounters (koala cuddles, lemurs, wombats, rhinos, and more) are booked separately from entry.",
-      "Encounters are intimate, keeper-led experiences with strict group sizes — they sell out quickly.",
+      "Encounters are intimate, keeper-led experiences with strict group sizes. They sell out quickly.",
     ],
     tip: "If you want an encounter, book as far in advance as possible. Popular sessions disappear fast.",
     booking: {

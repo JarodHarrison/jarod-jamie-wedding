@@ -43,7 +43,7 @@ export function VenueMapScreen({
           <>
             <p className="mb-1 text-sm leading-relaxed text-gray-600">
               {hasOnSiteAccess
-                ? "Your on-site map — find your room, the lawns, and Lake View Deck anytime."
+                ? "Your on-site map: find your room, the lawns, and Lake View Deck anytime."
                 : "The estate map unlocks closer to the wedding. Pinch to zoom and scroll to explore."}
             </p>
             <VenueMapViewer />

@@ -68,7 +68,7 @@ export async function POST(request: Request) {
       return jsonError(`Keep it under ${GUEST_STORY_MAX_LENGTH} characters.`, 400);
     }
     if (containsProfanity(content)) {
-      return jsonError("Please keep stories wedding-appropriate — edit and try again.", 400);
+      return jsonError("Please keep stories wedding-appropriate: edit and try again.", 400);
     }
 
     const existingCount = await prisma.guestStory.count({

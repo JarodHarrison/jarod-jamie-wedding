@@ -62,10 +62,10 @@ export function formatEatPlaceForChat(place: ScoredEatery, geo: GuestGeoContext)
 
   const cuisineHint =
     place.cuisineTags.length > 0
-      ? ` — ${place.cuisineTags.slice(0, 3).join(", ")}`
+      ? `: ${place.cuisineTags.slice(0, 3).join(", ")}`
       : "";
 
-  return `• **${place.name}** (${place.category}${cuisineHint}, ${distanceLabel}) — ${place.description}${formatPlaceChatLinks({
+  return `• **${place.name}** (${place.category}${cuisineHint}, ${distanceLabel}): ${place.description}${formatPlaceChatLinks({
     name: place.name,
     websiteUrl: place.websiteUrl,
     latitude: place.latitude,

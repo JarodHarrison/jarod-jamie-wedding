@@ -35,7 +35,7 @@ export function enrichPlaceFromAttraction(attraction: Attraction): HinterlandPla
 
 const ALL_PLACES = ALL_ATTRACTIONS.map(enrichPlaceFromAttraction);
 
-/** Curated spots within ~35 minutes of Spicers Clovelly Estate — Annita's fast local index. */
+/** Curated spots within ~35 minutes of Spicers Clovelly Estate: Annita's fast local index. */
 export const HINTERLAND_PLACES_WITHIN_35_MIN = ALL_PLACES.filter(
   (place) => place.driveMinutes <= MAX_DRIVE_MINUTES_FROM_MONTVILLE,
 );
