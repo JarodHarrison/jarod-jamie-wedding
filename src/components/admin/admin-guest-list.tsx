@@ -1,6 +1,16 @@
 "use client";
 
-import { ChevronDown, Heart, Link2, Plus, RefreshCw, Shield, Trash2, BadgeCheck } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronDown,
+  Download,
+  Heart,
+  Link2,
+  Plus,
+  RefreshCw,
+  Shield,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { GUEST_TIER_LABELS } from "@/lib/api-utils";
 import { getGuestCompanionSummary } from "@/lib/guest-companion-display";
@@ -135,6 +145,19 @@ export function AdminGuestList({
     <div>
       <AdminGuestImport onMessage={onMessage} onImported={onRefresh} />
       <AdminRoomImport onMessage={onMessage} onImported={onRefresh} />
+
+      <a
+        href="/api/admin/guests/venue-export"
+        className="mb-4 flex w-full items-center justify-center gap-2 rounded-xl border bg-white py-3.5 text-xs font-bold uppercase tracking-widest shadow-sm transition-colors hover:bg-[#f7f4ee]"
+        style={{ borderColor: theme.border, color: theme.btnDark }}
+      >
+        <Download size={14} />
+        Download venue guest spreadsheet
+      </a>
+      <p className="-mt-2 mb-4 text-center text-[10px] leading-relaxed text-gray-400">
+        Excel workbook with numbers, attending guests, dietary requirements, room allocations,
+        preferences, and the complete guest list.
+      </p>
 
       <button
         type="button"

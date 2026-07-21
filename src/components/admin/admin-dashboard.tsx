@@ -318,8 +318,8 @@ export function AdminDashboard({ adminName, onLogout, onUnauthorized }: AdminDas
               />
               <AdminSectionCard
                 title="Guest List"
-                description="Add guests, edit RSVPs, accommodation, transfers, and admin access."
-                actionLabel="Manage Guests"
+                description="Manage guests and download the venue spreadsheet with numbers, dietary requirements, preferences, and room allocations."
+                actionLabel="Manage & Export"
                 icon={Users}
                 variant="dark"
                 onClick={() => setView("guests")}
