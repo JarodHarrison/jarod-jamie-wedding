@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { buildPasswordFields } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
+import { guestActivationCountSelect, guestRecordIsActivated } from "@/lib/guest-account-status";
 import { findClaimableGuestForSignup } from "@/lib/guest-claim";
 import { clearGuestManagementOnClaim } from "@/lib/guest-party";
 import { guestProfileSelect, serializeGuestProfile } from "@/lib/guest-profile";
@@ -34,9 +35,9 @@ export async function POST(request: Request) {
 
     const existing = await prisma.guest.findUnique({
       where: { email },
-      select: { id: true, passwordPlaintext: true },
+      select: { id: true, ...guestActivationCountSelect },
     });
-    if (existing?.passwordPlaintext) {
+    if (existing && guestRecordIsActivated(existing)) {
       return jsonError("An account with this email already exists. Please sign in.", 409);
     }
 
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
 
     let guest;
 
-    if (existing && !existing.passwordPlaintext) {
+    if (existing && !guestRecordIsActivated(existing)) {
       guest = await prisma.guest.update({
         where: { id: existing.id },
         data: {

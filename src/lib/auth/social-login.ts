@@ -7,6 +7,7 @@ import {
 } from "@/lib/auth/create-session";
 import { isAdminPreferredEmail, isGuestOnlyEmail } from "@/lib/auth/account-roles";
 import { hashPassword } from "@/lib/auth/password";
+import { guestActivationCountSelect, guestRecordIsActivated } from "@/lib/guest-account-status";
 import { findClaimableGuestForSignup, findGuestByLoginEmail } from "@/lib/guest-claim";
 import { clearGuestManagementOnClaim } from "@/lib/guest-party";
 import { prisma } from "@/lib/prisma";
@@ -88,10 +89,10 @@ async function createOrClaimGoogleGuest(email: string, name: string) {
   const normalized = normalizeEmail(email);
   const existing = await prisma.guest.findUnique({
     where: { email: normalized },
-    select: { id: true, passwordPlaintext: true },
+    select: { id: true, ...guestActivationCountSelect },
   });
 
-  if (existing?.passwordPlaintext) {
+  if (existing && guestRecordIsActivated(existing)) {
     throw new Error("An account with this email already exists. Please sign in instead.");
   }
 
@@ -99,7 +100,7 @@ async function createOrClaimGoogleGuest(email: string, name: string) {
   const passwordHash = await hashPassword(randomPassword);
   const displayName = name.trim() || normalized.split("@")[0] || "Guest";
   const claimable =
-    existing && !existing.passwordPlaintext
+    existing && !guestRecordIsActivated(existing)
       ? { id: existing.id }
       : await findClaimableGuestForSignup(displayName, normalized);
 
@@ -157,11 +158,11 @@ export async function linkGoogleAccountToGuest(guestId: string, googleEmail: str
 
   const existingGuest = await prisma.guest.findUnique({
     where: { email: normalized },
-    select: { id: true, passwordPlaintext: true },
+    select: { id: true, ...guestActivationCountSelect },
   });
 
   if (existingGuest && existingGuest.id !== guestId) {
-    if (existingGuest.passwordPlaintext) {
+    if (guestRecordIsActivated(existingGuest)) {
       throw new Error("That Google email belongs to another guest account.");
     }
 

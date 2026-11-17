@@ -1,4 +1,8 @@
 import { normalizeEmail } from "@/lib/api-utils";
+import {
+  guestRecordIsActivated,
+  unclaimedGuestAccountWhere,
+} from "@/lib/guest-account-status";
 import { GUEST_IMPORT_EMAIL_DOMAIN } from "@/lib/guest-spreadsheet-import";
 import type { GuestSpreadsheetRow } from "@/lib/guest-spreadsheet-import";
 import { normalizeGuestName } from "@/lib/guest-name";
@@ -32,6 +36,7 @@ export async function findImportableGuestByName(name: string) {
 
   const candidates = await prisma.guest.findMany({
     where: {
+      ...unclaimedGuestAccountWhere,
       email: { endsWith: `@${GUEST_IMPORT_EMAIL_DOMAIN}` },
     },
     select: {
@@ -42,10 +47,21 @@ export async function findImportableGuestByName(name: string) {
       rsvpStatus: true,
       rsvpSubmittedAt: true,
       passwordPlaintext: true,
+      _count: {
+        select: {
+          linkedLogins: true,
+          passkeyCredentials: true,
+        },
+      },
     },
   });
 
-  return candidates.find((guest) => normalizeGuestName(guest.name) === normalized) ?? null;
+  return (
+    candidates.find(
+      (guest) =>
+        normalizeGuestName(guest.name) === normalized && !guestRecordIsActivated(guest),
+    ) ?? null
+  );
 }
 
 const claimableGuestSelect = {
@@ -56,6 +72,12 @@ const claimableGuestSelect = {
   rsvpStatus: true,
   rsvpSubmittedAt: true,
   passwordPlaintext: true,
+  _count: {
+    select: {
+      linkedLogins: true,
+      passkeyCredentials: true,
+    },
+  },
 } as const;
 
 /** Match imported / pre-created guest rows when someone signs up with Google or email. */
@@ -67,8 +89,8 @@ export async function findClaimableGuestForSignup(name: string, email: string) {
     where: { email: normalizedEmail },
     select: claimableGuestSelect,
   });
-  if (byEmail && !byEmail.passwordPlaintext) {
-    return byEmail;
+  if (byEmail) {
+    return guestRecordIsActivated(byEmail) ? null : byEmail;
   }
 
   const importable = await findImportableGuestByName(name);
@@ -76,16 +98,18 @@ export async function findClaimableGuestForSignup(name: string, email: string) {
 
   if (!normalizedName) return null;
 
-  const candidates = await prisma.guest.findMany({
-    where: {
-      passwordPlaintext: null,
-      OR: [
-        { email: { endsWith: `@${GUEST_IMPORT_EMAIL_DOMAIN}` } },
-        { sayiImportedAt: { not: null } },
-      ],
-    },
-    select: claimableGuestSelect,
-  });
+  const candidates = (
+    await prisma.guest.findMany({
+      where: {
+        ...unclaimedGuestAccountWhere,
+        OR: [
+          { email: { endsWith: `@${GUEST_IMPORT_EMAIL_DOMAIN}` } },
+          { sayiImportedAt: { not: null } },
+        ],
+      },
+      select: claimableGuestSelect,
+    })
+  ).filter((guest) => !guestRecordIsActivated(guest));
 
   const exactMatches = candidates.filter(
     (guest) => normalizeGuestName(guest.name) === normalizedName,
