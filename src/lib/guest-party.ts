@@ -4,6 +4,11 @@ import { guestHasActivatedAppAccount } from "@/lib/guest-account-status";
 import { isPlaceholderImportEmail } from "@/lib/guest-claim";
 import { GUEST_IMPORT_EMAIL_DOMAIN } from "@/lib/guest-spreadsheet-import";
 import { normalizeGuestName } from "@/lib/guest-name";
+import {
+  pickUniqueGuestByNormalizedName,
+  planPlusOneEnsure,
+  type LinkedPlusOne,
+} from "@/lib/plus-one-ensure";
 import { applyPlusOneLink } from "@/lib/plus-one-link";
 import { prisma } from "@/lib/prisma";
 
@@ -424,11 +429,32 @@ export async function clearGuestManagementOnClaim(guestId: string) {
   });
 }
 
+async function declineAutoCreatedPlusOne(guestId: string | null) {
+  if (!guestId) return;
+  await prisma.guest.update({
+    where: { id: guestId },
+    data: { rsvpStatus: "DECLINED", profileUpdatedAt: new Date() },
+  });
+}
+
+async function storePlusOneNameOnly(managerId: string, plusOneName: string | null) {
+  await prisma.guest.update({
+    where: { id: managerId },
+    data: { plusOneName, profileUpdatedAt: new Date() },
+  });
+}
+
 /**
  * Turn a typed plus-one name into a real Guest row + bidirectional link.
- * Skips when already linked to someone with the same normalised name.
+ * Links an existing unique name match instead of duplicating them, and does
+ * not mint an attending guest when the RSVP is declined.
  */
-export async function ensurePlusOneGuestFromName(managerId: string, plusOneName: string | null) {
+export async function ensurePlusOneGuestFromName(
+  managerId: string,
+  plusOneName: string | null,
+  options?: { allowCreate?: boolean },
+) {
+  const allowCreate = options?.allowCreate ?? true;
   const name = plusOneName?.trim() || null;
 
   const manager = await prisma.guest.findUnique({
@@ -436,43 +462,104 @@ export async function ensurePlusOneGuestFromName(managerId: string, plusOneName:
     select: {
       id: true,
       plusOneGuestId: true,
-      plusOneGuest: { select: { id: true, name: true } },
+      plusOneGuest: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          managedByGuestId: true,
+          passwordPlaintext: true,
+          _count: {
+            select: {
+              linkedLogins: true,
+              passkeyCredentials: true,
+            },
+          },
+        },
+      },
     },
   });
   if (!manager) throw new Error("Guest not found.");
 
-  if (!name) {
-    if (manager.plusOneGuestId) {
+  const linked: LinkedPlusOne | null = manager.plusOneGuest
+    ? {
+        id: manager.plusOneGuest.id,
+        name: manager.plusOneGuest.name,
+        email: manager.plusOneGuest.email,
+        managedByGuestId: manager.plusOneGuest.managedByGuestId,
+        claimed: guestHasActivatedAppAccount({
+          passwordPlaintext: manager.plusOneGuest.passwordPlaintext,
+          linkedLoginCount: manager.plusOneGuest._count.linkedLogins,
+          passkeyCount: manager.plusOneGuest._count.passkeyCredentials,
+        }),
+      }
+    : null;
+
+  const uniqueNameMatch = name
+    ? pickUniqueGuestByNormalizedName(
+        name,
+        await prisma.guest.findMany({
+          select: { id: true, name: true, plusOneGuestId: true },
+        }),
+        managerId,
+      )
+    : null;
+
+  const plan = planPlusOneEnsure({
+    managerId,
+    plusOneName: name,
+    allowCreate,
+    linked,
+    uniqueNameMatch,
+  });
+
+  switch (plan.type) {
+    case "clear-name":
+      await storePlusOneNameOnly(managerId, null);
+      return null;
+    case "unlink":
       await applyPlusOneLink(managerId, null);
-    } else {
+      await declineAutoCreatedPlusOne(plan.declineAutoCreatedId);
+      await storePlusOneNameOnly(managerId, null);
+      return null;
+    case "keep":
+      await storePlusOneNameOnly(managerId, plan.canonicalName);
+      return plan.guestId;
+    case "rename-linked":
       await prisma.guest.update({
-        where: { id: managerId },
-        data: { plusOneName: null, profileUpdatedAt: new Date() },
+        where: { id: plan.guestId },
+        data: { name: plan.name, profileUpdatedAt: new Date() },
       });
+      await applyPlusOneLink(managerId, plan.guestId);
+      return plan.guestId;
+    case "link-existing":
+      await applyPlusOneLink(managerId, plan.guestId);
+      await declineAutoCreatedPlusOne(plan.declineAutoCreatedId);
+      return plan.guestId;
+    case "create":
+      await createPartyMember(managerId, {
+        name: plan.name,
+        linkAsPlusOne: true,
+        rsvpStatus: "ACCEPTED",
+      });
+      return (
+        (
+          await prisma.guest.findUnique({
+            where: { id: managerId },
+            select: { plusOneGuestId: true },
+          })
+        )?.plusOneGuestId ?? null
+      );
+    case "name-only":
+      if (plan.unlinkCurrent) {
+        await applyPlusOneLink(managerId, null);
+      }
+      await declineAutoCreatedPlusOne(plan.declineAutoCreatedId);
+      await storePlusOneNameOnly(managerId, plan.name);
+      return null;
+    default: {
+      const _exhaustive: never = plan;
+      throw new Error(`Unhandled plus-one plan: ${JSON.stringify(_exhaustive)}`);
     }
-    return null;
   }
-
-  if (
-    manager.plusOneGuest &&
-    normalizeGuestName(manager.plusOneGuest.name) === normalizeGuestName(name)
-  ) {
-    await prisma.guest.update({
-      where: { id: managerId },
-      data: { plusOneName: manager.plusOneGuest.name, profileUpdatedAt: new Date() },
-    });
-    return manager.plusOneGuest.id;
-  }
-
-  await createPartyMember(managerId, {
-    name,
-    linkAsPlusOne: true,
-    rsvpStatus: "ACCEPTED",
-  });
-
-  const updated = await prisma.guest.findUnique({
-    where: { id: managerId },
-    select: { plusOneGuestId: true },
-  });
-  return updated?.plusOneGuestId ?? null;
 }

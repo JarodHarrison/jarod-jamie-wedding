@@ -125,6 +125,7 @@ export async function PATCH(request: Request) {
     // RSVP plus-one name is expanded into a real Guest after the main update
     const rsvpPlusOneName =
       section === "rsvp" ? ((updateData.plusOneName as string | null) ?? null) : undefined;
+    const rsvpAllowsPlusOneCreate = updateData.rsvpStatus === "ACCEPTED";
 
     const guest = await prisma.guest.update({
       where: { id: session.id },
@@ -134,7 +135,9 @@ export async function PATCH(request: Request) {
 
     if (section === "rsvp") {
       try {
-        await ensurePlusOneGuestFromName(session.id, rsvpPlusOneName ?? null);
+        await ensurePlusOneGuestFromName(session.id, rsvpPlusOneName ?? null, {
+          allowCreate: rsvpAllowsPlusOneCreate,
+        });
       } catch (linkError) {
         console.error("[guest/profile rsvp plus-one]", linkError);
       }
