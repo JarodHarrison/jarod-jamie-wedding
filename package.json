@@ -9,6 +9,7 @@
     "start": "next start",
     "postinstall": "node scripts/prisma-generate.mjs",
     "lint": "eslint",
+    "test": "tsx --test src/lib/guest-name.test.ts",
     "db:generate": "node scripts/prisma-generate.mjs",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",

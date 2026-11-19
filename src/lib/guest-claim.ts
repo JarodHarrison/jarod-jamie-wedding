@@ -1,7 +1,7 @@
 import { normalizeEmail } from "@/lib/api-utils";
 import { GUEST_IMPORT_EMAIL_DOMAIN } from "@/lib/guest-spreadsheet-import";
 import type { GuestSpreadsheetRow } from "@/lib/guest-spreadsheet-import";
-import { normalizeGuestName } from "@/lib/guest-name";
+import { findUniqueFirstNameGuest, normalizeGuestName } from "@/lib/guest-name";
 import { prisma } from "@/lib/prisma";
 
 export function isPlaceholderImportEmail(email: string): boolean {
@@ -97,16 +97,7 @@ export async function findClaimableGuestForSignup(name: string, email: string) {
     );
   }
 
-  const firstName = normalizedName.split(" ")[0];
-  if (firstName.length >= 3) {
-    const firstNameMatches = candidates.filter((guest) => {
-      const guestNorm = normalizeGuestName(guest.name);
-      return guestNorm.startsWith(`${firstName} `) || guestNorm === firstName;
-    });
-    if (firstNameMatches.length === 1) return firstNameMatches[0];
-  }
-
-  return null;
+  return findUniqueFirstNameGuest(name, candidates);
 }
 
 export async function findGuestByLoginEmail(email: string) {
