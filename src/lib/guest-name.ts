@@ -28,3 +28,25 @@ export function namesShareFirstName(a: string, b: string): boolean {
   const right = guestNameTokens(b)[0];
   return Boolean(left && right && left === right);
 }
+
+/**
+ * True when an "add party member" name can safely attach to an existing guest
+ * found by email. Full names with different surnames must not match.
+ */
+export function guestNamesCompatibleForEmailLink(inputName: string, existingName: string): boolean {
+  const input = normalizeGuestName(inputName);
+  const existing = normalizeGuestName(existingName);
+  if (!input || !existing) return false;
+  if (input === existing) return true;
+
+  const inputTokens = guestNameTokens(inputName);
+  const existingTokens = guestNameTokens(existingName);
+  const inputFirst = inputTokens[0];
+  const existingFirst = existingTokens[0];
+  if (!inputFirst || inputFirst !== existingFirst) return false;
+
+  const inputSurname = inputTokens.length >= 2 ? inputTokens[inputTokens.length - 1] : null;
+  const existingSurname = existingTokens.length >= 2 ? existingTokens[existingTokens.length - 1] : null;
+  if (inputSurname && existingSurname && inputSurname !== existingSurname) return false;
+  return true;
+}

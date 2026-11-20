@@ -4,6 +4,7 @@ import { guestHasActivatedAppAccount } from "@/lib/guest-account-status";
 import { isPlaceholderImportEmail } from "@/lib/guest-claim";
 import { GUEST_IMPORT_EMAIL_DOMAIN } from "@/lib/guest-spreadsheet-import";
 import { normalizeGuestName } from "@/lib/guest-name";
+import { planPartyMemberEmailLink } from "@/lib/party-member-email-link";
 import { applyPlusOneLink } from "@/lib/plus-one-link";
 import { prisma } from "@/lib/prisma";
 
@@ -337,30 +338,56 @@ export async function createPartyMember(
         },
       });
       if (!existing) throw new Error("Guest not found.");
-      if (partyMemberIsClaimed(existing as PartyMemberRecord)) {
-        throw new Error("That email already belongs to someone who has signed in.");
-      }
-      await prisma.guest.update({
-        where: { id: taken.id },
-        data: {
+      const plan = planPartyMemberEmailLink(
+        {
           name,
-          phone: input.phone?.trim() || existing.phone,
-          dietaryNotes: input.dietaryNotes?.trim() || existing.dietaryNotes,
-          songRequest: input.songRequest?.trim() || existing.songRequest,
-          rsvpStatus: input.rsvpStatus ?? existing.rsvpStatus,
-          managedByGuestId: managerId,
-          sayiPartyName: existing.sayiPartyName ?? manager.sayiPartyName,
-          assignedRoomName: existing.assignedRoomName ?? manager.assignedRoomName,
-          assignedRoomDetails: existing.assignedRoomDetails ?? manager.assignedRoomDetails,
-          assignedRoomCheckIn: existing.assignedRoomCheckIn ?? manager.assignedRoomCheckIn,
-          assignedRoomCheckOut: existing.assignedRoomCheckOut ?? manager.assignedRoomCheckOut,
-          assignedRoomConfiguration:
-            existing.assignedRoomConfiguration ?? manager.assignedRoomConfiguration,
-          profileUpdatedAt: new Date(),
+          phone: input.phone,
+          dietaryNotes: input.dietaryNotes,
+          songRequest: input.songRequest,
+          rsvpStatus: input.rsvpStatus,
         },
-      });
-      if (input.linkAsPlusOne) await applyPlusOneLink(managerId, taken.id);
-      return loadPartyMembers(managerId);
+        {
+          claimed: partyMemberIsClaimed(existing as PartyMemberRecord),
+          name: existing.name,
+          phone: existing.phone,
+          dietaryNotes: existing.dietaryNotes,
+          songRequest: existing.songRequest,
+          rsvpStatus: existing.rsvpStatus,
+          sayiPartyName: existing.sayiPartyName,
+          assignedRoomName: existing.assignedRoomName,
+          assignedRoomDetails: existing.assignedRoomDetails,
+          assignedRoomCheckIn: existing.assignedRoomCheckIn,
+          assignedRoomCheckOut: existing.assignedRoomCheckOut,
+          assignedRoomConfiguration: existing.assignedRoomConfiguration,
+        },
+        {
+          sayiPartyName: manager.sayiPartyName,
+          assignedRoomName: manager.assignedRoomName,
+          assignedRoomDetails: manager.assignedRoomDetails,
+          assignedRoomCheckIn: manager.assignedRoomCheckIn,
+          assignedRoomCheckOut: manager.assignedRoomCheckOut,
+          assignedRoomConfiguration: manager.assignedRoomConfiguration,
+        },
+      );
+      switch (plan.type) {
+        case "reject":
+          throw new Error(plan.message);
+        case "link":
+          await prisma.guest.update({
+            where: { id: taken.id },
+            data: {
+              ...plan.data,
+              managedByGuestId: managerId,
+              profileUpdatedAt: new Date(),
+            },
+          });
+          if (input.linkAsPlusOne) await applyPlusOneLink(managerId, taken.id);
+          return loadPartyMembers(managerId);
+        default: {
+          const _exhaustive: never = plan;
+          throw new Error(`Unhandled party member email link plan: ${JSON.stringify(_exhaustive)}`);
+        }
+      }
     }
   } else {
     email = await uniquePlaceholderEmail(name);
