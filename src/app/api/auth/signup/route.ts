@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { shouldBlockUnverifiedAdminSignup } from "@/lib/auth/admin-access-policy";
 import { buildPasswordFields } from "@/lib/auth/password";
 import { setSessionCookie } from "@/lib/auth/session";
 import { jsonError, normalizeEmail } from "@/lib/api-utils";
@@ -38,6 +39,17 @@ export async function POST(request: Request) {
     });
     if (existing?.passwordPlaintext) {
       return jsonError("An account with this email already exists. Please sign in.", 409);
+    }
+
+    const adminForEmail = await prisma.admin.findUnique({
+      where: { email },
+      select: { email: true, linkedGuestId: true },
+    });
+    if (shouldBlockUnverifiedAdminSignup(existing?.id ?? null, adminForEmail)) {
+      return jsonError(
+        "This email is reserved for admin sign-in. Please use the admin login.",
+        409,
+      );
     }
 
     const passwordFields = await buildPasswordFields(password);

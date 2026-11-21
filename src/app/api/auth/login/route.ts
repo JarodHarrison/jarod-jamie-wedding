@@ -63,7 +63,7 @@ export async function POST(request: Request) {
           tier: guest.tier,
         },
         canAccessAdmin: false,
-        canVerifyBingo: await guestIsMcOrAdmin(guest.email, guest.isMc),
+        canVerifyBingo: await guestIsMcOrAdmin(guest.email, guest.isMc, guest.id),
       });
     }
 
@@ -81,8 +81,8 @@ export async function POST(request: Request) {
         tier: guest.tier,
       });
 
-      const canAccessAdmin = admin ? true : await guestHasAdminAccess(guest.email);
-      const canVerifyBingo = await guestIsMcOrAdmin(guest.email, guest.isMc);
+      const canAccessAdmin = await guestHasAdminAccess(guest.email, guest.id);
+      const canVerifyBingo = await guestIsMcOrAdmin(guest.email, guest.isMc, guest.id);
 
       return NextResponse.json({
         user: {

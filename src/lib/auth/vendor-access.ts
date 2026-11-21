@@ -26,7 +26,7 @@ export async function getVendorAccessForSession(
     select: { partyRole: true, email: true },
   });
 
-  const isAdminGuest = await guestHasAdminAccess(session.email);
+  const isAdminGuest = await guestHasAdminAccess(session.email, session.id);
   if (isAdminGuest) {
     return {
       canManageVendors: true,

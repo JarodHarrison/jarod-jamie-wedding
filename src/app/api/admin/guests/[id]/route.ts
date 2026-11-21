@@ -76,11 +76,23 @@ export async function PATCH(request: Request, context: RouteContext) {
       data.passwordPlaintext = passwordFields.passwordPlaintext;
     }
 
+    const current =
+      data.email !== undefined
+        ? await prisma.guest.findUnique({ where: { id }, select: { email: true } })
+        : null;
+
     const guest = await prisma.guest.update({
       where: { id },
       data,
       select: adminGuestSelect,
     });
+
+    if (data.email && current && data.email !== current.email) {
+      await prisma.admin.updateMany({
+        where: { linkedGuestId: id, email: current.email },
+        data: { email: data.email },
+      });
+    }
     const [withBucks] = await attachBucksRsvpsToAdminGuests([guest]);
     const [withGlow] = await attachGlowUpInterestsToAdminGuests([withBucks]);
 
@@ -114,6 +126,15 @@ export async function DELETE(_request: Request, context: RouteContext) {
   try {
     await requireAdminAccess();
     const { id } = await context.params;
+    const current = await prisma.guest.findUnique({
+      where: { id },
+      select: { email: true },
+    });
+    if (current) {
+      await prisma.admin.deleteMany({
+        where: { linkedGuestId: id, email: current.email },
+      });
+    }
     await prisma.guest.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {

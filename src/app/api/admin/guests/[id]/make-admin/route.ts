@@ -22,11 +22,20 @@ export async function POST(_request: Request, context: RouteContext) {
       return jsonError("This guest is already an admin.", 409);
     }
 
+    const alreadyLinked = await prisma.admin.findUnique({
+      where: { linkedGuestId: guest.id },
+      select: { id: true },
+    });
+    if (alreadyLinked) {
+      return jsonError("This guest is already an admin.", 409);
+    }
+
     const admin = await prisma.admin.create({
       data: {
         name: guest.name,
         email: guest.email,
         passwordHash: guest.passwordHash,
+        linkedGuestId: guest.id,
       },
       select: { id: true, name: true, email: true },
     });

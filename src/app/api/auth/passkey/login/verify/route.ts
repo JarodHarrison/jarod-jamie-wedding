@@ -57,11 +57,7 @@ export async function POST(request: Request) {
     });
 
     if (credential.guest) {
-      const admin = await prisma.admin.findUnique({
-        where: { email: credential.guest.email },
-        select: { id: true },
-      });
-      return createGuestSessionResponse(credential.guest, Boolean(admin));
+      return createGuestSessionResponse(credential.guest);
     }
 
     if (credential.admin) {

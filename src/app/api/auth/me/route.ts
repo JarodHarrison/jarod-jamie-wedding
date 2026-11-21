@@ -61,8 +61,12 @@ export async function GET() {
         glowUpPartyInterest: { select: { interest: true } },
       },
     });
-    const canAccessAdmin = await guestHasAdminAccess(fresh.email);
-    const canVerifyBingo = await guestIsMcOrAdmin(fresh.email, guestFlags?.isMc ?? false);
+    const canAccessAdmin = await guestHasAdminAccess(fresh.email, fresh.id);
+    const canVerifyBingo = await guestIsMcOrAdmin(
+      fresh.email,
+      guestFlags?.isMc ?? false,
+      fresh.id,
+    );
     const hasOnSiteAccess = hasOnSiteAppAccess(fresh.tier, {
       assignedRoomName: guestFlags?.assignedRoomName,
     });

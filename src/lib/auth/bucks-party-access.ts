@@ -15,7 +15,7 @@ export function emailIsBucksPartyOrganiser(email: string): boolean {
 }
 
 export async function guestIsBucksPartyAdmin(guestId: string, email: string): Promise<boolean> {
-  if (await guestHasAdminAccess(email)) return true;
+  if (await guestHasAdminAccess(email, guestId)) return true;
   if (emailIsBucksPartyOrganiser(email)) {
     // Keep the DB flag in sync so organiser lists stay accurate
     await prisma.guest

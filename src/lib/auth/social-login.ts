@@ -47,7 +47,7 @@ export async function signInWithEmailAccount(email: string) {
   }
 
   if (guest) {
-    return createGuestSessionResponse(guest, Boolean(admin));
+    return createGuestSessionResponse(guest);
   }
 
   if (admin) {

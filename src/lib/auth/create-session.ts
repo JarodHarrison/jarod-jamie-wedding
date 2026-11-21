@@ -68,13 +68,12 @@ export async function redirectWithAdminSession(admin: AdminAccount, redirectUrl:
   return response;
 }
 
-export async function createGuestSessionResponse(guest: GuestAccount, hasAdminRecord = false) {
+export async function createGuestSessionResponse(guest: GuestAccount) {
   await setGuestSessionCookie(guest);
 
   const canAccessAdmin =
-    !isGuestOnlyEmail(guest.email) &&
-    (hasAdminRecord || (await guestHasAdminAccess(guest.email)));
-  const canVerifyBingo = await guestIsMcOrAdmin(guest.email, guest.isMc ?? false);
+    !isGuestOnlyEmail(guest.email) && (await guestHasAdminAccess(guest.email, guest.id));
+  const canVerifyBingo = await guestIsMcOrAdmin(guest.email, guest.isMc ?? false, guest.id);
 
   return NextResponse.json({
     user: {
